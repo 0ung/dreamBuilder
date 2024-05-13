@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
-import main from "../mainImage.png";
+import main from "../image/mainImage.png";
 import Markdown from "react-markdown";
 
 function MainPage() {
