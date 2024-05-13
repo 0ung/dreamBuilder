@@ -8,6 +8,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 
 @Entity
@@ -19,7 +22,7 @@ public class Member {
 	private Long id;
 
 	@Column(unique = true,nullable = false)
-	private String email;  
+	private String email;
 	@Column(nullable = false)
 	private String password;
 	@Column(nullable = false)
@@ -28,4 +31,6 @@ public class Member {
 	@Enumerated(EnumType.STRING)
 	private Authority authority;
 	private boolean isWithdrawal;
+
+
 }

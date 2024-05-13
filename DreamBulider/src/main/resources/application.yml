@@ -6,9 +6,12 @@ spring:
     name: DreamBuilder
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: "jdbc:mysql://localhost:3306/xhadlfkd?serverTime=UTC"
+    url: jdbc:mysql://localhost:3306/xhadlfkd?serverTime=UTC, jdbc:h2:mem:testdb
     username: root
     password: 1234
+  h2:
+    console:
+      enabled: true
   jpa:
     properties:
       hibernate:
