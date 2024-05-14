@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import Header from "../layout/Header";
 import Footer from "../layout/Footer";
-import kakao from "../image/kakao.png";
+import kakaoLogin from "../image/kakaoLogin.png";
+import { useNavigate } from "react-router-dom";
+import { MAIN, SIGNUP } from "../constants/page_constants";
+import styled from "styled-components";
 
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
@@ -9,13 +11,8 @@ interface SignUPProps {
   type: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
-interface validation {
-  children: String;
-  data: () => boolean;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
 
-function SignupInput({ children, placeholder, type, onChange }: SignUPProps) {
+function LoginInput({ children, placeholder, type, onChange }: SignUPProps) {
   return (
     <>
       <div className="input-group mb-3">
@@ -24,7 +21,7 @@ function SignupInput({ children, placeholder, type, onChange }: SignUPProps) {
         </span>
         <input
           type={type}
-          className="form-control"
+          className="form-control form-control-lg"
           placeholder={placeholder}
           aria-label="Sizing example input"
           aria-describedby="inputGroup-sizing-default"
@@ -35,127 +32,76 @@ function SignupInput({ children, placeholder, type, onChange }: SignUPProps) {
   );
 }
 
-function Inputvalidation({ children, data, onChange }: validation) {
-  const isVliad = data();
-  return (
-    <>
-      {isVliad ? (
-        <p style={{ color: "green" }}>가입 가능합니다.</p>
-      ) : (
-        <p style={{ color: "red" }}>
-          {children + `(이)가 올바르게 입력되지 않았습니다.`}
-        </p>
-      )}
-    </>
-  );
-}
-
 export default function LoginPage() {
-  const [userId, setUserId] = useState("");
-  const [nickName, setNickName] = useState("");
-  const [password, setPassword] = useState("");
-  const [checkPassword, setCheckPassword] = useState("");
+  const navigator = useNavigate();
 
-  const handleUserId = (e: string) => {
-    const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
-    return regExp.test(e);
-  };
-  const handleNickName = (e: string) => {
-    const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
-    return regExp.test(e);
-  };
-  const handlePassword = (e: string) => {
-    const regExp = new RegExp(
-      "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_])[A-Za-z\\d\\W_]{8,20}$"
-    );
-    return regExp.test(e);
-  };
+  useEffect(() => {
+    // 페이지가 마운트될 때 배경색을 설정
+    document.body.style.backgroundColor = "#eeeeee";
 
-  const handleCheckPassword = (e: string) => {
-    if (e === password) {
-      return true;
+    // 페이지가 언마운트될 때 배경색을 원래대로 되돌림
+    return () => {
+      document.body.style.backgroundColor = "";
+    };
+  }, []);
+
+  const StyledLink = styled.a`
+    color: black !important;
+    text-decoration: none;
+
+    &:hover {
+      color: black;
+      text-decoration: none;
     }
-    return false;
-  };
+  `;
 
   return (
     <>
-      <Header />
-      <div className="container mt-5">
-        <h1>회원가입</h1>
-        <hr></hr>
-        <SignupInput
-          placeholder="아이디를 입력해주세요 (8~15자 영대소문자, 숫자만 가능)"
-          type="text"
-          onChange={(e) => {
-            setUserId(e.target.value);
-          }}
-        >
-          아이디
-        </SignupInput>
-        <Inputvalidation
-          data={() => {
-            return handleUserId(userId);
-          }}
-        >
-          아이디
-        </Inputvalidation>
-        <SignupInput
-          placeholder="닉네임을 입력해주세요 (8~15자)"
-          type="text"
-          onChange={(e) => {
-            setNickName(e.target.value);
-          }}
-        >
-          닉네임
-        </SignupInput>
-        <Inputvalidation
-          data={() => {
-            return handleNickName(nickName);
-          }}
-        >
-          닉네임
-        </Inputvalidation>
-        <SignupInput
-          placeholder="비밀번호를 입력해주세요 (8~20자 영대소문자, 숫자, 특수문자 하나씩 기입 )"
-          type="password"
-          onChange={(e) => {
-            setPassword(e.target.value);
-          }}
-        >
-          비밀번호
-        </SignupInput>
-        <Inputvalidation
-          data={() => {
-            return handlePassword(password);
-          }}
-        >
-          비밀번호
-        </Inputvalidation>
-        <SignupInput
-          type="password"
-          placeholder=""
-          onChange={(e) => {
-            setCheckPassword(e.target.value);
-          }}
-        >
-          비밀번호 확인
-        </SignupInput>
-        <Inputvalidation
-          data={() => {
-            return handleCheckPassword(checkPassword);
-          }}
-        >
-          비밀번호 확인
-        </Inputvalidation>
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button className="btn btn-primary">가입</button>
-        </div>
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div
-          className="mt-2"
-          style={{ display: "flex", justifyContent: "flex-end" }}
+          className="container text-center border rounded p-4 shadow-sm"
+          style={{ maxWidth: "400px" }}
         >
-          <img src={kakao} />
+          <h1
+            onClick={() => {
+              navigator(MAIN);
+            }}
+          >
+            <StyledLink href="#">DreamBuilder</StyledLink>
+          </h1>
+          <hr style={{ width: "100%", margin: "0 auto" }} />
+          <div className="mt-4">
+            <LoginInput type="text" placeholder="아이디">
+              아이디
+            </LoginInput>
+            <LoginInput type="password" placeholder="비밀번호">
+              비밀번호
+            </LoginInput>
+            <div className="row mb-2">
+              <div className="col d-flex justify-content-center">
+                <a href="#" className="w-100">
+                  <img
+                    src={kakaoLogin}
+                    alt="카카오 로그인"
+                    className="img-fluid w-100"
+                  />
+                </a>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col d-flex flex-column">
+                <button
+                  className="btn btn-primary mb-2 w-100"
+                  onClick={() => {
+                    navigator(SIGNUP);
+                  }}
+                >
+                  회원가입
+                </button>
+                <button className="btn btn-secondary w-100">로그인</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <Footer />

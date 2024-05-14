@@ -3,12 +3,17 @@ import SearchLi from "../componets/SearchLi";
 import { ReactNode, useState } from "react";
 import search from "../image/search.svg";
 import { useNavigate } from "react-router-dom";
-import { LOGIN, MAIN } from "../constants/page_constants";
+import { LOGIN, MAIN, MYPAGE } from "../constants/page_constants";
+import LOGOIMAGE from "../image/LogoImage.png";
 
 const StyledLink = styled.a`
-color: white !important; 
-&:hover {
-  color: white; 
+  color: white !important;
+  text-decoration: none;
+
+  &:hover {
+    color: white;
+    text-decoration: none;
+  }
 `;
 
 const Headers = styled.div`
@@ -80,7 +85,7 @@ function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [hashTag, setHashTag] = useState<ReactNode>([]);
 
-  const [loggin, isLoggin] = useState(false);
+  const [loggin, isLoggin] = useState(true);
   const [admin, isAdmin] = useState(false);
 
   const navigate = useNavigate();
@@ -103,7 +108,7 @@ function Header() {
           navigate(MAIN);
         }}
       >
-        Dream Builder
+        <StyledLink href="">Dream Builder</StyledLink>
       </Logo>
       <div className="col-6">
         <div className="row">
@@ -158,7 +163,14 @@ function Header() {
             ) : (
               <>
                 {/*로그인 후*/}
-                <NavLi href="#">마이페이지</NavLi>
+                <NavLi
+                  href=""
+                  onClick={() => {
+                    navigate(MYPAGE);
+                  }}
+                >
+                  마이페이지
+                </NavLi>
                 <NavLi href="#">로그아웃</NavLi>
               </>
             )
@@ -166,7 +178,7 @@ function Header() {
             <>
               {/*로그인 전*/}
               <NavLi href="#">프로젝트</NavLi>
-              <NavLi href="#" onClick={() => navigate(LOGIN)}>
+              <NavLi href="" onClick={() => navigate(LOGIN)}>
                 로그인
               </NavLi>
             </>
