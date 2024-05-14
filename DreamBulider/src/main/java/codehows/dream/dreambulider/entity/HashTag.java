@@ -13,6 +13,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -27,11 +29,20 @@ public class HashTag {
 	@JoinColumn(name = "board_id")
 	private Board board;
 
-	private String hashtag;
+	private String hashTag;
 
 //	@Builder
 //	public HashTag(Board board, String hashtag) {
 //		this.board = board;
 //		this.hashtag = hashtag;
 //	}
+
+	public HashTag(Board board, List<HashTag> hashTags) {
+		this.board = board;
+		this.hashTag = hashTags.toString();
+	}
+
+	public void update(String hashTag) {
+		this.hashTag = hashTag;
+	}
 }

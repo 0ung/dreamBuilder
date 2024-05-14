@@ -13,7 +13,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardRequestDTO {
+public class BoardUpdateDTO {
+
     private String title;
     private String content;
     private Date endDate;
