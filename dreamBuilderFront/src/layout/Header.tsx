@@ -1,14 +1,19 @@
 import styled from "styled-components";
 import SearchLi from "../componets/SearchLi";
 import { ReactNode, useState } from "react";
-import search from "../search.svg";
+import search from "../image/search.svg";
 import { useNavigate } from "react-router-dom";
-import { MAIN } from "../constants/page_constants";
+import { LOGIN, MAIN, MYPAGE } from "../constants/page_constants";
+import LOGOIMAGE from "../image/LogoImage.png";
 
 const StyledLink = styled.a`
-color: white !important; 
-&:hover {
-  color: white; 
+  color: white !important;
+  text-decoration: none;
+
+  &:hover {
+    color: white;
+    text-decoration: none;
+  }
 `;
 
 const Headers = styled.div`
@@ -52,12 +57,26 @@ interface SearchLiProps {
   href: string;
 }
 
-function NavLi({ children, href }: SearchLiProps) {
+interface NavLiProps {
+  children: React.ReactNode; // 자식 요소의 타입
+  href: string; // 링크 URL
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void; // 옵셔널 onClick 이벤트 핸들러
+}
+
+function NavLi({ children, href, onClick }: NavLiProps) {
   return (
     <li className="nav-item">
-      <StyledLink className="nav-link active" aria-current="page" href={href}>
+      <a
+        style={{ color: "white" }}
+        className="nav-link active"
+        aria-current="page"
+        href={href}
+        onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
+          onClick?.(event); // onClick 핸들러가 제공되면 호출
+        }}
+      >
         {children}
-      </StyledLink>
+      </a>
     </li>
   );
 }
@@ -66,7 +85,7 @@ function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [hashTag, setHashTag] = useState<ReactNode>([]);
 
-  const [loggin, isLoggin] = useState(false);
+  const [loggin, isLoggin] = useState(true);
   const [admin, isAdmin] = useState(false);
 
   const navigate = useNavigate();
@@ -89,7 +108,7 @@ function Header() {
           navigate(MAIN);
         }}
       >
-        Dream Builder
+        <StyledLink href="">Dream Builder</StyledLink>
       </Logo>
       <div className="col-6">
         <div className="row">
@@ -144,7 +163,14 @@ function Header() {
             ) : (
               <>
                 {/*로그인 후*/}
-                <NavLi href="#">마이페이지</NavLi>
+                <NavLi
+                  href=""
+                  onClick={() => {
+                    navigate(MYPAGE);
+                  }}
+                >
+                  마이페이지
+                </NavLi>
                 <NavLi href="#">로그아웃</NavLi>
               </>
             )
@@ -152,7 +178,9 @@ function Header() {
             <>
               {/*로그인 전*/}
               <NavLi href="#">프로젝트</NavLi>
-              <NavLi href="#">로그인</NavLi>
+              <NavLi href="" onClick={() => navigate(LOGIN)}>
+                로그인
+              </NavLi>
             </>
           )}
         </ul>
