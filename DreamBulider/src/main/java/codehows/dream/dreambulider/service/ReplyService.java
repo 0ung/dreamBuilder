@@ -1,5 +1,6 @@
 package codehows.dream.dreambulider.service;
 
+import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyUpdateDTO;
 import codehows.dream.dreambulider.entity.Reply;
@@ -16,9 +17,13 @@ public class ReplyService {
 
     private final ReplyRepository replyRepository;
     public Reply saveReply(ReplyRequestDTO replyRequestDTO){
+        if(replyRequestDTO.getComment() == null){
+            throw new IllegalArgumentException("데이터 없음");
+        }
         return replyRepository
                 .save(Reply.builder()
                 .comment(replyRequestDTO.getComment())
+                .invisible(replyRequestDTO.isInvisible())
                 .build());
     }
 
@@ -30,8 +35,14 @@ public class ReplyService {
         return replyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
     }
-    public void delete (long id) {
-        replyRepository.deleteById(id);
+
+    @Transactional
+    public Reply delete (long id, ReplyDeleteDTO replyDeleteDTO) {
+        Reply reply = replyRepository.findById(id)
+                        .orElseThrow(() ->new IllegalArgumentException("삭제 실패 : " + id));
+        reply.update(replyDeleteDTO.getComment());
+
+        return reply;
     }
 
     @Transactional

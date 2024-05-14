@@ -1,5 +1,6 @@
 package codehows.dream.dreambulider.controller;
 
+import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyResponseDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyUpdateDTO;
@@ -23,7 +24,9 @@ public class ReplyController {
     public ResponseEntity<?> saveReply(@RequestBody ReplyRequestDTO replyRequestDTO){
         try{
             replyService.saveReply(replyRequestDTO);
-        }catch (Exception e){
+        }catch (IllegalArgumentException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch(RuntimeException e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -47,11 +50,13 @@ public class ReplyController {
                 .body(new ReplyResponseDTO(reply));
     }
     @DeleteMapping("/reply/{id}")
-    public ResponseEntity<Void> deleteReply(@PathVariable(name = "id") long id) {
-        replyService.delete(id);
+    public ResponseEntity<Reply> deleteReply(@PathVariable(name = "id") long id,
+                                             @RequestBody ReplyDeleteDTO replyDeleteDTO) {
+
+        Reply deleteReply = replyService.delete(id, replyDeleteDTO);
 
         return ResponseEntity.ok()
-                .build();
+                .body(deleteReply);
     }
 
     @PutMapping("/reply/{id}")

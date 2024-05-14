@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -29,8 +31,11 @@ public class Reply {
 	@JoinColumn(name = "board_id")
 	private Board board;
 
+	@Column(nullable = false)
 	private boolean invisible;
 
+	@OneToMany(mappedBy = "reply", fetch = FetchType.LAZY)
+	public List<NestedReply> nestedReplies;
 	public void update(String comment) {
 		this.comment = comment;
 	}

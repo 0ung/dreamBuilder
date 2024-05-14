@@ -33,5 +33,10 @@ public class NestedReply {
 
 	@Column(columnDefinition = "TEXT")
 	private String comment;
+
+	/* 대댓글 수정 */
+	public void update(String comment) {
+		this.comment = comment;
+	}
 }
 

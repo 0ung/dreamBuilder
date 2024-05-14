@@ -10,4 +10,7 @@ import lombok.*;
 public class ReplyRequestDTO {
 
     private String comment;
+    private boolean invisible=false;
+
+
 }
