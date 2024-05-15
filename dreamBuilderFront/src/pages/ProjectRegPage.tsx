@@ -1,19 +1,26 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import MDEditor, { ICommand, ContextStore } from "@uiw/react-md-editor";
-import Dropzone from "react-dropzone";
 import DropZone from "../componets/DropZone";
 
 export default function ProjectRegPage() {
-  const [board, setBoard] = useState({
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  interface Board {
+    title: string;
+    content: string;
+    endDate: string;
+    hashTag: string[];
+  }
+
+  const [board, setBoard] = useState<Board>({
     title: "",
     content: "",
     endDate: "",
     hashTag: [],
   });
 
-  const [hashTags, setHashTags] = useState("");
   const handleMarkdownChange = (
     value?: string,
     event?: React.ChangeEvent<HTMLTextAreaElement>,
@@ -25,14 +32,38 @@ export default function ProjectRegPage() {
     }));
     console.log(board);
   };
-  const handleHashTag = () => {
-    hashTags;
+
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === " " || event.key === "Enter") {
+      const data = event.currentTarget.value.trim();
+      setBoard((prevBoard) => ({
+        ...prevBoard,
+        hashTag: [...prevBoard.hashTag, data],
+      }));
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+      event.preventDefault();
+    }
+    console.log(board);
   };
+
+  const handleRemoveHashTag = (index: number) => {
+    setBoard((prevBoard) => ({
+      ...prevBoard,
+      hashTag: prevBoard.hashTag.filter((_, i) => i !== index),
+    }));
+  };
+
   return (
     <>
       <Header />
       <div className="container mt-5">
-        <div className="input-group mb-3">
+        <div>
+          <h1 className="">프로젝트 생성</h1>
+          <hr></hr>
+        </div>
+        <div className="input-group mt-5 mb-3">
           <span className="input-group-text" id="basic-addon1">
             제목
           </span>
@@ -60,7 +91,7 @@ export default function ProjectRegPage() {
             마김일
           </span>
           <input
-            type="text"
+            type="date"
             className="form-control"
             placeholder="마김일 등록"
             aria-describedby="basic-addon1"
@@ -77,16 +108,38 @@ export default function ProjectRegPage() {
             해시태그
           </span>
           <input
+            ref={inputRef}
             type="text"
             className="form-control"
             placeholder="해시태그 입력 (#을 달지 않고 작성하세요)"
             aria-describedby="basic-addon1"
-            onChange={(e) => {
-              setHashTags(e.target.value);
-            }}
+            onKeyDown={handleKeyPress}
           />
         </div>
+        <div>
+          <div>
+            {board.hashTag.map((tag, index) => (
+              <span key={index} className="badge bg-primary me-2">
+                {tag}
+                <button
+                  type="button"
+                  className="btn-close btn-close-white ms-2"
+                  aria-label="Close"
+                  onClick={() => handleRemoveHashTag(index)}
+                ></button>
+              </span>
+            ))}
+          </div>
+        </div>
         <DropZone></DropZone>
+
+        <button
+          onClick={() => {
+            console.log(board);
+          }}
+        >
+          제출
+        </button>
       </div>
       <Footer />
     </>
