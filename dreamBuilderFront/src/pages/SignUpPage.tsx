@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import kakao from "../image/kakao.png";
-
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
   placeholder: string;
