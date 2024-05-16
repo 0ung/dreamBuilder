@@ -79,7 +79,10 @@ export default function LoginPage() {
             </LoginInput>
             <div className="row mb-2">
               <div className="col d-flex justify-content-center">
-                <a href="#" className="w-100">
+                <a
+                  href="https://kauth.kakao.com/oauth/authorize?client_id=95a542009e6abdf2635c87b2de0b4c5f&redirect_uri=http://localhost:8080/auth/callback&response_type=code"
+                  className="w-100"
+                >
                   <img
                     src={kakaoLogin}
                     alt="카카오 로그인"

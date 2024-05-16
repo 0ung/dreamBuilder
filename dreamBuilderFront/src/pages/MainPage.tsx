@@ -3,8 +3,11 @@ import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import main from "../image/mainImage.png";
 import Markdown from "react-markdown";
+import { useNavigate } from "react-router-dom";
+import { PROJECT_REG } from "../constants/page_constants";
 
 function MainPage() {
+  const navigator = useNavigate();
   const [markdown, setMarkdown] = useState(`## 창의적 여정을 시작하세요
 
   여러분의 창의력을 마음껏 발휘하고, 실현 가능한 아이디어로 세상에 영향을 미치세요. **드림 빌더**는 모든 창조적 개인과 팀을 위한 공간을 제공합니다. 우리는 여러분이 세상을 바꾸는 아이디어를 현실로 만들 수 있도록 지원합니다.
@@ -33,6 +36,9 @@ function MainPage() {
               <button
                 className="btn btn-primary btn-lg"
                 style={{ backgroundColor: "#348f8f" }}
+                onClick={() => {
+                  navigator(PROJECT_REG);
+                }}
               >
                 프로젝트 등록하기
               </button>
