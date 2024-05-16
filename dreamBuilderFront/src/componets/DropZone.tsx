@@ -1,34 +1,67 @@
-import React, { useCallback, useState } from "react";
+import React, { ReactNode, useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { image } from "@uiw/react-md-editor";
 
-const MyComponent: React.FC = () => {
-
-  const [extensions,setExtensions] = useState<String[]>([
-    "hwp" , "pdf" , "png"
-  ]);
-  const [fileSize,setFileSize] = useState();
-
+interface DropZoneProps {
+  filteredFiles: File[];
+  setFilteredFiles: (files: File[]) => void;
+}
+const MyComponent: React.FC<DropZoneProps> = ({
+  filteredFiles,
+  setFilteredFiles,
+}) => {
+  const [filePolicy, setFilePolicy] = useState({
+    fileCount: 2,
+    fileSize: 150000,
+    fileExtensions: [
+      { type: "file", extensions: ["asd", "asdasd", "asdasd"] },
+      { type: "image", extensions: ["png", "svg", "jpg"] },
+      { type: "video", extensions: ["mp4", "mp5"] },
+    ],
+  });
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    // 파일을 처리하는 로직을 여기에 추가하세요
-    acceptedFiles.map((e)=>{
-      if(e.name)
-    })
-    console.log(acceptedFiles);
+    if (!handleFileCnt(acceptedFiles)) {
+      return;
+    }
+    const filteredFiles = acceptedFiles.filter((file) => {
+      const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+      return handleFileExtension(fileExtension) && handleFileSize(file.size);
+    });
+    setFilteredFiles(filteredFiles);
+    console.log(filteredFiles);
   }, []);
 
-  const handleFileExtension = (extension: string)=>{
-      
-  }
+  const handleFileExtension = (fileExtension: string) => {
+    const isValidExtension = filePolicy.fileExtensions.some((policy) =>
+      policy.extensions.includes(fileExtension)
+    );
+    if (!isValidExtension) {
+      alert("업로드가 금지된 확장자입니다. 다시 업로드 해주세요");
+    }
+    return isValidExtension;
+  };
 
-  const handleFileSize = (extension: number)=>{
+  const handleFileSize = (filesize: number) => {
+    if (filesize > filePolicy.fileSize) {
+      alert(`파일 사이즈가 ${filePolicy.fileSize}KB 를 넘을 수 없습니다.`);
+      return false;
+    }
+    return true;
+  };
 
-  }
+  const handleFileCnt = (file: File[]) => {
+    if (file.length > filePolicy.fileCount) {
+      alert(`파일 업로드 개수가 ${filePolicy.fileCount}개를 넘을 수 없습니다.`);
+      return false;
+    }
+    return true;
+  };
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } =
     useDropzone({ onDrop });
 
-  const files = acceptedFiles.map((file) => (
+  const files = filteredFiles.map((file) => (
     <li key={file.name} className="list-group-item">
       {file.name}
     </li>

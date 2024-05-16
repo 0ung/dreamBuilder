@@ -6,6 +6,7 @@ import DropZone from "../componets/DropZone";
 
 export default function ProjectRegPage() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [filteredFiles, setFilteredFiles] = useState<File[]>([]);
 
   interface Board {
     title: string;
@@ -20,7 +21,6 @@ export default function ProjectRegPage() {
     endDate: "",
     hashTag: [],
   });
-
   const handleMarkdownChange = (
     value?: string,
     event?: React.ChangeEvent<HTMLTextAreaElement>,
@@ -30,7 +30,6 @@ export default function ProjectRegPage() {
       ...prevBoard,
       content: value || "",
     }));
-    console.log(board);
   };
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -45,7 +44,6 @@ export default function ProjectRegPage() {
       }
       event.preventDefault();
     }
-    console.log(board);
   };
 
   const handleRemoveHashTag = (index: number) => {
@@ -131,11 +129,15 @@ export default function ProjectRegPage() {
             ))}
           </div>
         </div>
-        <DropZone></DropZone>
+        <DropZone
+          filteredFiles={filteredFiles}
+          setFilteredFiles={setFilteredFiles}
+        ></DropZone>
 
         <button
           onClick={() => {
             console.log(board);
+            console.log(filteredFiles);
           }}
         >
           제출
