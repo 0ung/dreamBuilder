@@ -4,6 +4,9 @@ import reply from "../image/chat.svg";
 import heartFill from "../image/heart-fill.svg";
 import heart from "../image/heart.svg";
 import views from "../image/views.svg";
+import { useNavigate } from "react-router-dom";
+import ProjectDetailView from "../pages/ProjectDetailView";
+import { PROJECT_DETAIL_VIEW } from "../constants/page_constants";
 
 interface ViewBoxProps {
   data: {
@@ -35,8 +38,18 @@ const TruncateText = styled.p`
   text-overflow: ellipsis;
 `;
 
+const StyledLink = styled.a`
+  text-decoration: none; /* 밑줄 제거 */
+  color: inherit; /* 글자 색을 부모 요소와 동일하게 */
+
+  &:hover {
+    color: #348f8f; /* 마우스를 올렸을 때 색상 변경 */
+  }
+`;
+
 const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
   const [liked, setLiked] = useState(data.liked);
+  const navigator = useNavigate();
   const handleDisliked = () => {
     console.log(data.id + "싫어요");
     setLiked(false);
@@ -46,6 +59,10 @@ const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
     console.log(data.id + "좋아요");
     setLiked(true);
     console.log(data);
+  };
+
+  const handleTitle = (id: number) => {
+    navigator(PROJECT_DETAIL_VIEW, { state: id });
   };
   useEffect(() => {
     setLiked(data.liked);
@@ -62,7 +79,15 @@ const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
             )}
           </span>
           <div className="card-body">
-            <h5 className="card-title text-truncate">{data.title}</h5>
+            <h5 className="card-title text-truncate">
+              <StyledLink
+                onClick={() => {
+                  handleTitle(data.id);
+                }}
+              >
+                {data.title}
+              </StyledLink>
+            </h5>
             <p className="card-text">마감일: {data.endDate}</p>
           </div>
         </div>

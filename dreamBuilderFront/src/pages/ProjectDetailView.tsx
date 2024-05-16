@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import Markdown from "react-markdown";
 import styled from "styled-components";
+import CommentSection from "../componets/CommentSection";
+import { useLocation } from "react-router-dom";
 
 interface board {
   id: number;
@@ -21,8 +23,8 @@ interface reply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: Date;
-  updateDate: Date;
+  regDate: string;
+  updateDate: string | null;
   nestReply: nestedReply[];
 }
 
@@ -30,8 +32,8 @@ interface nestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: Date;
-  updateDate: Date;
+  regDate: string;
+  updateDate: string;
 }
 
 // 더미 데이터 생성
@@ -80,22 +82,22 @@ const dummyBoard: board = {
       id: 1,
       comment: "첫 번째 댓글입니다.",
       nickname: "User1",
-      regDate: new Date("2024-01-01"),
-      updateDate: new Date("2024-01-02"),
+      regDate: "2024-01-01",
+      updateDate: "2024-01-02",
       nestReply: [
         {
           id: 1,
           comment: "첫 번째 대댓글입니다.",
           nickname: "User2",
-          regDate: new Date("2024-01-01"),
-          updateDate: new Date("2024-01-02"),
+          regDate: "2024-01-01",
+          updateDate: "2024-01-02",
         },
         {
           id: 2,
           comment: "두 번째 대댓글입니다.",
           nickname: "User3",
-          regDate: new Date("2024-01-01"),
-          updateDate: new Date("2024-01-02"),
+          regDate: "2024-01-01",
+          updateDate: "2024-01-02",
         },
       ],
     },
@@ -103,15 +105,15 @@ const dummyBoard: board = {
       id: 2,
       comment: "두 번째 댓글입니다.",
       nickname: "User4",
-      regDate: new Date("2024-01-03"),
-      updateDate: new Date("2024-01-04"),
+      regDate: "2024-01-03",
+      updateDate: null,
       nestReply: [
         {
           id: 3,
           comment: "세 번째 대댓글입니다.",
           nickname: "User5",
-          regDate: new Date("2024-01-03"),
-          updateDate: new Date("2024-01-04"),
+          regDate: "2024-01-03",
+          updateDate: "2024-01-04",
         },
       ],
     },
@@ -123,8 +125,18 @@ const Hr = styled.hr`
   border-top: 5px solid black;
 `;
 
-function ProjectDetailView() {
-  const [data, setDate] = useState<board>(dummyBoard);
+const ProjectDetailView: React.FC = () => {
+  const location = useLocation();
+  const boardId = location.state;
+
+  const [data, setData] = useState<board>(dummyBoard);
+
+  useEffect(() => {
+    //대충 API로 데이터 받아오기
+    setData(Object);
+    console.log(boardId);
+  });
+
   return (
     <>
       <Header />
@@ -146,11 +158,13 @@ function ProjectDetailView() {
             ))}
           </ul>
         </div>
-        <Hr />
       </div>
+
+      <Hr />
+      <CommentSection replies={data.reply} />
       <Footer />
     </>
   );
-}
+};
 
 export default ProjectDetailView;
