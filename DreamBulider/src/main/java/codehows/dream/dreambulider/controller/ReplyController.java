@@ -1,6 +1,5 @@
 package codehows.dream.dreambulider.controller;
 
-import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyResponseDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyUpdateDTO;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -22,6 +20,7 @@ public class ReplyController {
 
     @PostMapping("/reply")
     public ResponseEntity<?> saveReply(@RequestBody ReplyRequestDTO replyRequestDTO){
+
         try{
             replyService.saveReply(replyRequestDTO);
         }catch (IllegalArgumentException e){
@@ -49,11 +48,10 @@ public class ReplyController {
         return ResponseEntity.ok()
                 .body(new ReplyResponseDTO(reply));
     }
-    @DeleteMapping("/reply/{id}")
-    public ResponseEntity<Reply> deleteReply(@PathVariable(name = "id") long id,
-                                             @RequestBody ReplyDeleteDTO replyDeleteDTO) {
+    @PatchMapping("/reply/{id}")
+    public ResponseEntity<Reply> deleteReply(@PathVariable(name = "id") long id) {
 
-        Reply deleteReply = replyService.delete(id, replyDeleteDTO);
+        Reply deleteReply = replyService.deleteInvisible(id);
 
         return ResponseEntity.ok()
                 .body(deleteReply);

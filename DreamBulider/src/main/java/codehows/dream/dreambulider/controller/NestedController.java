@@ -11,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,15 +28,25 @@ public class NestedController {
 
         try {
             nestedService.saveNestedReply(id, nestedRequestDTO);
-        } catch(Exception e) {
+        } catch(IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/reply/{replyId}/rereply")
-    public List<NestedReply> read(@PathVariable (name = "replyId") long id) {
-        return nestedService.findAll(id);
+    public ResponseEntity<?> findAllNestedReplys(@PathVariable(name = "replyId") long id) {
+
+        NestedReply nestedReply = nestedService.findById(id);
+
+        List<NestedResponseDTO> nestedReplys = nestedService.findAll()
+                        .stream()
+                        .map(NestedResponseDTO::new)
+                        .toList();
+
+        return ResponseEntity.ok().body(nestedReplys);
     }
 
     @GetMapping("/reply/{replyId}/rereply/{id}")
@@ -45,11 +57,12 @@ public class NestedController {
                 .body(new NestedResponseDTO(nestedReply));
     }
 
-    @DeleteMapping("/reply/{replyId}/rereply/{id}")
-    public ResponseEntity<Long> deleteNestedReply(@PathVariable(name = "replyId") long replyId, @PathVariable (name = "id") Long id) {
-        nestedService.delete(replyId, id);
+    @PatchMapping("/reply/{replyId}/rereply/{id}")
+    public ResponseEntity<Long> deleteNestedReply(@PathVariable (name = "id") long id) {
 
-        return ResponseEntity.ok(id);
+       NestedReply deleteNestedReply =  nestedService.deleteInvisible(id);
+
+        return ResponseEntity.ok().body(deleteNestedReply.getId());
     }
 
     @PutMapping("/reply/{replyId}/rereply/{id}")

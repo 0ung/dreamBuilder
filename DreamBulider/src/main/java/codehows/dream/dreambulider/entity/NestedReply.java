@@ -23,6 +23,12 @@ public class NestedReply {
 	@Column(name = "NestedReply_id")
 	private Long id;
 
+	@Column(columnDefinition = "TEXT")
+	private String comment;
+
+	@Column(nullable = false)
+	private boolean invisible= false;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
@@ -31,12 +37,15 @@ public class NestedReply {
 	@JoinColumn(name = "reply_id")
 	private Reply reply;
 
-	@Column(columnDefinition = "TEXT")
-	private String comment;
+
 
 	/* 대댓글 수정 */
 	public void update(String comment) {
 		this.comment = comment;
+	}
+	/* 대댓글 삭제(비활성화) */
+	public void delete() {
+		this.invisible = true;
 	}
 }
 

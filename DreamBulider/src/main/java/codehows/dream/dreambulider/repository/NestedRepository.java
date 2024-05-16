@@ -11,4 +11,5 @@ public interface NestedRepository extends JpaRepository <NestedReply,Long> {
 
     List<NestedReply> getNestedReplyByReplyOrderById(Reply reply);
     Optional<NestedReply> findByReplyIdAndId(Long replyId, Long id);
+
 }
