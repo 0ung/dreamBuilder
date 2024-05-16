@@ -160,7 +160,11 @@ export default function SignUpPage() {
             className="mt-2"
             style={{ display: "flex", justifyContent: "flex-end" }}
           >
-            <a className="" href="#" style={{ width: "15%" }}>
+            <a
+              className=""
+              href="https://kauth.kakao.com/oauth/authorize?client_id=95a542009e6abdf2635c87b2de0b4c5f&redirect_uri=http://localhost:8080/auth/callback&response_type=code"
+              style={{ width: "15%" }}
+            >
               <img src={kakao} style={{ width: "100%", height: "100%" }} />
             </a>
           </div>

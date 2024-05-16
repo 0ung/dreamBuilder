@@ -3,7 +3,12 @@ import SearchLi from "../componets/SearchLi";
 import { ReactNode, useState } from "react";
 import search from "../image/search.svg";
 import { useNavigate } from "react-router-dom";
-import { LOGIN, MAIN, MYPAGE } from "../constants/page_constants";
+import {
+  LOGIN,
+  MAIN,
+  MYPAGE,
+  PROJECT_OVERVIEW,
+} from "../constants/page_constants";
 import LOGOIMAGE from "../image/LogoImage.png";
 
 const StyledLink = styled.a`
@@ -50,12 +55,6 @@ const TaggedText = styled.span`
   margin: 0 0.25em;
   border-radius: 0.375em;
 `;
-
-// 컴포넌트의 속성을 위한 인터페이스 정의
-interface SearchLiProps {
-  children: ReactNode; // ReactNode는 렌더링할 수 있는 모든 것을 포함합니다: 숫자, 문자열, 요소 또는 이들의 배열
-  href: string;
-}
 
 interface NavLiProps {
   children: React.ReactNode; // 자식 요소의 타입
@@ -166,6 +165,14 @@ function Header() {
                 <NavLi
                   href=""
                   onClick={() => {
+                    navigate(PROJECT_OVERVIEW);
+                  }}
+                >
+                  프로젝트
+                </NavLi>
+                <NavLi
+                  href=""
+                  onClick={() => {
                     navigate(MYPAGE);
                   }}
                 >
@@ -177,7 +184,14 @@ function Header() {
           ) : (
             <>
               {/*로그인 전*/}
-              <NavLi href="#">프로젝트</NavLi>
+              <NavLi
+                href=""
+                onClick={() => {
+                  navigate(PROJECT_OVERVIEW);
+                }}
+              >
+                프로젝트
+              </NavLi>
               <NavLi href="" onClick={() => navigate(LOGIN)}>
                 로그인
               </NavLi>
