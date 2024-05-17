@@ -16,8 +16,13 @@ spring:
         format_sql: true
         default_batch_fetch_size: 1000
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
+cos:
+  key: cos12
 
+jwt:
+  issuer: 김영웅
+  secret-key: iJgx1bclHYf9DGhRt6704NZnulCsksc9wEGCtjuLahUG8yQEXchr3QC2nJflUAPQ

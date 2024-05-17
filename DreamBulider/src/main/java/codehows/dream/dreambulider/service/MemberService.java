@@ -9,7 +9,18 @@ import codehows.dream.dreambulider.entity.RefreshToken;
 import codehows.dream.dreambulider.jwt.TokenProvider;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.RefreshTokenRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+//import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+//import org.springframework.security.core.Authentication;
+//import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.userdetails.UserDetailsService;
+//import org.springframework.security.core.userdetails.UsernameNotFoundException;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.password.PasswordEncoder;
+import org.apache.catalina.User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -46,7 +57,7 @@ public class MemberService implements UserDetailsService {
         return memberRepository.existsMemberByEmail(email);
     }
 
-    public TokenResponse login (MemberLoginDTO memberLoginDTO) {
+    public TokenResponse login (MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
 
         Authentication authentication =authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -63,6 +74,23 @@ public class MemberService implements UserDetailsService {
         }else{
             refreshToken.update(newRefreshToken);
         }
+
+        // 액세스 토큰을 쿠키에 설정
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true); // 자바스크립트에서 접근하지 못하게 설정
+        accessTokenCookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능하도록 설정
+        accessTokenCookie.setMaxAge(60 * 60); // 1시간 동안 유효
+
+        // 리프레시 토큰을 쿠키에 설정
+        Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
+
+        // 쿠키를 응답에 추가
+        response.addCookie(accessTokenCookie);
+        response.addCookie(refreshTokenCookie);
+
         return new TokenResponse(accessToken, newRefreshToken);
     }
 

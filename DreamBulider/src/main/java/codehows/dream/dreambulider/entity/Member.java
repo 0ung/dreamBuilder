@@ -12,6 +12,10 @@ import lombok.*;
 import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.GrantedAuthority;
+//import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.GrantedAuthority;
+//import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
@@ -21,7 +25,7 @@ import java.util.Collection;
 @NoArgsConstructor
 @Entity
 @Builder
-public class Member implements UserDetails{
+public class Member implements UserDetails {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

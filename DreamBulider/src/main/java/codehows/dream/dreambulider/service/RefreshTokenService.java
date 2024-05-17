@@ -3,11 +3,14 @@ package codehows.dream.dreambulider.service;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.RefreshToken;
 import codehows.dream.dreambulider.repository.RefreshTokenRepository;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class RefreshTokenService {
-    private RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public RefreshToken findByRefreshToken(String refreshToken) {
         return refreshTokenRepository.findByRefreshToken(refreshToken)
