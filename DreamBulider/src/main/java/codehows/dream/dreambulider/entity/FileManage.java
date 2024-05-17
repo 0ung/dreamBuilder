@@ -22,6 +22,10 @@ public class FileManage {
 	private Integer uploadSize;
 	private Integer uploadNum;
 	@Column(nullable = false, columnDefinition = "TEXT")
-	private String extension;
+	private String docExtension;
+	@Column(nullable = false, columnDefinition = "TEXT")
+	private String imageExtension;
+	@Column(nullable = false, columnDefinition = "TEXT")
+	private String videoExtension;
 
 }
