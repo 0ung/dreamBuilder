@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardResponseDTO {
+    //게시글 상세조회 dto
 
     private Long id;
     private String title;

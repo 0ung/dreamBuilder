@@ -37,9 +37,9 @@ public class HashTag {
 //		this.hashtag = hashtag;
 //	}
 
-	public HashTag(Board board, List<HashTag> hashTags) {
+	public HashTag(Board board, String hashTag) {
 		this.board = board;
-		this.hashTag = hashTags.toString();
+		this.hashTag = hashTag;
 	}
 
 	public void update(String hashTag) {

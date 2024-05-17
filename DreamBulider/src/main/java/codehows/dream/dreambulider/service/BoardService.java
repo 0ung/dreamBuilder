@@ -36,6 +36,16 @@ public class BoardService {
         return boardRepository.findAll(pageable);
     }
 
+    public Page<Board> searchBoard(Pageable pageable, String search, String keyword) {
+        if ("title".equalsIgnoreCase(search)) {
+            return boardRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        } else if("content".equalsIgnoreCase(search)) {
+            return boardRepository.findByContentContainingIgnoreCase(keyword, pageable);
+        } else {
+            return Page.empty(pageable);
+        }
+    }
+
     //게시글 상세 조회
     public Board findById(long id) {
         return boardRepository.findById(id)

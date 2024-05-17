@@ -14,11 +14,13 @@ public interface HashTagRepository extends JpaRepository<HashTag, Long> {
     @Query(value = "SELECT hash_tag FROM Hash_tag WHERE board_id = :boardId", nativeQuery = true)
     List<String> findByBoardId(@Param("boardId") Long boardId);
 
-    @Query(value = "SELECT hash_tag FROM Hash_tag WHERE board_id = :boardId", nativeQuery = true)
-    List<String> findHashTagsByBoardId(@Param("boardId") Long boardId);
+    @Query(value = "SELECT * FROM Hash_tag WHERE board_id = :boardId", nativeQuery = true)
+    List<HashTag> findHashTagsByBoardId(@Param("boardId") Long boardId);
 
     @Modifying
     @Query(value = "DELETE FROM Hash_tag WHERE board_id = :boardId", nativeQuery = true)
     void deleteByBoardId(@Param("boardId") Long boardId);
+
+
 
 }

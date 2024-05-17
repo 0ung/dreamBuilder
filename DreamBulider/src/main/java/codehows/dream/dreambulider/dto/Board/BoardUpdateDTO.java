@@ -1,5 +1,7 @@
 package codehows.dream.dreambulider.dto.Board;
 
+import codehows.dream.dreambulider.dto.HashTag.UpdateRequestHash;
+import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.HashTag;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,5 +20,7 @@ public class BoardUpdateDTO {
     private String title;
     private String content;
     private Date endDate;
-    private List<HashTag> hashTags;
+   private List<UpdateRequestHash> hashTags;
+//    private List<String> hashTags;
+
 }

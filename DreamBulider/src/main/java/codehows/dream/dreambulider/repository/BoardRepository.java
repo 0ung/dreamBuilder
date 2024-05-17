@@ -10,4 +10,8 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     //List<Board> findAllByBoardByTitle();
 
     Page<Board> findAll(Pageable pageable);
+
+    Page<Board> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
+    Page<Board> findByContentContainingIgnoreCase(String content, Pageable pageable);
 }

@@ -1,6 +1,7 @@
 package codehows.dream.dreambulider.dto.Board;
 
 import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.entity.HashTag;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,27 +10,21 @@ import lombok.Setter;
 import java.sql.Date;
 import java.util.List;
 
-@Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class BoardListResponseDTO {
-    //게시판 목록 dto
-
+@Setter
+@Getter
+public class BoardDTO {
+    //게시글 수정 ( board와 hashTag 반환하는 dto)
     private Long id;
     private String title;
+    private String content;
     private Date endDate;
     private List<String> hashTags;
 
-    private Long countLike;
-
-    private Boolean likeList;
-
-    public BoardListResponseDTO(Board board) {
-        this.id = board.getId();
-        this.title = board.getTitle();
-        this.endDate = board.getEndDate();
+    public BoardDTO(String title, String content, Date endDate, List<String> hashTags) {
+        this.title = title;
+        this.content = content;
+        this.endDate = endDate;
         this.hashTags = hashTags;
     }
-
 }

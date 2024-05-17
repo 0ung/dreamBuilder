@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardRequestDTO {
+    //게시글 추가 dto
     private String title;
     private String content;
     private Date endDate;

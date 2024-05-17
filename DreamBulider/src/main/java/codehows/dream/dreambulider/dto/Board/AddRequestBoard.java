@@ -14,16 +14,18 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class AddRequestBoard {
-    private String title;
-    private String content;
-    private Date endDate;
 
-    public Board toEntity() {
-        return Board.builder()
-                .title(title)
-                .content(content)
-                .endDate(endDate)
-                .build();
-    }
+  //아마도 안쓰는거?
+//    private String title;
+//    private String content;
+//    private Date endDate;
+//
+//    public Board toEntity() {
+//        return Board.builder()
+//                .title(title)
+//                .content(content)
+//                .endDate(endDate)
+//                .build();
+//    }
 
 }

@@ -8,8 +8,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.*;
+
+import java.sql.Date;
 
 @Entity
+@AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class Liked {
 
 	@Id
@@ -24,4 +31,19 @@ public class Liked {
 	private Board board;
 	@Column(nullable = false)
 	private boolean isLike;
+
+//	public Liked(Board board, Member member) {
+//		this.board = board;
+//		this.member = member;
+//	}
+
+	@Builder
+	public Liked(Board board, Member member, Boolean isLike) {
+		this.board = board;
+		this.member = member;
+		this.isLike = isLike;
+	}
+	public void update(Boolean isLike) {
+		this.isLike = isLike;
+    }
 }
