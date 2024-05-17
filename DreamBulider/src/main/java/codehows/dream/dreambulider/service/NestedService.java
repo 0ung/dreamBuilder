@@ -36,6 +36,8 @@ public class NestedService {
     public List<NestedReply> findAll()  {
 
         return nestedRepository.findAll();
+
+
     }
     /*public List<NestedReply> findAll(Long id) {
         Reply reply = replyRepository.findById(id)
