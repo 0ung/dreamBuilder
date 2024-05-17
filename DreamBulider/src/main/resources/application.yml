@@ -19,7 +19,7 @@ spring:
         format_sql: true
         default_batch_fetch_size: 1000
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
@@ -29,3 +29,13 @@ cos:
 jwt:
   issuer: 김영웅
   secret-key: iJgx1bclHYf9DGhRt6704NZnulCsksc9wEGCtjuLahUG8yQEXchr3QC2nJflUAPQ
+
+springdoc:
+  packages-to-scan: codehows/dream/dreambulider/controller
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha
