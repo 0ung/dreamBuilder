@@ -1,4 +1,4 @@
-package codehows.dream.dreambulider.controller;
+package codehows.dream.dreambulider.Controller;
 
 import codehows.dream.dreambulider.dto.Board.*;
 import codehows.dream.dreambulider.dto.HashTag.MemberNoExistExcpetion;
