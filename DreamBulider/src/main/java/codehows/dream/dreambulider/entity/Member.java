@@ -33,7 +33,7 @@ public class Member implements UserDetails {
 	private Long id;
 
 	@Column(unique = true,nullable = false)
-	private String email;  
+	private String email;
 	@Column(nullable = false)
 	private String password;
 	@Column(nullable = false)

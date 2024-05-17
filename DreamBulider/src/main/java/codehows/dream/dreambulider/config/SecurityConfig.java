@@ -56,7 +56,7 @@ public class SecurityConfig {
                         request ->{
                             request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                                     .requestMatchers(antMatcher("/member/**")).permitAll()
-                                    .anyRequest().authenticated();
+                                    .anyRequest().permitAll();
                         }
                 )
                 .cors(
