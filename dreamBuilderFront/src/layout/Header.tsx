@@ -6,10 +6,16 @@ import { useNavigate } from "react-router-dom";
 import {
   LOGIN,
   MAIN,
+  MANAGE_FILEUPLOAD,
+  MANAGE_MEMBER,
+  MANAGE_PROJECT,
+  MANAGE_REPLY,
+  MANAGE_VISITOR,
   MYPAGE,
   PROJECT_OVERVIEW,
 } from "../constants/page_constants";
 import LOGOIMAGE from "../image/LogoImage.png";
+import MangeVisitor from "../pages/MangeVisitor";
 
 const StyledLink = styled.a`
   color: white !important;
@@ -85,7 +91,7 @@ function Header() {
   const [hashTag, setHashTag] = useState<ReactNode>([]);
 
   const [loggin, isLoggin] = useState(true);
-  const [admin, isAdmin] = useState(false);
+  const [admin, isAdmin] = useState(true);
 
   const navigate = useNavigate();
 
@@ -153,10 +159,46 @@ function Header() {
             admin ? (
               <>
                 {/*로그인 관리인*/}
-                <NavLi href="#">방문자 수</NavLi>
-                <NavLi href="#">프로젝트 관리</NavLi>
-                <NavLi href="#">댓글 관리</NavLi>
-                <NavLi href="#">회원정보 관리</NavLi>
+                <NavLi
+                  href="#"
+                  onClick={() => {
+                    navigate(MANAGE_VISITOR);
+                  }}
+                >
+                  방문자 수
+                </NavLi>
+                <NavLi
+                  href="#"
+                  onClick={() => {
+                    navigate(MANAGE_PROJECT);
+                  }}
+                >
+                  프로젝트 관리
+                </NavLi>
+                <NavLi
+                  href="#"
+                  onClick={() => {
+                    navigate(MANAGE_REPLY);
+                  }}
+                >
+                  댓글 관리
+                </NavLi>
+                <NavLi
+                  href="#"
+                  onClick={() => {
+                    navigate(MANAGE_MEMBER);
+                  }}
+                >
+                  회원정보 관리
+                </NavLi>
+                <NavLi
+                  href=""
+                  onClick={() => {
+                    navigate(MANAGE_FILEUPLOAD);
+                  }}
+                >
+                  파일 관리
+                </NavLi>
                 <NavLi href="#">로그아웃</NavLi>
               </>
             ) : (

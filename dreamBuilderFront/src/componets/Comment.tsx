@@ -1,5 +1,6 @@
 import React from "react";
 import NestedComment from "./NestedComment";
+import { useDispatch, useSelector } from "react-redux";
 
 interface Reply {
   id: number;
@@ -8,6 +9,7 @@ interface Reply {
   regDate: string;
   updateDate: string | null;
   nestReply: NestedReply[];
+  deactive: boolean;
 }
 
 interface NestedReply {
@@ -15,7 +17,8 @@ interface NestedReply {
   comment: string;
   nickname: string;
   regDate: string;
-  updateDate: string;
+  updateDate: string | null;
+  deactive: boolean;
 }
 
 interface CommentProps {
@@ -29,11 +32,22 @@ const Comment: React.FC<CommentProps> = ({
   openReplies,
   toggleReplies,
 }) => {
+  const isAdmin = useSelector((state: any) => state.admin.isAdmin);
+
   return (
     <div className="card mb-3">
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-2">
-          <h5 className="card-title mb-0">{reply.nickname}</h5>
+          {isAdmin ? (
+            <h5 className="card-title mb-0">
+              {reply.nickname}{" "}
+              <small className="text-muted" style={{ fontSize: "15px" }}>
+                {reply.deactive ? `(삭제됨)` : <></>}
+              </small>
+            </h5>
+          ) : (
+            <h5 className="card-title mb-0">{reply.nickname}</h5>
+          )}
           <small className="text-muted">
             {reply.updateDate == null
               ? reply.regDate
@@ -51,7 +65,11 @@ const Comment: React.FC<CommentProps> = ({
             {openReplies[reply.id] ? "댓글 숨기기" : "댓글 더보기"}
           </button>
           <div className="d-flex justify-content-start">
-            <button className="btn btn-primary btn-sm me-2">수정</button>
+            {isAdmin ? (
+              <></>
+            ) : (
+              <button className="btn btn-primary btn-sm me-2">수정</button>
+            )}
             <button className="btn btn-danger btn-sm">삭제</button>
           </div>
         </div>
@@ -60,24 +78,28 @@ const Comment: React.FC<CommentProps> = ({
             {reply.nestReply.map((nestedReply) => (
               <NestedComment key={nestedReply.id} nestedReply={nestedReply} />
             ))}
-            <div className="row mt-3">
-              <div className="col-12 ps-4">
-                <div className="input-group">
-                  <span className="input-group-text">대댓글</span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="댓글을 작성하세요..."
-                  />
-                  <button
-                    className="btn btn-primary"
-                    style={{ backgroundColor: "#348f8f" }}
-                  >
-                    작성
-                  </button>
+            {isAdmin ? (
+              <></>
+            ) : (
+              <div className="row mt-3">
+                <div className="col-12 ps-4">
+                  <div className="input-group">
+                    <span className="input-group-text">대댓글</span>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="댓글을 작성하세요..."
+                    />
+                    <button
+                      className="btn btn-primary"
+                      style={{ backgroundColor: "#348f8f" }}
+                    >
+                      작성
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
