@@ -4,6 +4,8 @@ import kakaoLogin from "../image/kakaoLogin.png";
 import { useNavigate } from "react-router-dom";
 import { MAIN, SIGNUP } from "../constants/page_constants";
 import styled from "styled-components";
+import axios from "axios";
+import { LOGIN_API } from "../constants/api_constants";
 
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
@@ -34,6 +36,26 @@ function LoginInput({ children, placeholder, type, onChange }: SignUPProps) {
 
 export default function LoginPage() {
   const navigator = useNavigate();
+  const [email, setEamil] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const handleLogin = async () => {
+    try {
+      const formData = {
+        email: email,
+        password: password,
+      };
+      const response = await axios.post(
+        "http://localhost:8080" + LOGIN_API,
+        JSON.stringify(formData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(response.data);
+    } catch {}
+  };
 
   useEffect(() => {
     // 페이지가 마운트될 때 배경색을 설정
@@ -71,10 +93,22 @@ export default function LoginPage() {
           </h1>
           <hr style={{ width: "100%", margin: "0 auto" }} />
           <div className="mt-4">
-            <LoginInput type="text" placeholder="아이디">
+            <LoginInput
+              type="text"
+              placeholder="아이디"
+              onChange={(e) => {
+                setEamil(e.target.value);
+              }}
+            >
               아이디
             </LoginInput>
-            <LoginInput type="password" placeholder="비밀번호">
+            <LoginInput
+              type="password"
+              placeholder="비밀번호"
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+            >
               비밀번호
             </LoginInput>
             <div className="row mb-2">
@@ -101,7 +135,12 @@ export default function LoginPage() {
                 >
                   회원가입
                 </button>
-                <button className="btn btn-secondary w-100">로그인</button>
+                <button
+                  className="btn btn-secondary w-100"
+                  onClick={handleLogin}
+                >
+                  로그인
+                </button>
               </div>
             </div>
           </div>
