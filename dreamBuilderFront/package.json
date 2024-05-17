@@ -10,12 +10,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@uiw/react-md-editor": "^4.0.4",
+    "@yaireo/tagify": "^4.26.4",
+    "bootstrap": "^5.3.3",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-bootstrap": "^2.10.2",
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
+    "react-infinite-scroll-component": "^6.1.0",
+    "react-markdown": "^9.0.1",
+    "react-router-dom": "^6.23.1",
+    "styled-components": "^6.1.11"
   },
   "devDependencies": {
+    "@types/dropzone": "^5.7.8",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
+    "@types/yaireo__tagify": "^4.24.0",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react": "^4.2.1",
