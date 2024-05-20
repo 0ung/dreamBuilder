@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Comment from "./Comment";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 
 interface Reply {
   id: number;
@@ -28,6 +29,28 @@ interface CommentSectionProps {
 const CommentSection: React.FC<CommentSectionProps> = ({ replies }) => {
   const isAdmin = useSelector((state: any) => state.admin.isAdmin);
   const dispatch = useDispatch();
+
+  const [comment, setComment] = useState("");
+
+  const handleReply = async () => {
+    const data = {
+      comment: comment,
+    };
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/reply",
+        JSON.stringify(data),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert(response.status);
+    } catch (error) {
+      alert("에러임");
+    }
+  };
 
   const [openReplies, setOpenReplies] = useState<{ [key: number]: boolean }>(
     {}
@@ -60,10 +83,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ replies }) => {
               className="form-control"
               placeholder="댓글을 작성하세요..."
               aria-describedby="basic-addon1"
+              onChange={(e) => {
+                setComment(e.target.value);
+              }}
             />
             <button
               className="btn btn-primary"
               style={{ backgroundColor: "#348f8f" }}
+              onClick={handleReply}
             >
               작성
             </button>

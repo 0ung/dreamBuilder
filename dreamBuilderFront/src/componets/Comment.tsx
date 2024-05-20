@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import NestedComment from "./NestedComment";
 import { useDispatch, useSelector } from "react-redux";
+import { toggleAdmin, setAdmin } from "../store/slices/adminSlice"; // adminSlice 파일의 경로
 
 interface Reply {
   id: number;
@@ -33,9 +34,15 @@ const Comment: React.FC<CommentProps> = ({
   toggleReplies,
 }) => {
   const isAdmin = useSelector((state: any) => state.admin.isAdmin);
+  const dispatch = useDispatch();
+
+  const handleToggleAdmin = () => {
+    dispatch(toggleAdmin());
+  };
 
   return (
     <div className="card mb-3">
+      <button onClick={handleToggleAdmin}>변경</button>
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-2">
           {isAdmin ? (
