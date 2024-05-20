@@ -1,12 +1,15 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
+import { useParams } from "react-router-dom"; // useParams 추가
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import MDEditor from "@uiw/react-md-editor";
 import { useDropzone } from "react-dropzone";
-import axios from "axios";
-import DropZone from "../components/DropZone"; // 경로 확인 필요
 import fetcher from "../fetcher";
-import { BOARD_REGISTRATION } from "../constants/api_constants";
+import DropZone from "../components/DropZone"; // 경로 확인 필요
+import {
+  BOARD_REGISTRATION,
+  BOARD_DEATIL_VIEW,
+} from "../constants/api_constants"; // BOARD_DETAILS 추가
 
 interface Board {
   title: string;
@@ -73,15 +76,36 @@ const MarkdownWithDropzone: React.FC<MarkdownWithDropzoneProps> = ({
 };
 
 export default function ProjectRegPage() {
+  const { id } = useParams<{ id: string }>(); // URL 파라미터에서 ID를 가져옴
   const inputRef = useRef<HTMLInputElement>(null);
   const [filteredFiles, setFilteredFiles] = useState<File[]>([]);
-
+  const [modify, setModify] = useState<boolean>(!!id); // ID가 있으면 수정 모드
   const [board, setBoard] = useState<Board>({
     title: "",
     content: "",
     endDate: "",
     hashTags: [],
   });
+
+  useEffect(() => {
+    if (modify) {
+      // 수정 모드일 때 기존 데이터 로드
+      fetcher
+        .get(`${BOARD_DEATIL_VIEW}${id}`)
+        .then((response) => {
+          const existingBoard = response.data;
+          setBoard({
+            title: existingBoard.title,
+            content: existingBoard.content,
+            endDate: existingBoard.endDate,
+            hashTags: existingBoard.hashTags,
+          });
+        })
+        .catch((error) => {
+          console.error("기존 데이터 로드 오류:", error);
+        });
+    }
+  }, [modify, id]);
 
   const handleMarkdownChange = (value?: string) => {
     setBoard((prevBoard) => ({
@@ -125,7 +149,7 @@ export default function ProjectRegPage() {
     filteredFiles.forEach((file) => {
       sendData.append("files", file);
     });
-    console.log(sendData.get("board")?.toString);
+
     try {
       const response = await fetcher.post(BOARD_REGISTRATION, sendData, {
         headers: {
@@ -141,9 +165,9 @@ export default function ProjectRegPage() {
   return (
     <>
       <Header />
-      <div className="container mt-5">
+      <div className="container mt-5 mb-5">
         <div>
-          <h1 className="">프로젝트 생성</h1>
+          <h1 className="">프로젝트 {modify ? "수정" : "등록"}</h1>
           <hr />
         </div>
         <div className="input-group mt-5 mb-3">
@@ -155,6 +179,7 @@ export default function ProjectRegPage() {
             className="form-control"
             placeholder="제목 입력"
             aria-describedby="basic-addon1"
+            value={board.title}
             onChange={(e) => {
               setBoard((prevBoard) => ({
                 ...prevBoard,
@@ -176,6 +201,7 @@ export default function ProjectRegPage() {
             className="form-control"
             placeholder="마김일 등록"
             aria-describedby="basic-addon1"
+            value={board.endDate}
             onChange={(e) => {
               setBoard((prevBoard) => ({
                 ...prevBoard,
@@ -214,7 +240,19 @@ export default function ProjectRegPage() {
           filteredFiles={filteredFiles}
           setFilteredFiles={setFilteredFiles}
         />
-        <button onClick={handleBoard}>제출</button>
+        <div className="d-flex justify-content-end">
+          <button
+            className="btn btn-primary"
+            style={{
+              backgroundColor: " #348f8f",
+              border: "none",
+              color: "white",
+            }}
+            onClick={handleBoard}
+          >
+            제출
+          </button>
+        </div>
       </div>
       <Footer />
     </>

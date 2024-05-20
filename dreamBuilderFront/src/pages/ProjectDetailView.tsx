@@ -221,6 +221,30 @@ const ProjectDetailView: React.FC = () => {
                 {board.content}
               </ReactMarkdown>
             </div>
+            <div className="d-flex justify-content-end mt-2">
+              <div>
+                <button
+                  className="btn btn-primary me-2"
+                  style={{
+                    backgroundColor: " #348f8f",
+                    border: "none",
+                    color: "white",
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  className="btn btn-primary"
+                  style={{
+                    backgroundColor: " #348f8f",
+                    border: "none",
+                    color: "white",
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
             <div className="mt-3">
               <h6>첨부 파일:</h6>
               <ul className="list-group">

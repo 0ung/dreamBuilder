@@ -109,15 +109,11 @@ function Header() {
       const response = await fetcher.get(
         `${BOARD_SEARCH}0?search=${searchQuery}&criteria=${criteriaEng}`
       );
-      console.log(response.data);
+      navigate(PROJECT_OVERVIEW, { state: { data: response.data } });
     } catch (error) {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    console.log(criteria);
-  }, [criteria]);
 
   return (
     <Headers className="row align-items-center pt-4">

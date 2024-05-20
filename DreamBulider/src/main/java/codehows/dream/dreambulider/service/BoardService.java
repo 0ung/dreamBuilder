@@ -1,8 +1,12 @@
 package codehows.dream.dreambulider.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
+import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
+import codehows.dream.dreambulider.dto.Board.BoardUpdateDTO;
+import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,12 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
-import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
-import codehows.dream.dreambulider.dto.Board.BoardUpdateDTO;
-import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.repository.BoardRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,33 +23,35 @@ public class BoardService {
 	private final BoardRepository boardRepository;
 	private final HashTagService hashTagService;
 	private final LikedService likedService;
+	private final MemberRepository memberRepository;
 
-	public Board save(BoardRequestDTO boardDTO) {
+	public Board save(BoardRequestDTO boardDTO, String email) {
 		return boardRepository.save(Board.builder()
 			.title(boardDTO.getTitle())
 			.content(boardDTO.getContent())
 			.endDate(boardDTO.getEndDate())
+			.member(memberRepository.findMemberByEmail(email).orElse(null))
 			.build());
 	}
 
-	public Page<Board> findAll(Pageable pageable) {
-		return boardRepository.findAll(pageable);
-	}
-
-	public Page<Board> searchBoard(Pageable pageable
+	public List<BoardListResponseDTO> searchBoard(Pageable pageable
 		, String criteria
 		, String keyword
 	) {
-		return switch (criteria.toLowerCase()) {
-			case "title" -> boardRepository.findByTitleContainingIgnoreCase(keyword, pageable);
-			case "content" -> boardRepository.findByContentContainingIgnoreCase(keyword, pageable);
-			case "member" -> boardRepository.findByMemberContainingIgnoreCase(keyword, pageable);
-			case "title,content" -> boardRepository.findByTitleOrContent(keyword, pageable);
-			case "title,member" -> boardRepository.findByTitleOrAuthor(keyword, pageable);
-			case "content,member" -> boardRepository.findByContentOrAuthor(keyword, pageable);
-			case "title,content,member" -> boardRepository.findByTitleOrContentOrAuthor(keyword, pageable);
-			default -> Page.empty(pageable);
+		Page<Board> boards = null;
+		String escapedKeyword = keyword.replace("\\", "\\\\");
+		switch (criteria.toLowerCase()) {
+			case "title" -> boards = boardRepository.findByTitleContainingIgnoreCase(escapedKeyword, pageable);
+			case "content" -> boards = boardRepository.findByContentContainingIgnoreCase(escapedKeyword, pageable);
+			case "member" -> boards = boardRepository.findByMemberContainingIgnoreCase(escapedKeyword, pageable);
+			case "title,content" -> boards = boardRepository.findByTitleOrContent(escapedKeyword, pageable);
+			case "title,member" -> boards = boardRepository.findByTitleOrAuthor(escapedKeyword, pageable);
+			case "content,member" -> boards = boardRepository.findByContentOrAuthor(escapedKeyword, pageable);
+			case "title,content,member" ->
+					boards = boardRepository.findByTitleOrContentOrAuthor(escapedKeyword, pageable);
+			default -> boards = boardRepository.findAll(pageable);
 		};
+		return boardToList(boards);
 	}
 
 	public Pageable sorted(String sort, int currentPage) {
@@ -119,6 +121,7 @@ public class BoardService {
 
 	public List<BoardListResponseDTO> boardToList(Page<Board> boardList) {
 		List<BoardListResponseDTO> list = new ArrayList<>();
+
 		for (Board board : boardList) {
 			BoardListResponseDTO listResponseDTO = new BoardListResponseDTO();
 			listResponseDTO.setId(board.getId());
@@ -130,6 +133,7 @@ public class BoardService {
 			listResponseDTO.setCountLike(likedService.countLike(board.getId()));
 			list.add(listResponseDTO);
 		}
-		return list;
+
+		return list; // 새로운 Page 객체 생성
 	}
 }

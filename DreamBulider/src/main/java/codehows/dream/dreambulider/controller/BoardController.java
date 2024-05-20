@@ -1,31 +1,6 @@
 package codehows.dream.dreambulider.controller;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import codehows.dream.dreambulider.dto.Board.BoardDTO;
-import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
-import codehows.dream.dreambulider.dto.Board.BoardResponseDTO;
-import codehows.dream.dreambulider.dto.Board.BoardUpdateDTO;
+import codehows.dream.dreambulider.dto.Board.*;
 import codehows.dream.dreambulider.dto.HashTag.MemberNoExistExcpetion;
 import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.repository.HashTagRepository;
@@ -35,6 +10,18 @@ import codehows.dream.dreambulider.service.HashTagService;
 import codehows.dream.dreambulider.service.LikedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,11 +36,13 @@ public class BoardController {
 
 	//게시글 작성
 	@PostMapping("/api/addBoard")
-	public ResponseEntity<Board> addBoard(@RequestPart(name = "board") BoardRequestDTO boardDTO,
-		@RequestPart(name = "files", required = false) List<MultipartFile> multipartFile) {
+	public ResponseEntity<Board> addBoard(
+			@RequestPart(name = "board") BoardRequestDTO boardDTO,
+			@RequestPart(name = "files", required = false) List<MultipartFile> multipartFile,
+			Principal principal) {
 		try {
 			boardDTO.replaceTempUrlsWithPermanentUrls(boardFileService);
-			Board savedBoard = boardService.save(boardDTO);
+			Board savedBoard = boardService.save(boardDTO, principal.getName());
 			boardDTO.getHashTags().forEach(e -> {
 				hashTagService.saveHashTag(savedBoard.getId(), e);
 			});
@@ -69,6 +58,7 @@ public class BoardController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
+	//파일 업로드
 	@PostMapping("/api/upload")
 	public ResponseEntity<?> addFiles(@RequestPart(name = "file") MultipartFile file) {
 		Map<String, String> result = new HashMap<>();
@@ -81,7 +71,7 @@ public class BoardController {
 		return ResponseEntity.ok(result);
 	}
 
-	//게시글 검색
+	//게시글 검색 and 목록 조회
 	@GetMapping("/api/boards/{page}")
 	public ResponseEntity<?> searchBoardList(@PathVariable Optional<Integer> page,
 		@RequestParam(name = "search") String search,
@@ -91,8 +81,7 @@ public class BoardController {
 		try {
 			int currentPage = page.orElse(0);
 			Pageable pageable = boardService.sorted(sort, currentPage);
-			Page<Board> boardPage = boardService.searchBoard(pageable, criteria, search);
-
+			List<BoardListResponseDTO> boardPage = boardService.searchBoard(pageable, criteria, search);
 			return new ResponseEntity<>(boardPage, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
