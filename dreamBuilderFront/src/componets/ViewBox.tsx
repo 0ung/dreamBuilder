@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import reply from "../image/chat.svg";
 import heartFill from "../image/heart-fill.svg";
 import heart from "../image/heart.svg";
 import views from "../image/views.svg";
-import { useNavigate } from "react-router-dom";
-import ProjectDetailView from "../pages/ProjectDetailView";
 import { PROJECT_DETAIL_VIEW } from "../constants/page_constants";
 
 interface ViewBoxProps {
@@ -13,13 +12,14 @@ interface ViewBoxProps {
     id: number;
     title: string;
     endDate: string;
-    hashTag: string[];
-    likedCnt: number;
+    hashTags: string[];
+    countLike: number;
+    likeList: boolean | null;
     replyCnt: number;
     viewCnt: number;
-    liked: boolean;
   };
 }
+
 const Card = styled.div`
   width: 25rem;
   height: 15rem;
@@ -39,52 +39,50 @@ const TruncateText = styled.p`
 `;
 
 const StyledLink = styled.a`
-  text-decoration: none; /* 밑줄 제거 */
-  color: inherit; /* 글자 색을 부모 요소와 동일하게 */
+  text-decoration: none;
+  color: inherit;
 
   &:hover {
-    color: #348f8f; /* 마우스를 올렸을 때 색상 변경 */
+    color: #348f8f;
   }
 `;
 
 const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
-  const [liked, setLiked] = useState(data.liked);
-  const navigator = useNavigate();
+  const [liked, setLiked] = useState(data.likeList ?? false);
+  const navigate = useNavigate();
+
   const handleDisliked = () => {
     console.log(data.id + "싫어요");
     setLiked(false);
   };
+
   const handleLiked = () => {
-    console.log(data);
     console.log(data.id + "좋아요");
     setLiked(true);
-    console.log(data);
   };
 
   const handleTitle = (id: number) => {
-    navigator(PROJECT_DETAIL_VIEW, { state: id });
+    navigate(PROJECT_DETAIL_VIEW, { state: id });
   };
+
   useEffect(() => {
-    setLiked(data.liked);
+    setLiked(data.likeList ?? false);
   }, [data]);
+
   return (
     <Card className="card mb-2">
       <div className="row g-0 h-100">
         <div className="col-md-6 d-flex flex-column justify-content-center">
           <span className="ms-1">
             {liked ? (
-              <img src={heartFill} onClick={handleDisliked} />
+              <img src={heartFill} onClick={handleDisliked} alt="좋아요 취소" />
             ) : (
-              <img src={heart} onClick={handleLiked} />
+              <img src={heart} onClick={handleLiked} alt="좋아요" />
             )}
           </span>
           <div className="card-body">
             <h5 className="card-title text-truncate">
-              <StyledLink
-                onClick={() => {
-                  handleTitle(data.id);
-                }}
-              >
+              <StyledLink onClick={() => handleTitle(data.id)}>
                 {data.title}
               </StyledLink>
             </h5>
@@ -100,22 +98,26 @@ const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
         </div>
         <div className="card-body">
           <TruncateText className="card-text">
-            기술스택: {data.hashTag.join(", ")}
+            기술스택: {data.hashTags.join(", ")}
           </TruncateText>
         </div>
       </div>
       <div className="card-footer d-flex justify-content-between">
         <span>
-          <img className="pe-1" src={heart} />: {data.likedCnt}
+          <img className="pe-1" src={heart} alt="좋아요 아이콘" />:{" "}
+          {data.countLike}
         </span>
         <span>
-          <img className="pe-1 pb-1" src={reply} />: {data.replyCnt}
+          <img className="pe-1 pb-1" src={reply} alt="댓글 아이콘" />:{" "}
+          {data.replyCnt ?? 0}
         </span>
         <span>
-          <img className="pe-1 " src={views} />: {data.viewCnt}
+          <img className="pe-1" src={views} alt="조회수 아이콘" />:{" "}
+          {data.viewCnt ?? 0}
         </span>
       </div>
     </Card>
   );
 };
+
 export default ViewBox;
