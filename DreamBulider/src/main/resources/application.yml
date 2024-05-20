@@ -20,7 +20,7 @@ spring:
         default_batch_fetch_size: 1000
 
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
   servlet:
@@ -30,6 +30,10 @@ spring:
 
 uploadPath: file:///C:/dreamBuilder/
 savePath: C:/dreamBuilder/
+temp:
+  uploadPath: file:///C:/dreamBuilder/temp/
+  savePath: C:/dreamBuilder/temp/
+
 
 
 cos:

@@ -52,14 +52,14 @@ public class SecurityConfig {
                         session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 ).addFilterBefore(new JwtFilter(tokenProvider)
                         , UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(
-                        request ->{
-                            request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                                    .requestMatchers(antMatcher("/member/**")).permitAll()
-                                    .requestMatchers(antMatcher("/swagger")).permitAll()
-                                    .anyRequest().permitAll();
-                        }
-                )
+                // .authorizeHttpRequests(
+                //         request ->{
+                //             request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+                //                     .requestMatchers(antMatcher("/member/**")).permitAll()
+                //                     .requestMatchers(antMatcher("/swagger")).permitAll()
+                //                     .anyRequest().permitAll();
+                //         }
+                // )
                 .cors(
                         cors->cors.configurationSource(corsConfigurationSource())
                 );

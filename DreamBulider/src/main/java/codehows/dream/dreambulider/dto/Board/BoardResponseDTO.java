@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -24,14 +25,15 @@ public class BoardResponseDTO {
     private Date endDate;
     private Long cnt;
     private List<String> hashTags;
-
-    public BoardResponseDTO(Board board, List<String> hashTags) {
+    private List<Map<String,String>> file;
+    public BoardResponseDTO(Board board, List<String> hashTags,List<Map<String,String>> file) {
         this.id = board.getId();
         this.title = board.getTitle();
         this.content = board.getContent();
         this.endDate = board.getEndDate();
         this.cnt = board.getCnt();
         this.hashTags = hashTags;
+        this.file = file;
     }
 
 }

@@ -33,4 +33,5 @@ public class BoardListResponseDTO {
         this.hashTags = hashTags;
     }
 
+
 }

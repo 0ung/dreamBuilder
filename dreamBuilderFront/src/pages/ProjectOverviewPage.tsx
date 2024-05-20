@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
-import ViewBox from "../componets/ViewBox";
+import ViewBox from "../components/ViewBox";
 import styled from "styled-components";
 import InfiniteScroll from "react-infinite-scroll-component";
 import fetcher from "../fetcher";
@@ -95,7 +95,7 @@ export default function ProjectOverviewPage() {
           dataLength={data.length}
           next={fetchMoreData}
           hasMore={hasMore}
-          loader={<h4>Loading...</h4>}
+          loader={<h4></h4>}
         >
           <FlexContainer>
             {data.map((project) => (
