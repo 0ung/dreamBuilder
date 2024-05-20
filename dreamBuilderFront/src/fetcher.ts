@@ -43,28 +43,4 @@ fetcher.interceptors.response.use(
   }
 );
 
-const tokenRefresh = async () => {
-  const refreshToken = localStorage.getItem("refresh_token");
-
-  try {
-    const formData = {
-      refreshToken: refreshToken,
-    };
-    const response = await axios.post(
-      API_BASE_URL + TOKEN_REFRESH_API,
-      JSON.stringify(formData),
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    localStorage.setItem("access_token", response.data.accessToken);
-    localStorage.setItem("refresh_token", response.data.refreshToken);
-  } catch (error) {
-    window.location.href = LOGIN;
-  }
-};
-
 export default fetcher;
