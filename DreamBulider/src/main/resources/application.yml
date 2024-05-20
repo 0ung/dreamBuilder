@@ -23,6 +23,14 @@ spring:
       ddl-auto: create
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
+  servlet:
+    multipart:
+      max-file-size: 1500MB
+      max-request-size: 1500MB
+
+uploadPath: file:///C:/dreamBuilder/
+savePath: C:/dreamBuilder/
+
 
 cos:
   key: cos12

@@ -3,29 +3,54 @@ import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import MDEditor, { ICommand, ContextStore } from "@uiw/react-md-editor";
 import DropZone from "../componets/DropZone";
+import fetcher from "../fetcher";
+import { BOARD_REGISTRATION } from "../constants/api_constants";
 
 export default function ProjectRegPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [filteredFiles, setFilteredFiles] = useState<File[]>([]);
 
+  const handleBoard = async () => {
+    const sendData = new FormData();
+
+    // 보드 데이터를 추가
+    // board 객체를 JSON 문자열로 변환하여 추가
+    sendData.append(
+      "board",
+      new Blob([JSON.stringify(board)], { type: "application/json" })
+    );
+
+    // 파일 배열을 추가
+    filteredFiles.forEach((file) => {
+      sendData.append("files", file);
+    });
+    console.log(sendData.get("board")?.toString);
+    try {
+      const response = await fetcher.post(BOARD_REGISTRATION, sendData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      alert(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   interface Board {
     title: string;
     content: string;
     endDate: string;
-    hashTag: string[];
+    hashTags: string[];
   }
 
   const [board, setBoard] = useState<Board>({
     title: "",
     content: "",
     endDate: "",
-    hashTag: [],
+    hashTags: [],
   });
-  const handleMarkdownChange = (
-    value?: string,
-    event?: React.ChangeEvent<HTMLTextAreaElement>,
-    state?: ContextStore
-  ) => {
+  const handleMarkdownChange = (value?: string) => {
     setBoard((prevBoard) => ({
       ...prevBoard,
       content: value || "",
@@ -37,7 +62,7 @@ export default function ProjectRegPage() {
       const data = event.currentTarget.value.trim();
       setBoard((prevBoard) => ({
         ...prevBoard,
-        hashTag: [...prevBoard.hashTag, data],
+        hashTags: [...prevBoard.hashTags, data],
       }));
       if (inputRef.current) {
         inputRef.current.value = "";
@@ -49,7 +74,7 @@ export default function ProjectRegPage() {
   const handleRemoveHashTag = (index: number) => {
     setBoard((prevBoard) => ({
       ...prevBoard,
-      hashTag: prevBoard.hashTag.filter((_, i) => i !== index),
+      hashTags: prevBoard.hashTags.filter((_, i) => i !== index),
     }));
   };
 
@@ -116,7 +141,7 @@ export default function ProjectRegPage() {
         </div>
         <div>
           <div>
-            {board.hashTag.map((tag, index) => (
+            {board.hashTags.map((tag, index) => (
               <span key={index} className="badge bg-primary me-2">
                 {tag}
                 <button
@@ -134,14 +159,7 @@ export default function ProjectRegPage() {
           setFilteredFiles={setFilteredFiles}
         ></DropZone>
 
-        <button
-          onClick={() => {
-            console.log(board);
-            console.log(filteredFiles);
-          }}
-        >
-          제출
-        </button>
+        <button onClick={handleBoard}>제출</button>
       </div>
       <Footer />
     </>
