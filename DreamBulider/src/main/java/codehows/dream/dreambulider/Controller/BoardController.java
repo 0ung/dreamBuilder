@@ -1,13 +1,11 @@
-package codehows.dream.dreambulider.Controller;
+package codehows.dream.dreambulider.controller;
 
 import codehows.dream.dreambulider.dto.Board.*;
 import codehows.dream.dreambulider.dto.HashTag.MemberNoExistExcpetion;
 import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.HashTag;
-import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.repository.HashTagRepository;
-import codehows.dream.dreambulider.repository.LikedRepository;
 import codehows.dream.dreambulider.repository.MemberRepository;
+import codehows.dream.dreambulider.service.BoardFileService;
 import codehows.dream.dreambulider.service.BoardService;
 import codehows.dream.dreambulider.service.HashTagService;
 import codehows.dream.dreambulider.service.LikedService;
@@ -20,10 +18,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,53 +33,51 @@ public class BoardController {
     private final HashTagRepository hashTagRepository;
     private final LikedService likedService;
     private final MemberRepository memberRepository;
-
+    private final BoardFileService boardFileService;
     //게시글 작성
     @PostMapping("/api/addBoard")
-    public ResponseEntity<Board> addBoard(@RequestBody BoardRequestDTO boardDTO) {
+    public ResponseEntity<Board> addBoard(@RequestPart(name = "board") BoardRequestDTO boardDTO,
+                                          @RequestPart(name = "files", required = false) List<MultipartFile> multipartFile) {
         try{
             Board savedBoard = boardService.save(boardDTO);
             boardDTO.getHashTags().forEach(e -> {
                 hashTagService.saveHashTag(savedBoard.getId(),e);
             });
+            // 첨부파일로 들어온 파일 처리하는 로직
+            boardFileService.saveFiles(multipartFile);
+
 //      위랑 같은거임.
 //            for(HashTag hash : boardDTO.getHashTags()){
 //                hashTagService.saveHashTag(savedBoard.getId(), hash);
 //            }
         } catch (MemberNoExistExcpetion e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         //201 완료 ok
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @PostMapping("/api/upload")
+    public ResponseEntity<?> addFiles(@RequestPart(name = "file") MultipartFile file) {
+        Map<String,String> result = new HashMap<>();
+        try {
+            String fileUrl = boardFileService.saveFile(file);
+            result.put("fileUrl",fileUrl);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok(result);
+    }
+
     //게시글 목록 조회
     @GetMapping("/api/boardList/{page}")
-    public ResponseEntity<?> findAllBoardList(@PathVariable Optional<Integer> page, @RequestParam(required = false) String search,
-                                              @RequestParam(required = false) String keyword, @RequestParam(required = false) String sort) {
+    public ResponseEntity<?> findAllBoardList(@PathVariable Optional<Integer> page, @RequestParam String search, @RequestParam String keyword) {
 
         Pageable pageable = PageRequest.of(page.isPresent() ? page.get() : 0, 10);
-
-        int currentPage = page.orElse(0);
-        //정렬
-        Sort.Direction sortDirection = Sort.Direction.DESC;
-        if (sort != null) {
-            switch (sort) {
-                case "title":
-                case "content":
-                case "endDate":
-                    pageable = PageRequest.of(currentPage, 10, Sort.by(sortDirection, sort));
-                    break;
-                default:
-                    pageable = PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id"));
-                    break;
-            }
-        } else {
-            pageable = PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id"));
-        }
-
         Page<Board> boardList;
-        if(search!=null && keyword!=null) {
+        if(!search.isEmpty() && !keyword.isEmpty()) {
             boardList = boardService.searchBoard(pageable, search, keyword);
         } else {
             boardList = boardService.findAll(pageable);
@@ -96,7 +92,6 @@ public class BoardController {
             listResponseDTO.setTitle(board.getTitle());
             listResponseDTO.setEndDate(board.getEndDate());
             listResponseDTO.setHashTags(hashTagService.findAll(board.getId()));
-            listResponseDTO.setCnt(boardService.getCnt(board.getId()));
             listResponseDTO.setLikeList(likedService.LikeList(board.getId()));
             listResponseDTO.setCountLike(likedService.countLike(board.getId()));
             list.add(listResponseDTO);
@@ -105,27 +100,52 @@ public class BoardController {
    }
 //
 //    //게시글 목록 조회
-//    @GetMapping("/api/boardList/{page}")
-//    public ResponseEntity<?> findAllBoardList(@PathVariable Optional<Integer> page) {
-//        Pageable pageable = PageRequest.of(page.isPresent() ? page.get() : 0, 10);
-//
-//        Page<Board> boardList = boardService.findAll(pageable);
-//
-//        //Member member = memberRepository.findById(memberId);
-//
-//        List<BoardListResponseDTO> list = new ArrayList<>();
-//        for (Board board : boardList) {
-//            BoardListResponseDTO listResponseDTO = new BoardListResponseDTO();
-//            listResponseDTO.setId(board.getId());
-//            listResponseDTO.setTitle(board.getTitle());
-//            listResponseDTO.setEndDate(board.getEndDate());
-//            listResponseDTO.setHashTags(hashTagService.findAll(board.getId()));
-//            listResponseDTO.setLikeList(likedService.LikeList(board.getId()));
-//            listResponseDTO.setCountLike(likedService.countLike(board.getId()));
-//            list.add(listResponseDTO);
-//        }
-//        return ResponseEntity.ok().body(list);
-//    }
+@GetMapping("/api/boards/{page}")
+public ResponseEntity<?> findBoardList(@PathVariable Optional<Integer> page, @RequestParam(required = false) String search,
+                                       @RequestParam(required = false) String keyword, @RequestParam(required = false) String sort) {
+    Pageable pageable = PageRequest.of(page.isPresent() ? page.get() : 0, 10);
+
+    int currentPage = page.orElse(0);
+    //정렬
+    Sort.Direction sortDirection = Sort.Direction.DESC;
+    if (sort != null) {
+        switch (sort) {
+            case "title":
+            case "content":
+            case "endDate":
+                pageable = PageRequest.of(currentPage, 10, Sort.by(sortDirection, sort));
+                break;
+            default:
+                pageable = PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id"));
+                break;
+        }
+    } else {
+        pageable = PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id"));
+    }
+    //검색
+    Page<Board> boardList;
+    if(search != null && keyword != null) {
+        boardList = boardService.searchBoard(pageable, search, keyword);
+    } else {
+        boardList = boardService.findAll(pageable);
+    }
+
+    //Member member = memberRepository.findById(memberId);
+
+    List<BoardListResponseDTO> list = new ArrayList<>();
+    for (Board board : boardList) {
+        BoardListResponseDTO listResponseDTO = new BoardListResponseDTO();
+        listResponseDTO.setId(board.getId());
+        listResponseDTO.setTitle(board.getTitle());
+        listResponseDTO.setEndDate(board.getEndDate());
+        listResponseDTO.setHashTags(hashTagService.findAll(board.getId()));
+        listResponseDTO.setCnt(boardService.getCnt(board.getId()));
+        listResponseDTO.setLikeList(likedService.LikeList(board.getId()));
+        listResponseDTO.setCountLike(likedService.countLike(board.getId()));
+        list.add(listResponseDTO);
+    }
+    return ResponseEntity.ok().body(list);
+}
 
     //게시글 상세 조회
     @GetMapping("/api/board/{id}")
@@ -162,4 +182,5 @@ public class BoardController {
         return ResponseEntity.ok()
                 .body(updatedBoard);
     }
+
 }

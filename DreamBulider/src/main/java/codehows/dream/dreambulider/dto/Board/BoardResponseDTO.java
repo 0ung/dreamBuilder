@@ -22,7 +22,6 @@ public class BoardResponseDTO {
     private String title;
     private String content;
     private Date endDate;
-
     private Long cnt;
     private List<String> hashTags;
 
