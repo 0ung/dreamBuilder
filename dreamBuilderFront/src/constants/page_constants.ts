@@ -1,0 +1,12 @@
+export const MAIN = "/main";
+export const LOGIN = "/login";
+export const SIGNUP = "/signup";
+export const MYPAGE = "/mypage";
+export const PROJECT_REG = "/project/reg";
+export const PROJECT_OVERVIEW = "/project/view";
+export const PROJECT_DETAIL_VIEW = "/project/detail";
+export const MANAGE_VISITOR = "/manage/visitor";
+export const MANAGE_REPLY = "/manage/reply";
+export const MANAGE_PROJECT = "/manage/project";
+export const MANAGE_MEMBER = "/manage/member";
+export const MANAGE_FILEUPLOAD = "/manage/fileupload";

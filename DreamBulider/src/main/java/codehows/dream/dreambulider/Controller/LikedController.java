@@ -1,4 +1,4 @@
-package codehows.dream.dreambulider.Controller;
+package codehows.dream.dreambulider.controller;
 
 import codehows.dream.dreambulider.dto.Liked.LikedRequest;
 import codehows.dream.dreambulider.entity.Liked;

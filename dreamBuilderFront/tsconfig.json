@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "paths": {
+      "@toast-ui/editor": ["./node_modules/@toast-ui/editor/types/index.d.ts"],
+      "@toast-ui/editor/types": ["./node_modules/@toast-ui/editor/types"]
+    },
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],

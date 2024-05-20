@@ -8,14 +8,19 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.apachecommons.CommonsLog;
 
-@Entity
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Collection;
+
 @Getter
 @Setter
-public class Member {
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Builder
+public class Member implements UserDetails {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +28,7 @@ public class Member {
 	private Long id;
 
 	@Column(unique = true,nullable = false)
-	private String email;  
+	private String email;
 	@Column(nullable = false)
 	private String password;
 	@Column(nullable = false)
@@ -31,5 +36,36 @@ public class Member {
 
 	@Enumerated(EnumType.STRING)
 	private Authority authority;
+
 	private boolean isWithdrawal;
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return null;
+	}
+
+	@Override
+	public String getUsername() {
+		return this.email;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
 }

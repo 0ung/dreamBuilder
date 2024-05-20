@@ -18,5 +18,5 @@ public class BoardRequestDTO {
     private String title;
     private String content;
     private Date endDate;
-    private List<HashTag> hashTags;
+    private List<String> hashTags;
 }

@@ -21,13 +21,14 @@ public class HashTagService {
 
     //해시태그 저장
     @Transactional
-    public HashTag saveHashTag(Long boardId, HashTag hashTag) {
+    public HashTag saveHashTag(Long boardId, String hashTag) {
 
 
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("not found : "+ boardId));
-        hashTag.setBoard(board);
-        return hashTagRepository.save(hashTag);
+        return hashTagRepository.save(HashTag.builder()
+                .board(board)
+                .hashTag(hashTag).build());
     }
 
     //해시태그 목록 조회
