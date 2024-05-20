@@ -13,7 +13,7 @@ const MyComponent: React.FC<DropZoneProps> = ({
 }) => {
   const [filePolicy, setFilePolicy] = useState({
     fileCount: 2,
-    fileSize: 150000,
+    fileSize: 150000000,
     fileExtensions: [
       { type: "file", extensions: ["asd", "asdasd", "asdasd"] },
       { type: "image", extensions: ["png", "svg", "jpg"] },

@@ -1,11 +1,12 @@
 import React from "react";
+import { useSelector } from "react-redux";
 
 interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
   regDate: string;
-  updateDate: string;
+  updateDate: string | null;
 }
 
 interface NestedCommentProps {
@@ -13,6 +14,8 @@ interface NestedCommentProps {
 }
 
 const NestedComment: React.FC<NestedCommentProps> = ({ nestedReply }) => {
+  const isAdmin = useSelector((state: any) => state.admin.isAdmin);
+
   return (
     <div className="card mb-2 ms-3">
       <div className="card-body">
@@ -28,7 +31,11 @@ const NestedComment: React.FC<NestedCommentProps> = ({ nestedReply }) => {
           <div className="col-9">{nestedReply.comment}</div>
         </div>
         <div className="d-flex justify-content-end mt-2">
-          <button className="btn btn-primary btn-sm me-2">수정</button>
+          {isAdmin ? (
+            <></>
+          ) : (
+            <button className="btn btn-primary btn-sm me-2">수정</button>
+          )}
           <button className="btn btn-danger btn-sm">삭제</button>
         </div>
       </div>

@@ -56,6 +56,7 @@ public class SecurityConfig {
                         request ->{
                             request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                                     .requestMatchers(antMatcher("/member/**")).permitAll()
+                                    .requestMatchers(antMatcher("/swagger")).permitAll()
                                     .anyRequest().permitAll();
                         }
                 )
@@ -69,7 +70,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.addAllowedOrigin("http://localhost:3000/");
+        configuration.addAllowedOrigin("http://localhost:5173");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setMaxAge(86400L);
