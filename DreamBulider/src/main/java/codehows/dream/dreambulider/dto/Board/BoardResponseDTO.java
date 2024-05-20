@@ -22,6 +22,7 @@ public class BoardResponseDTO {
     private String title;
     private String content;
     private Date endDate;
+    private Long cnt;
     private List<String> hashTags;
 
     public BoardResponseDTO(Board board, List<String> hashTags) {
@@ -29,6 +30,7 @@ public class BoardResponseDTO {
         this.title = board.getTitle();
         this.content = board.getContent();
         this.endDate = board.getEndDate();
+        this.cnt = board.getCnt();
         this.hashTags = hashTags;
     }
 

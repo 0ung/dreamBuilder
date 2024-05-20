@@ -1,6 +1,7 @@
 package codehows.dream.dreambulider.dto.Board;
 
 import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.entity.Liked;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,10 +21,10 @@ public class BoardListResponseDTO {
     private String title;
     private Date endDate;
     private List<String> hashTags;
-
+    private Long cnt;
     private Long countLike;
 
-    private Boolean likeList;
+    private List<Boolean> likeList;
 
     public BoardListResponseDTO(Board board) {
         this.id = board.getId();

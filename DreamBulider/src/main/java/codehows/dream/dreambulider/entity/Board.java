@@ -40,7 +40,7 @@ public class Board {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	private Long cnt;
+	private Long cnt=0L;
 
 
 //	@OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
