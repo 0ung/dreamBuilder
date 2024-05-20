@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,11 +57,31 @@ public class BoardController {
 
     //게시글 목록 조회
     @GetMapping("/api/boardList/{page}")
-    public ResponseEntity<?> findAllBoardList(@PathVariable Optional<Integer> page, @RequestParam String search, @RequestParam String keyword) {
+    public ResponseEntity<?> findAllBoardList(@PathVariable Optional<Integer> page, @RequestParam(required = false) String search,
+                                              @RequestParam(required = false) String keyword, @RequestParam(required = false) String sort) {
 
         Pageable pageable = PageRequest.of(page.isPresent() ? page.get() : 0, 10);
+
+        int currentPage = page.orElse(0);
+        //정렬
+        Sort.Direction sortDirection = Sort.Direction.DESC;
+        if (sort != null) {
+            switch (sort) {
+                case "title":
+                case "content":
+                case "endDate":
+                    pageable = PageRequest.of(currentPage, 10, Sort.by(sortDirection, sort));
+                    break;
+                default:
+                    pageable = PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id"));
+                    break;
+            }
+        } else {
+            pageable = PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id"));
+        }
+
         Page<Board> boardList;
-        if(!search.isEmpty() && !keyword.isEmpty()) {
+        if(search!=null && keyword!=null) {
             boardList = boardService.searchBoard(pageable, search, keyword);
         } else {
             boardList = boardService.findAll(pageable);
@@ -75,6 +96,7 @@ public class BoardController {
             listResponseDTO.setTitle(board.getTitle());
             listResponseDTO.setEndDate(board.getEndDate());
             listResponseDTO.setHashTags(hashTagService.findAll(board.getId()));
+            listResponseDTO.setCnt(boardService.getCnt(board.getId()));
             listResponseDTO.setLikeList(likedService.LikeList(board.getId()));
             listResponseDTO.setCountLike(likedService.countLike(board.getId()));
             list.add(listResponseDTO);
@@ -109,6 +131,7 @@ public class BoardController {
     @GetMapping("/api/board/{id}")
     public ResponseEntity<BoardResponseDTO> findBoard(@PathVariable long id) {
         Board board = boardService.findById(id);
+        board.setCnt(boardService.incrementAndViewCnt(id)); //조회수
 //        HashTag hashTag = hashTagService.findById(id);
         List<String> hashTags = hashTagService.findById(id);
         BoardResponseDTO dt = new BoardResponseDTO(board, hashTags);

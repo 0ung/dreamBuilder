@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -58,7 +59,7 @@ public class LikedService {
     }
 
     //좋아요 상태 리스트 출력
-    public Boolean LikeList(long boardId) {
+    public List<Boolean> LikeList(long boardId) {
 
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("not found:" + boardId));
@@ -66,7 +67,8 @@ public class LikedService {
 //        Member member = memberRepository.findById(memberId)
 //                .orElseThrow(() -> new IllegalArgumentException("not found:" + memberId));
 
-        Boolean like = likedRepository.findByBoardId(board.getId());
+        List<Boolean> like = likedRepository.findByBoardId(board.getId());
+
 
         return like;
 

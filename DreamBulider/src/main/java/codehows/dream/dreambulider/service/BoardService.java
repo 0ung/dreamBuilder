@@ -37,12 +37,23 @@ public class BoardService {
     }
 
     public Page<Board> searchBoard(Pageable pageable, String search, String keyword) {
-        if ("title".equalsIgnoreCase(search)) {
-            return boardRepository.findByTitleContainingIgnoreCase(keyword, pageable);
-        } else if("content".equalsIgnoreCase(search)) {
-            return boardRepository.findByContentContainingIgnoreCase(keyword, pageable);
-        } else {
-            return Page.empty(pageable);
+        switch (search.toLowerCase()) {
+            case "title":
+                return boardRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+            case "content":
+                return boardRepository.findByContentContainingIgnoreCase(keyword, pageable);
+//            case "member":
+//                return boardRepository.findByMemberContainingIgnoreCase(keyword, pageable);
+            case "titleorcontent":
+                return boardRepository.findByTitleOrContentContaining(keyword, pageable);
+//            case "titleormember":
+//                return boardRepository.findByTitleOrAuthorContaining(keyword, pageable);
+//            case "contentormember":
+//                return boardRepository.findByContentOrAuthorContaining(keyword, pageable);
+//            case "titleorcontentormember":
+//                return boardRepository.findByTitleOrContentOrAuthorContaining(keyword, pageable);
+            default:
+                return Page.empty(pageable);
         }
     }
 
@@ -50,6 +61,19 @@ public class BoardService {
     public Board findById(long id) {
         return boardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("not found: " + id));
+    }
+
+    //조회수 +1
+    @Transactional
+    public Long incrementAndViewCnt(long id) {
+        boardRepository.incrementCnt(id);
+        Long getCnt = boardRepository.getCntById(id);
+        return getCnt;
+        //return (getCnt != null) ? getCnt : 1L;
+    }
+
+    public Long getCnt(long id) {
+        return boardRepository.getCntById(id);
     }
 
     @Transactional
