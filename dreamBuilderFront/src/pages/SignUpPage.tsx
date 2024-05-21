@@ -120,7 +120,7 @@ export default function SignUpPage() {
               setUserId(e.target.value);
             }}
           >
-            아이디
+            이메일
           </SignupInput>
           <Inputvalidation
             data={() => {

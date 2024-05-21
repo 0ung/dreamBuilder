@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,8 @@ import org.springframework.web.client.RestTemplate;
 
 
 import java.net.http.HttpResponse;
+import java.security.Principal;
+import java.util.Arrays;
 import java.util.Map;
 
 @RestController
@@ -44,9 +47,9 @@ public class MemberController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody MemberFormDTO memberFormDTO) {
-        try{
+        try {
             memberService.save(memberFormDTO);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>("입력이 잘못되었습니다.", HttpStatus.BAD_GATEWAY);
         }
         return new ResponseEntity<>("회원가입 완료", HttpStatus.CREATED);
@@ -55,7 +58,7 @@ public class MemberController {
     @PostMapping("/useremail/exist")
     public ResponseEntity<?> exist(@RequestBody Map<String, String> requestBody) {
         String email = requestBody.get("email");
-        if(memberService.duplicateMemberEmail(email)){
+        if (memberService.duplicateMemberEmail(email)) {
             return new ResponseEntity<>("중복된 이메일입니다.", HttpStatus.BAD_REQUEST);
         } else {
             return new ResponseEntity<>("사용가능한 이메일입니다.", HttpStatus.OK);
@@ -64,9 +67,9 @@ public class MemberController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
-        try{
-            return new ResponseEntity<>(memberService.login(memberLoginDTO, response),HttpStatus.OK);
-        }catch (Exception e){
+        try {
+            return new ResponseEntity<>(memberService.login(memberLoginDTO, response), HttpStatus.OK);
+        } catch (Exception e) {
             return new ResponseEntity<>("입력정보를 확인해주세요", HttpStatus.BAD_REQUEST);
         }
     }
@@ -81,11 +84,11 @@ public class MemberController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody RefreshToken refreshToken){
-        try{
-            memberService.logout(refreshToken);
+    public ResponseEntity<?> logout(Principal principal,HttpServletResponse response) {
+        try {
+            memberService.logout(principal.getName(),response);
             return ResponseEntity.ok("로그아웃 되었습니다.");
-        } catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body("잘못된 요청");
         }
     }
@@ -121,7 +124,7 @@ public class MemberController {
             e.printStackTrace();
         }
 
-        System.out.println("카카오 엑세스 토큰: "+oauthToken.getAccess_token());
+        System.out.println("카카오 엑세스 토큰: " + oauthToken.getAccess_token());
 
         RestTemplate rt2 = new RestTemplate();
 
@@ -147,37 +150,38 @@ public class MemberController {
             e.printStackTrace();
         }
 
-        System.out.println("카카오 아이디(번호): "+kakaoProfile.getId());
-        System.out.println("카카오 프로필: "+kakaoProfile.getProperties().getNickname());
-        System.out.println("카카오 이메일: "+kakaoProfile.getKakao_account().getEmail());
+        System.out.println("카카오 아이디(번호): " + kakaoProfile.getId());
+        System.out.println("카카오 프로필: " + kakaoProfile.getProperties().getNickname());
+        System.out.println("카카오 이메일: " + kakaoProfile.getKakao_account().getEmail());
 
         MemberFormDTO kakaoUser = MemberFormDTO.builder()
-                        .name(kakaoProfile.getProperties().getNickname())
-                                .password(cosKey)
-                                        .email(kakaoProfile.getKakao_account().getEmail()+"_kakao")
-                                                .build();
+                .name(kakaoProfile.getProperties().getNickname())
+                .password(cosKey)
+                .email(kakaoProfile.getKakao_account().getEmail() + "_kakao")
+                .build();
 
         //회원가입 처리
-        if(!memberService.duplicateMemberEmail(kakaoUser.getEmail())){
+        if (!memberService.duplicateMemberEmail(kakaoUser.getEmail())) {
             memberService.save(kakaoUser);
         }
 
         //로그인 처리
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(kakaoUser.getEmail(), kakaoUser.getPassword()); //getPassword를 coskey로 변경
 
-        Authentication authentication =authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
 
-        String newRefreshToken =tokenProvider.createRefreshToken();
+        String newRefreshToken = tokenProvider.createRefreshToken();
         String accessToken = tokenProvider.createToken(member);
 
         RefreshToken refreshToken = refreshTokenRepository.findByMember(member).orElse(null);
 
-        if(refreshToken == null) {
+        if (refreshToken == null) {
             refreshTokenService.saveRefreshToken(new RefreshToken(member, newRefreshToken));
-        }else{
+        } else {
             refreshToken.update(newRefreshToken);
+            refreshTokenService.saveRefreshToken(refreshToken);
         }
 
         // 액세스 토큰을 쿠키에 설정
@@ -196,9 +200,10 @@ public class MemberController {
         servletResponse.addCookie(accessTokenCookie);
         servletResponse.addCookie(refreshTokenCookie);
 
-        try{
+        try {
             servletResponse.sendRedirect("http://localhost:5173/main");
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
 
         servletResponse.addHeader("Role", member.getAuthority().toString());
     }

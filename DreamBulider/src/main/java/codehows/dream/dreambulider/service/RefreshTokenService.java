@@ -17,7 +17,11 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new IllegalArgumentException("확인되지 않은 토큰"));
     }
 
-    public void saveRefreshToken(RefreshToken refreshToken) {refreshTokenRepository.save(refreshToken);}
+    public void saveRefreshToken(RefreshToken refreshToken) {
+        refreshTokenRepository.save(refreshToken);
+    }
 
-    public void removeRefreshToken(Member member) {refreshTokenRepository.deleteByMember(member);}
+    public void removeRefreshToken(Member member) {
+        refreshTokenRepository.deleteByMember(member);
+    }
 }
