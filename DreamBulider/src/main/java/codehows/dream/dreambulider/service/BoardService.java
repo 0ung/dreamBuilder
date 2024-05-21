@@ -6,6 +6,7 @@ import codehows.dream.dreambulider.dto.Board.BoardUpdateDTO;
 import codehows.dream.dreambulider.dto.Board.UpdateRequestBoard;
 import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.HashTag;
+import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.repository.BoardRepository;
 import codehows.dream.dreambulider.repository.HashTagRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,6 +54,9 @@ public class BoardService {
 //                return boardRepository.findByContentOrAuthorContaining(keyword, pageable);
 //            case "titleorcontentormember":
 //                return boardRepository.findByTitleOrContentOrAuthorContaining(keyword, pageable);
+            case "hashtag":
+                Long boardId = hashTagRepository.findHashTagByHashTag(keyword);
+                return boardRepository.findByboardId(boardId, pageable);
             default:
                 return Page.empty(pageable);
         }
@@ -72,36 +77,43 @@ public class BoardService {
         //return (getCnt != null) ? getCnt : 1L;
     }
 
+    //조회수 조회
     public Long getCnt(long id) {
         return boardRepository.getCntById(id);
     }
 
+    //게시글 업데이트
     @Transactional
-    public Board update(long id, BoardUpdateDTO request) {
-        Board board = boardRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
+    public Board update(long boardId, BoardUpdateDTO request, Principal principal) {
+        Member member = boardRepository.findMemberByBoardId(boardId);
 
+        if (member.getEmail() == null) {
+            throw new IllegalArgumentException("Invalid board Id:" + boardId);
+        }
+        if(!principal.getName().equals(member.getEmail())) {
+            throw new SecurityException("You do not have permission to edit this board");
+        }
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("not found : " + boardId));
         board.update(request.getTitle(), request.getContent(), request.getEndDate());
-
         return board;
     }
 
-//    @Transactional
-//    public BoardUpdateDTO updateDTO(Long boardId) {
-//
-//        List<HashTag> hashTagList = hashTagRepository.findByBoardId(boardId);
-//        List<BoardUpdateDTO> boardDtoList = new ArrayList<>();
-//        for (HashTag hashTag : hashTagList) {
-//            BoardUpdateDTO boardDto = BoardUpdateDTO.of(hashTag);
-//            boardDtoList.add(boardDto);
-//        }
-//    }
-
     //비활성화(삭제)
     @Transactional
-    public Board updateInvisible(long id) {
-        Board board = boardRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("not found:" + id));
+    public Board updateInvisible(long boardId, Principal principal) {
+        Member member = boardRepository.findMemberByBoardId(boardId);
+
+        if (member.getEmail() == null) {
+            throw new IllegalArgumentException("Invalid board Id:" + boardId);
+        }
+        if(!principal.getName().equals(member.getEmail())) {
+            throw new SecurityException("You do not have permission to edit this board");
+        }
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("not found:" + boardId));
         board.update1();
 
         return board;

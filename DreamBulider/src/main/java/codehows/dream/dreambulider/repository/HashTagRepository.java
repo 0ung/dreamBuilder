@@ -1,6 +1,8 @@
 package codehows.dream.dreambulider.repository;
 
+import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.HashTag;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +23,7 @@ public interface HashTagRepository extends JpaRepository<HashTag, Long> {
     @Query(value = "DELETE FROM Hash_tag WHERE board_id = :boardId", nativeQuery = true)
     void deleteByBoardId(@Param("boardId") Long boardId);
 
-
+    @Query(value = "SELECT board_id FROM Hash_tag WHERE hashTag = :hashTag", nativeQuery = true)
+    Long findHashTagByHashTag(@Param("hashTag") String hashTag);
 
 }

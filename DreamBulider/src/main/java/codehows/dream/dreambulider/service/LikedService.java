@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,13 +60,18 @@ public class LikedService {
     }
 
     //좋아요 상태 리스트 출력
-    public List<Boolean> LikeList(long boardId) {
+    public List<Boolean> LikeList(long boardId, Principal principal) {
 
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("not found:" + boardId));
+        Member member = boardRepository.findMemberByBoardId(boardId);
 
-//        Member member = memberRepository.findById(memberId)
-//                .orElseThrow(() -> new IllegalArgumentException("not found:" + memberId));
+        if (member.getEmail() == null) {
+            throw new IllegalArgumentException("Invalid board Id:" + boardId);
+        }
+        if(!principal.getName().equals(member.getEmail())) {
+            throw new SecurityException("You do not have permission to edit this board");
+        }
 
         List<Boolean> like = likedRepository.findByBoardId(board.getId());
 

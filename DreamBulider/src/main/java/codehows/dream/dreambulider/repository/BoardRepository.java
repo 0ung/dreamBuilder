@@ -2,6 +2,7 @@ package codehows.dream.dreambulider.repository;
 
 import codehows.dream.dreambulider.entity.Board;
 
+import codehows.dream.dreambulider.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,11 +10,20 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 public interface BoardRepository extends JpaRepository<Board,Long> {
 
     //List<Board> findAllByBoardByTitle();
 
     Page<Board> findAll(Pageable pageable);
+
+    @Query("SELECT b.member FROM Board b WHERE b.id = :id")
+    Member findMemberByBoardId(Long id);
+
+//    @Query("SELECT p FROM Board p WHERE p.deadline > :currentDateTime OR p.deadline IS NULL")
+//    List<Board> findAllActivePosts(@Param("currentDateTime") LocalDateTime currentDateTime);
 
     //제목 조회
     Page<Board> findByTitleContainingIgnoreCase(String title, Pageable pageable);
@@ -22,6 +32,9 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     Page<Board> findByContentContainingIgnoreCase(String content, Pageable pageable);
 
     //Page<Board> findByMemberContainingIgnoreCase(String keyword, Pageable pageable);
+
+    @Query("select b from Board b where b.id = :boardId")
+    Page<Board> findByboardId(@Param("boardId") Long boardId, Pageable pageable);
 
     //제목+내용 조회
     @Query("select b from Board b where b.title like %:keyword% or b.content like %:keyword%")
