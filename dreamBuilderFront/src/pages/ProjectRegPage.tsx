@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
-import { useParams } from "react-router-dom"; // useParams 추가
+import { useLocation, useNavigate, useParams } from "react-router-dom"; // useParams 추가
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import MDEditor from "@uiw/react-md-editor";
@@ -9,7 +9,14 @@ import DropZone from "../components/DropZone"; // 경로 확인 필요
 import {
   BOARD_REGISTRATION,
   BOARD_DEATIL_VIEW,
+  BOARD_UPDATE,
 } from "../constants/api_constants"; // BOARD_DETAILS 추가
+import { PROJECT_OVERVIEW } from "../constants/page_constants";
+
+interface FileData {
+  oriName: string;
+  url: string;
+}
 
 interface Board {
   title: string;
@@ -86,20 +93,49 @@ export default function ProjectRegPage() {
     endDate: "",
     hashTags: [],
   });
-
+  const location = useLocation();
+  const navigate = useNavigate();
   useEffect(() => {
+    setModify(location.state?.modify);
+
+    const loadFile = async (fileUrl: string, oriName: string) => {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      return new File([blob], oriName, { type: blob.type });
+    };
+
+    const fetchFiles = async (files: { oriName: string; url: string }[]) => {
+      const filePromises = files.map((file) =>
+        loadFile(`http://localhost:8080${file.url}`, file.oriName)
+      );
+      const fileObjects = await Promise.all(filePromises);
+      setFilteredFiles(fileObjects);
+    };
+
     if (modify) {
       // 수정 모드일 때 기존 데이터 로드
       fetcher
-        .get(`${BOARD_DEATIL_VIEW}${id}`)
+        .get(`${BOARD_DEATIL_VIEW}${location.state?.boardId}`)
         .then((response) => {
           const existingBoard = response.data;
+          console.log(existingBoard);
           setBoard({
             title: existingBoard.title,
             content: existingBoard.content,
             endDate: existingBoard.endDate,
             hashTags: existingBoard.hashTags,
           });
+
+          // 파일 데이터를 URL에서 File 객체로 변환하여 설정
+          const fileData: { oriName: string; url: string }[] =
+            existingBoard.file.flatMap((file: any) =>
+              Object.entries(file).map(([oriName, url]) => ({
+                oriName,
+                url,
+              }))
+            );
+
+          fetchFiles(fileData);
         })
         .catch((error) => {
           console.error("기존 데이터 로드 오류:", error);
@@ -137,28 +173,34 @@ export default function ProjectRegPage() {
 
   const handleBoard = async () => {
     const sendData = new FormData();
-
-    // 보드 데이터를 추가
-    // board 객체를 JSON 문자열로 변환하여 추가
     sendData.append(
       "board",
       new Blob([JSON.stringify(board)], { type: "application/json" })
     );
 
-    // 파일 배열을 추가
-    filteredFiles.forEach((file) => {
+    // Append files if they exist
+    filteredFiles?.forEach((file) => {
       sendData.append("files", file);
     });
 
+    const url = modify
+      ? `${BOARD_UPDATE}${location.state?.boardId}`
+      : BOARD_REGISTRATION;
+
     try {
-      const response = await fetcher.post(BOARD_REGISTRATION, sendData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      alert(response.data);
+      if (modify) {
+        await fetcher.put(url, sendData);
+      } else {
+        await fetcher.post(url, sendData);
+      }
+      console.log(url);
+      alert(modify ? "업데이트 성공" : "등록 성공");
+      navigate(PROJECT_OVERVIEW);
     } catch (error) {
-      console.log(error);
+      console.error("Error:", error);
+      alert(
+        "An error occurred while processing your request. Please try again."
+      );
     }
   };
 
@@ -175,6 +217,7 @@ export default function ProjectRegPage() {
             제목
           </span>
           <input
+            required
             type="text"
             className="form-control"
             placeholder="제목 입력"
@@ -197,6 +240,7 @@ export default function ProjectRegPage() {
             마김일
           </span>
           <input
+            required
             type="date"
             className="form-control"
             placeholder="마김일 등록"
@@ -215,6 +259,7 @@ export default function ProjectRegPage() {
             해시태그
           </span>
           <input
+            required
             ref={inputRef}
             type="text"
             className="form-control"

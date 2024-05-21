@@ -59,7 +59,7 @@ public class Board {
 	}
 
 	//게시글 비활성화(삭제)
-	public void update1() {
+	public void updateInvisible() {
 		this.invisible = true;
 	}
 }

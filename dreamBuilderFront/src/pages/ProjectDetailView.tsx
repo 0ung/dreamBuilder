@@ -4,11 +4,16 @@ import Footer from "../layout/Footer";
 import ReactMarkdown from "react-markdown";
 import styled from "styled-components";
 import CommentSection from "../components/CommentSection";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import fetcher from "../fetcher";
-import { BOARD_DEATIL_VIEW } from "../constants/api_constants";
+import {
+  BOARD_DEATIL_VIEW,
+  BOARD_DELETE,
+  BOARD_REGISTRATION,
+} from "../constants/api_constants";
 import VIDEO from "../image/video.png";
 import DOCS from "../image/docs.png";
+import { PROJECT_DETAIL_VIEW, PROJECT_REG } from "../constants/page_constants";
 
 interface Board {
   id: number;
@@ -55,6 +60,7 @@ interface Extension {
   docs: Set<string>;
 }
 const ProjectDetailView: React.FC = () => {
+  const navigator = useNavigate();
   const [extension, setExtension] = useState<Extension>({
     video: new Set([
       "mp4",
@@ -94,7 +100,7 @@ const ProjectDetailView: React.FC = () => {
       "hwp",
     ]),
   });
-  const [hoveredFile, setHoveredFile] = useState<string | null>(null);
+
   const getFileType = (fileName: string): string => {
     const extensionMatch = fileName.split(".").pop()?.toLowerCase();
     if (!extensionMatch) return "unknown";
@@ -164,10 +170,22 @@ const ProjectDetailView: React.FC = () => {
 
   const [board, setBoard] = useState<Board | null>(null);
   const [reply, setReply] = useState<Reply[] | null>(null);
-
+  const handleModify = () => {
+    navigator(PROJECT_REG, { state: { boardId: boardId, modify: true } });
+  };
+  const handleDelete = async () => {
+    if (confirm("삭제하시겠습니까?")) {
+      try {
+        await fetcher.delete(BOARD_DELETE + boardId);
+        alert("삭제 성공");
+      } catch (error) {
+        alert("삭제 실패");
+      }
+    }
+  };
   useEffect(() => {
     handleBoardData();
-  }, [boardId]);
+  }, []);
 
   const handleBoardData = async () => {
     try {
@@ -230,6 +248,7 @@ const ProjectDetailView: React.FC = () => {
                     border: "none",
                     color: "white",
                   }}
+                  onClick={handleModify}
                 >
                   수정
                 </button>
@@ -240,6 +259,7 @@ const ProjectDetailView: React.FC = () => {
                     border: "none",
                     color: "white",
                   }}
+                  onClick={handleDelete}
                 >
                   삭제
                 </button>

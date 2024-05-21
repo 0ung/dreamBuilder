@@ -1,12 +1,8 @@
 package codehows.dream.dreambulider.service;
 
-import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
-import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
-import codehows.dream.dreambulider.dto.Board.BoardUpdateDTO;
-import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.repository.BoardRepository;
-import codehows.dream.dreambulider.repository.MemberRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,8 +10,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
+import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
+import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -48,9 +48,10 @@ public class BoardService {
 			case "title,member" -> boards = boardRepository.findByTitleOrAuthor(escapedKeyword, pageable);
 			case "content,member" -> boards = boardRepository.findByContentOrAuthor(escapedKeyword, pageable);
 			case "title,content,member" ->
-					boards = boardRepository.findByTitleOrContentOrAuthor(escapedKeyword, pageable);
+				boards = boardRepository.findByTitleOrContentOrAuthor(escapedKeyword, pageable);
 			default -> boards = boardRepository.findAll(pageable);
-		};
+		}
+		;
 		return boardToList(boards);
 	}
 
@@ -89,33 +90,20 @@ public class BoardService {
 	}
 
 	@Transactional
-	public Board update(long id, BoardUpdateDTO request) {
+	public Board update(long id, BoardRequestDTO boardRequestDTO) {
 		Board board = boardRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("not found : " + id));
 
-		board.update(request.getTitle(), request.getContent(), request.getEndDate());
+		board.update(boardRequestDTO.getTitle(), boardRequestDTO.getContent(), boardRequestDTO.getEndDate());
 
 		return board;
 	}
-
-	//    @Transactional
-	//    public BoardUpdateDTO updateDTO(Long boardId) {
-	//
-	//        List<HashTag> hashTagList = hashTagRepository.findByBoardId(boardId);
-	//        List<BoardUpdateDTO> boardDtoList = new ArrayList<>();
-	//        for (HashTag hashTag : hashTagList) {
-	//            BoardUpdateDTO boardDto = BoardUpdateDTO.of(hashTag);
-	//            boardDtoList.add(boardDto);
-	//        }
-	//    }
-
-	//비활성화(삭제)
 	@Transactional
-	public Board updateInvisible(long id) {
+	public void updateInvisible(long id) {
 		Board board = boardRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("not found:" + id));
-		board.update1();
-
+		board.updateInvisible();
+		System.out.println(board.getMember().getId());
 		return board;
 	}
 
