@@ -10,7 +10,9 @@ import codehows.dream.dreambulider.jwt.TokenProvider;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.RefreshTokenRepository;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 //import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 //import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -77,6 +79,7 @@ public class MemberService implements UserDetailsService {
             refreshTokenService.saveRefreshToken(new RefreshToken(member, newRefreshToken));
         }else{
             refreshToken.update(newRefreshToken);
+            refreshTokenService.saveRefreshToken(refreshToken);
         }
 
         // 액세스 토큰을 쿠키에 설정
@@ -97,6 +100,7 @@ public class MemberService implements UserDetailsService {
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
         refreshTokenCookie.setSecure(true);
+
 
         // 쿠키를 응답에 추가
         response.addCookie(accessTokenCookie);
@@ -122,9 +126,44 @@ public class MemberService implements UserDetailsService {
         return new TokenResponse(accessToken, newRefreshToken);
     }
 
-    public void logout(RefreshToken refreshToken) {
-        Member member = refreshTokenService.findByRefreshToken(refreshToken.getRefreshToken()).getMember();
+    @Transactional
+    public void logout(String email,HttpServletResponse response) {
+        Member member = memberRepository.findMemberByEmail(email).orElse(null);
         refreshTokenService.removeRefreshToken(member);
+
+        Cookie accessTokenCookie = new Cookie("accessToken","");
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(0);
+        accessTokenCookie.setSecure(true);
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken","");
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setSecure(true);
+
+        // 쿠키를 응답에 추가
+        response.addCookie(accessTokenCookie);
+        response.addCookie(refreshTokenCookie);
+
+    }
+
+    public String getRefreshToken(HttpServletRequest request) {
+        // 요청에서 쿠키 배열을 가져옴
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                // 쿠키 이름이 'refreshToken'과 일치하는지 확인
+                if ("refreshToken".equals(cookie.getName())) {
+                    // refreshToken 값을 반환
+                    return cookie.getValue();
+                }
+            }
+        }
+        // refreshToken 쿠키가 없으면 메시지를 반환
+        return "Refresh Token not found";
     }
 
 

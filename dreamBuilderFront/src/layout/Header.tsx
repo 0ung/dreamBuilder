@@ -14,7 +14,11 @@ import {
   MYPAGE,
   PROJECT_OVERVIEW,
 } from "../constants/page_constants";
+import { LOGOUT_API } from "../constants/api_constants";
+import axios from "axios";
 import LOGOIMAGE from "../image/LogoImage.png";
+import MangeVisitor from "../pages/MangeVisitor";
+import { useEffect } from "react";
 import fetcher from "../fetcher";
 import { BOARD_SEARCH } from "../constants/api_constants";
 
@@ -90,10 +94,12 @@ function NavLi({ children, href, onClick }: NavLiProps) {
 function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [hashTag, setHashTag] = useState<ReactNode>([]);
+
   const [criteria, setCriteria] = useState("검색");
   const [criteriaEng, setCriteriaEng] = useState("search");
   const [loggin, isLoggin] = useState(true);
   const [admin, isAdmin] = useState(true);
+
 
   const navigate = useNavigate();
 
@@ -113,6 +119,15 @@ function Header() {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetcher.post(
+        LOGOUT_API
+      );
+      console.log(response.data);
+    } catch(error) {console.error}
   };
 
   return (
@@ -295,7 +310,7 @@ function Header() {
                 >
                   마이페이지
                 </NavLi>
-                <NavLi href="#">로그아웃</NavLi>
+                <NavLi href="#" onClick={handleLogout}>로그아웃</NavLi>
               </>
             )
           ) : (
