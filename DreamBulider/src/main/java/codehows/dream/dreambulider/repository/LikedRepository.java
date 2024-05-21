@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface LikedRepository extends JpaRepository<Liked, Long> {
 
     @Query(value = "SELECT is_like FROM liked WHERE board_id = :boardId", nativeQuery = true)
-    Boolean findByBoardId(@Param("boardId") Long boardId);
+    List<Boolean> findByBoardId(@Param("boardId") Long boardId);
 
     //게시판 좋아요 총 개수
     @Query(value = "SELECT COUNT(*) FROM liked WHERE board_id = :boardId AND is_like = true", nativeQuery = true)
