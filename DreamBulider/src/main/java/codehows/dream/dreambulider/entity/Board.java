@@ -41,7 +41,6 @@ public class Board {
 
 	private Long cnt=0L;
 
-
 //	@OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 //	private List<HashTag> hashTags;
 

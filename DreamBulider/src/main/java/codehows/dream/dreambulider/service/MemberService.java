@@ -30,6 +30,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
@@ -40,6 +43,7 @@ public class MemberService implements UserDetailsService {
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
+    Map map = new HashMap();
 
     public Member save(MemberFormDTO member) {
         if(member == null) {
@@ -57,7 +61,7 @@ public class MemberService implements UserDetailsService {
         return memberRepository.existsMemberByEmail(email);
     }
 
-    public TokenResponse login (MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
+    public Map<String,String> login (MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
 
         Authentication authentication =authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -76,31 +80,36 @@ public class MemberService implements UserDetailsService {
         }
 
         // 액세스 토큰을 쿠키에 설정
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true); // 자바스크립트에서 접근하지 못하게 설정
-        accessTokenCookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능하도록 설정
-        accessTokenCookie.setMaxAge(60 * 60); // 1시간 동안 유효
+        addCookies(response,accessToken,newRefreshToken);
+        map.put("Role",member.getAuthority());
+        return map;
+    }
 
-        // 리프레시 토큰을 쿠키에 설정
+    public void addCookies(HttpServletResponse response, String accessToken, String newRefreshToken) {
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(60 * 60);
+        accessTokenCookie.setSecure(true);
+
         Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+        refreshTokenCookie.setSecure(true);
 
         // 쿠키를 응답에 추가
         response.addCookie(accessTokenCookie);
         response.addCookie(refreshTokenCookie);
 
-        return new TokenResponse(accessToken, newRefreshToken);
     }
-
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return memberRepository.findMemberByEmail(email).orElseThrow();
     }
 
     public TokenResponse tokenRefresh(String refreshToken) {
-        if(!tokenProvider.validateToken(refreshToken)) {
+        if(tokenProvider.validateToken(refreshToken) != 1) {
             throw new IllegalArgumentException("잘못된 토큰");
         }
         RefreshToken existRefreshToken = refreshTokenService.findByRefreshToken(refreshToken);

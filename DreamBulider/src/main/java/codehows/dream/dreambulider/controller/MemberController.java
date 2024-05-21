@@ -11,6 +11,7 @@ import codehows.dream.dreambulider.service.RefreshTokenService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 
+import java.net.http.HttpResponse;
 import java.util.Map;
 
 @RestController
@@ -63,7 +65,7 @@ public class MemberController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
         try{
-            return new ResponseEntity<>(memberService.login(memberLoginDTO, response), HttpStatus.OK);
+            return new ResponseEntity<>(memberService.login(memberLoginDTO, response),HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>("입력정보를 확인해주세요", HttpStatus.BAD_REQUEST);
         }
@@ -89,7 +91,7 @@ public class MemberController {
     }
 
     @GetMapping("/auth/callback")
-    public String authCallback(String code) {
+    public void authCallback(String code, HttpServletResponse servletResponse) {
         RestTemplate rt = new RestTemplate();
 
         //HttpHeader 오브젝트 생성
@@ -152,7 +154,7 @@ public class MemberController {
         MemberFormDTO kakaoUser = MemberFormDTO.builder()
                         .name(kakaoProfile.getProperties().getNickname())
                                 .password(cosKey)
-                                        .email(kakaoProfile.getKakao_account().getEmail())
+                                        .email(kakaoProfile.getKakao_account().getEmail()+"_kakao")
                                                 .build();
 
         //회원가입 처리
@@ -178,7 +180,27 @@ public class MemberController {
             refreshToken.update(newRefreshToken);
         }
 
-        return "로그인 완료";
+        // 액세스 토큰을 쿠키에 설정
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true); // 자바스크립트에서 접근하지 못하게 설정
+        accessTokenCookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능하도록 설정
+        accessTokenCookie.setMaxAge(60 * 60); // 1시간 동안 유효
+
+        // 리프레시 토큰을 쿠키에 설정
+        Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
+
+        // 쿠키를 응답에 추가
+        servletResponse.addCookie(accessTokenCookie);
+        servletResponse.addCookie(refreshTokenCookie);
+
+        try{
+            servletResponse.sendRedirect("http://localhost:5173/main");
+        }catch (Exception e){}
+
+        servletResponse.addHeader("Role", member.getAuthority().toString());
     }
 
 
