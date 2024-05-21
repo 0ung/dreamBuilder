@@ -2,18 +2,23 @@ package codehows.dream.dreambulider.service;
 
 
 import codehows.dream.dreambulider.dto.NestedReplyDTO.NestedRequestDTO;
+import codehows.dream.dreambulider.dto.NestedReplyDTO.NestedResponseDTO;
 import codehows.dream.dreambulider.dto.NestedReplyDTO.NestedUpdateDTO;
+import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.NestedReply;
 import codehows.dream.dreambulider.entity.Reply;
+import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.NestedRepository;
 import codehows.dream.dreambulider.repository.ReplyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,46 +26,41 @@ public class NestedService {
 
     private final NestedRepository nestedRepository;
     private final ReplyRepository replyRepository;
+    private final MemberRepository memberRepository;
+    public NestedReply saveNestedReply(Long id, NestedRequestDTO nestedRequestDTO, String email) {
 
-    public NestedReply saveNestedReply(Long id, NestedRequestDTO nestedRequestDTO) {
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("이메일이 존재하지 않습니다."));
 
         Reply reply = replyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("실패 : " + id));
 
-        nestedRequestDTO.setReply(reply);
+        NestedReply result = NestedReply.builder()
+                .comment(nestedRequestDTO.getComment())
+                .invisible(nestedRequestDTO.isInvisible())
+                .member(member)
+                .reply(reply)
+                .createdDate(nestedRequestDTO.getRegDate())
+                .build();
+        nestedRepository.save(result);
 
-        return nestedRepository.save(nestedRequestDTO.toEntity());
+        return result;
     }
 
     @Transactional
-    public List<NestedReply> findAll()  {
+    public List<NestedResponseDTO> findAllByReplyId(Long replyId) {
 
-        return nestedRepository.findAll();
-
-
+        List<NestedReply> nestedReplies = nestedRepository.findByReplyId(replyId);
+        return nestedReplies.stream()
+                .map(NestedResponseDTO::new)
+                .collect(Collectors.toList());
     }
-    /*public List<NestedReply> findAll(Long id) {
-        Reply reply = replyRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다 : id " + id));
-        Map<Long, List<NestedReply>> responseData = new HashMap<>();
-        List<NestedReply> nestedReplies = reply.getNestedReplies();
-
-        return nestedReplies;
-    }*/
 
     public NestedReply findById(long id) {
         return nestedRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("ID못찾음 :" + id));
     }
 
-    /*
-    @Transactional
-    public void delete (Long replyId, Long id) {
-        NestedReply nestedReply = nestedRepository.findByReplyIdAndId(replyId, id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다. : id " + id));
-
-        nestedRepository.delete(nestedReply);
-    }*/
 
     @Transactional
     public NestedReply deleteInvisible(long id) {

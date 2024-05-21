@@ -15,7 +15,7 @@ const MyComponent: React.FC<DropZoneProps> = ({
     fileCount: 2,
     fileSize: 150000000,
     fileExtensions: [
-      { type: "file", extensions: ["asd", "asdasd", "asdasd"] },
+      { type: "file", extensions: ["html", "pdf", "asdasd"] },
       { type: "image", extensions: ["png", "svg", "jpg"] },
       { type: "video", extensions: ["mp4", "mp5"] },
     ],
