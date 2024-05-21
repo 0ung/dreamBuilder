@@ -1,5 +1,6 @@
 package codehows.dream.dreambulider.controller;
 
+import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyResponseDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyUpdateDTO;
@@ -20,11 +21,11 @@ public class ReplyController {
     private final ReplyService replyService;
 
     @PostMapping("/reply")
-    public ResponseEntity<?> saveReply(@RequestBody ReplyRequestDTO replyRequestDTO){
+    public ResponseEntity<?> saveReply(@RequestBody ReplyRequestDTO replyRequestDTO, Principal principal){
 
         try{
-            replyService.saveReply(replyRequestDTO);
-        }catch (IllegalArgumentException e){
+            replyService.saveReply(replyRequestDTO, principal.getName());
+        } catch (IllegalArgumentException e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch(RuntimeException e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -44,26 +45,24 @@ public class ReplyController {
 
     @GetMapping("/reply/{id}")
     public ResponseEntity<ReplyResponseDTO> findReply(@PathVariable(name = "id") long id) {
-        Reply reply = replyService.findById(id);
 
-        return ResponseEntity.ok()
-                .body(new ReplyResponseDTO(reply));
+        ReplyResponseDTO response = replyService.findById(id);
+
+        return ResponseEntity.ok(response);
     }
     @PatchMapping("/reply/{id}")
-    public ResponseEntity<Reply> deleteReply(@PathVariable(name = "id") long id) {
+    public ResponseEntity<?> deleteReply(@PathVariable(name = "id") long id) {
 
-        Reply deleteReply = replyService.deleteInvisible(id);
+        ReplyDeleteDTO deleteReply = replyService.deleteInvisible(id);
 
-        return ResponseEntity.ok()
-                .body(deleteReply);
+        return ResponseEntity.ok(deleteReply);
     }
 
     @PutMapping("/reply/{id}")
-    public ResponseEntity<Reply> updateReply(@PathVariable(name = "id") long id,
+    public ResponseEntity<?> updateReply(@PathVariable(name = "id") long id,
                                              @RequestBody ReplyUpdateDTO replyUpdateDTO) {
         Reply updatedReply = replyService.update(id, replyUpdateDTO);
 
-        return ResponseEntity.ok()
-                .body(updatedReply);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

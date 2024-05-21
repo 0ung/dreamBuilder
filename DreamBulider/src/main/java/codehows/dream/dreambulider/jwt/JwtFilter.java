@@ -29,7 +29,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = getToken(cookies);
 
         if(tokenProvider.validateToken(token)) {
-            Authentication auth = tokenProvider.getAuthentication(token);
+                Authentication auth = tokenProvider.getAuthentication(token);
 
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
@@ -47,7 +47,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private String getToken(Cookie[] cookies) {
         if(cookies != null && cookies.length > 0) {
             for(Cookie cookie : cookies) {
-                if(cookie.getName().equals("accesstoken")) {
+                if(cookie.getName().equals("accessToken")) {
                     return cookie.getValue();
                 }
             }
