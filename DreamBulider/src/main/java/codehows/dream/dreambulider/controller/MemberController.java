@@ -200,12 +200,12 @@ public class MemberController {
         servletResponse.addCookie(accessTokenCookie);
         servletResponse.addCookie(refreshTokenCookie);
 
+        servletResponse.addHeader("Role", member.getAuthority().toString());
         try {
             servletResponse.sendRedirect("http://localhost:5173/main");
         } catch (Exception e) {
         }
 
-        servletResponse.addHeader("Role", member.getAuthority().toString());
     }
 
 

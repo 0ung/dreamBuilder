@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,20 +36,22 @@ public class ReplyController {
 	public ResponseEntity<?> saveReply(@RequestBody ReplyRequestDTO replyRequestDTO, Principal principal) {
 
 		try {
-			replyService.saveReply(replyRequestDTO, principal.getName());
+			Reply reply = replyService.saveReply(replyRequestDTO, principal.getName());
+			ReplyResponseDTO replyResponseDTO = new ReplyResponseDTO(reply);
+			return new ResponseEntity<>(replyResponseDTO, HttpStatus.CREATED);
 		} catch (IllegalArgumentException e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		} catch (RuntimeException e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
 	@GetMapping("/read/{boardId}/{page}")
-	public ResponseEntity<List<ReplyResponseDTO>> findAllReplys(@PathVariable Optional<Integer> page
-	@PathVariable(name)) {
-		Pageable pageable = PageRequest.of(page.orElse(0), 10);
-		List<ReplyResponseDTO> replys = replyService.findAll(pageable)
+	public ResponseEntity<List<ReplyResponseDTO>> findAllReplys(@PathVariable Optional<Integer> page,
+		@PathVariable(name = "boardId") Long boardId) {
+		Pageable pageable = PageRequest.of(page.orElse(0), 5,
+			Sort.by(Sort.Direction.DESC, "id"));
+		List<ReplyResponseDTO> replys = replyService.findAll(boardId, pageable)
 			.stream()
 			.map(ReplyResponseDTO::new)
 			.toList();

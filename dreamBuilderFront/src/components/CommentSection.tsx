@@ -1,19 +1,8 @@
 import React, { useState } from "react";
-import Comment from "./Comment";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import { useSelector } from "react-redux";
 import fetcher from "../fetcher";
 import { REPLY_POST } from "../constants/api_constants";
-
-interface reply {
-  id: number;
-  comment: string;
-  nickname: string;
-  regDate: string;
-  updateDate: string | null;
-  nestReply: NestedReply[];
-  deactive: boolean;
-}
+import Comment from "./Comment";
 
 interface NestedReply {
   id: number;
@@ -21,22 +10,33 @@ interface NestedReply {
   nickname: string;
   regDate: string;
   updateDate: string | null;
-  deactive: boolean;
+  invisible: boolean;
+}
+
+interface Reply {
+  id: number;
+  comment: string;
+  nickname: string;
+  regDate: string;
+  updateDate: string | null;
+  nestReply: NestedReply[];
+  invisible: boolean;
 }
 
 interface CommentSectionProps {
-  replies: reply[] | null;
+  replies: Reply[] | null;
   boardId: number;
+  setReplies: React.Dispatch<React.SetStateAction<Reply[]>>;
 }
 
 const CommentSection: React.FC<CommentSectionProps> = ({
   replies,
   boardId,
+  setReplies,
 }) => {
   const isAdmin = useSelector((state: any) => state.admin.isAdmin);
-  const dispatch = useDispatch();
+  const [comment, setComment] = useState<string>("");
 
-  const [comment, setComment] = useState("");
   const handleReply = async () => {
     const data = {
       comment: comment,
@@ -48,7 +48,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           "Content-Type": "application/json",
         },
       });
-      alert(response.status);
+      const newReply = response.data;
+      console.log(newReply);
+      setReplies((prevReplies) => [newReply, ...prevReplies]); // 새로운 댓글을 추가
+      setComment(""); // 댓글 작성 후 입력 필드 초기화
     } catch (error) {
       alert("에러임");
     }
@@ -85,6 +88,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               className="form-control"
               placeholder="댓글을 작성하세요..."
               aria-describedby="basic-addon1"
+              value={comment}
               onChange={(e) => {
                 setComment(e.target.value);
               }}
@@ -99,9 +103,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           </div>
         </>
       )}
-      {(replies || []).map((reply) => (
+      {(replies || []).map((reply, index) => (
         <Comment
-          key={reply.id}
+          key={`${reply.id}-${index}`} // 고유한 key 보장
           reply={reply}
           openReplies={openReplies}
           toggleReplies={toggleReplies}

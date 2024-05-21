@@ -110,7 +110,7 @@ export default function ProjectOverviewPage() {
         >
           <FlexContainer>
             {data.map((project) => (
-              <FlexItem key={project.id}>
+              <FlexItem key={project.id + 1}>
                 <ViewBox data={project} />
               </FlexItem>
             ))}

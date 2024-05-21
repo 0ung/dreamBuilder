@@ -15,5 +15,5 @@ export const BOARD_DELETE = "/api/";
 export const REPLY_READ = "/api/reply";
 export const REPLY_POST = "/api/reply";
 export const REPLY_DETAIL = "/api/reply/";
-export const REPLY_READ_ALL = "/api/reply/";
+export const REPLY_READ_ALL = "/api/read/";
 export const REPLY_UPDATE = "/api/reply/";

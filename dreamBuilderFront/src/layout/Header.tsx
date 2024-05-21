@@ -15,12 +15,10 @@ import {
   PROJECT_OVERVIEW,
 } from "../constants/page_constants";
 import { LOGOUT_API } from "../constants/api_constants";
-import axios from "axios";
-import LOGOIMAGE from "../image/LogoImage.png";
-import MangeVisitor from "../pages/MangeVisitor";
-import { useEffect } from "react";
 import fetcher from "../fetcher";
 import { BOARD_SEARCH } from "../constants/api_constants";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/index";
 
 const StyledLink = styled.a`
   color: white !important;
@@ -97,9 +95,9 @@ function Header() {
 
   const [criteria, setCriteria] = useState("검색");
   const [criteriaEng, setCriteriaEng] = useState("search");
-  const [loggin, isLoggin] = useState(true);
-  const [admin, isAdmin] = useState(true);
 
+  const loggin = useSelector((state: RootState) => state.login.isLogin);
+  const admin = useSelector((state: RootState) => state.admin.isAdmin);
 
   const navigate = useNavigate();
 
@@ -123,11 +121,11 @@ function Header() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetcher.post(
-        LOGOUT_API
-      );
+      const response = await fetcher.post(LOGOUT_API);
       console.log(response.data);
-    } catch(error) {console.error}
+    } catch (error) {
+      console.error;
+    }
   };
 
   return (
@@ -310,7 +308,9 @@ function Header() {
                 >
                   마이페이지
                 </NavLi>
-                <NavLi href="#" onClick={handleLogout}>로그아웃</NavLi>
+                <NavLi href="#" onClick={handleLogout}>
+                  로그아웃
+                </NavLi>
               </>
             )
           ) : (

@@ -38,7 +38,7 @@ interface Reply {
   regDate: string;
   updateDate: string | null;
   nestReply: NestedReply[];
-  deactive: boolean;
+  invisible: boolean;
 }
 
 interface NestedReply {
@@ -46,8 +46,8 @@ interface NestedReply {
   comment: string;
   nickname: string;
   regDate: string;
-  updateDate: string;
-  deactive: boolean;
+  updateDate: string | null;
+  invisible: boolean;
 }
 
 const Hr = styled.hr`
@@ -63,7 +63,7 @@ interface Extension {
 
 const ProjectDetailView: React.FC = () => {
   const navigator = useNavigate();
-  const [extension, setExtension] = useState<Extension>({
+  const [extension] = useState<Extension>({
     video: new Set([
       "mp4",
       "avi",
@@ -169,6 +169,7 @@ const ProjectDetailView: React.FC = () => {
 
   const location = useLocation();
   const boardId = location.state;
+  console.log("boardId: ", boardId); // boardId 확인
 
   const [board, setBoard] = useState<Board | null>(null);
   const [reply, setReply] = useState<Reply[]>([]);
@@ -184,6 +185,7 @@ const ProjectDetailView: React.FC = () => {
       try {
         await fetcher.delete(BOARD_DELETE + boardId);
         alert("삭제 성공");
+        navigator(PROJECT_DETAIL_VIEW); // 삭제 후 프로젝트 목록으로 이동
       } catch (error) {
         alert("삭제 실패");
       }
@@ -223,14 +225,20 @@ const ProjectDetailView: React.FC = () => {
 
   const fetchMoreData = async () => {
     try {
-      const response = await fetcher.get(
-        `${REPLY_READ_ALL}?boardId=${boardId}&page=${page}`
-      );
+      console.log("호출"); // 함수 호출 확인
+      console.log(`${REPLY_READ_ALL}${boardId}/${page}`); // 요청 URL 확인
+      const response = await fetcher.get(`${REPLY_READ_ALL}${boardId}/${page}`);
       const data = response.data;
+      console.log(data);
+      setReply((prevReplies) => [...prevReplies, ...data]);
 
-      setReply((prevReplies) => [...prevReplies, ...data.replies]);
-      setPage((prevPage) => prevPage + 1);
-      setHasMore(data.replies.length > 0);
+      if (data.length === 5) {
+        // 데이터 길이가 정확히 5인지 확인
+        setPage((prevPage) => prevPage + 1);
+        setHasMore(true);
+      } else {
+        setHasMore(false);
+      }
     } catch (error) {
       console.log(error);
       setHasMore(false);
@@ -297,7 +305,7 @@ const ProjectDetailView: React.FC = () => {
 
               <ul className="list-group">
                 {board.file.map((file, index) => (
-                  <li key={index} className="list-group-item">
+                  <li key={`${file.name}-${index}`} className="list-group-item">
                     <a href={file.url} download={file.name}>
                       <div>
                         {renderFileIcon(
@@ -320,9 +328,14 @@ const ProjectDetailView: React.FC = () => {
         dataLength={reply.length}
         next={fetchMoreData}
         hasMore={hasMore}
-        loader={<h4></h4>}
+        loader={<h4>Loading...</h4>}
       >
-        <CommentSection replies={reply} boardId={boardId} />
+        <CommentSection
+          key={boardId}
+          replies={reply}
+          boardId={boardId}
+          setReplies={setReply}
+        />
       </InfiniteScroll>
       <Footer />
     </>

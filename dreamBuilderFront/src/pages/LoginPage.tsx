@@ -7,6 +7,10 @@ import styled from "styled-components";
 import axios from "axios";
 import { LOGIN_API } from "../constants/api_constants";
 import fetcher from "../fetcher";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/index";
+import { toggleAdmin } from "../store/slices/adminSlice";
+import { toggleLogin } from "../store/slices/loginSlice";
 
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
@@ -39,26 +43,27 @@ export default function LoginPage() {
   const navigator = useNavigate();
   const [email, setEamil] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const dispatch = useDispatch();
+
   const handleLogin = async () => {
     try {
       const formData = {
         email: email,
         password: password,
       };
-      const response = await fetcher.post(
-        LOGIN_API,
-        JSON.stringify(formData),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetcher.post(LOGIN_API, JSON.stringify(formData), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       console.log(response.data);
-      
+      if (response.data.Role === "ROLE_ADMIN") {
+        dispatch(toggleAdmin());
+      }
+      dispatch(toggleLogin());
       navigator(MAIN);
-    } catch(error) {
-      console.error
+    } catch (error) {
+      console.error;
       alert("아이디 또는 비밀번호를 다시 확인해주세요");
     }
   };
