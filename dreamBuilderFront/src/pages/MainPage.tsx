@@ -5,16 +5,12 @@ import main from "../image/mainImage.png";
 import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
 import { PROJECT_REG } from "../constants/page_constants";
-import { LOGIN_API } from "../constants/api_constants";
+
 
 
 function MainPage() {
-  const searchRole = async () => {
-    let response = await fetch(LOGIN_API);
-    console.log(response.headers.get('Role'));
-  };
   
-
+  
   const navigator = useNavigate();
   const [markdown, setMarkdown] = useState(`## 창의적 여정을 시작하세요
 
@@ -27,9 +23,10 @@ function MainPage() {
   > "함께라면, 불가능이란 없습니다. 오늘 바로 시작해 보세요!"
   
   [프로젝트 등록하기](#) - 새로운 가능성을 향한 첫걸음을 내딛어 보세요!`);
+
+
   return (
     <>
-      {searchRole}
       <Header />
       <div className="container mt-5">
         <div className="row ps-5">

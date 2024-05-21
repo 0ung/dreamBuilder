@@ -14,8 +14,12 @@ import {
   MYPAGE,
   PROJECT_OVERVIEW,
 } from "../constants/page_constants";
+import { LOGOUT_API } from "../constants/api_constants";
+import axios from "axios";
 import LOGOIMAGE from "../image/LogoImage.png";
 import MangeVisitor from "../pages/MangeVisitor";
+import { useEffect } from "react";
+import fetcher from "../fetcher";
 
 const StyledLink = styled.a`
   color: white !important;
@@ -90,8 +94,8 @@ function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [hashTag, setHashTag] = useState<ReactNode>([]);
 
-  const [loggin, isLoggin] = useState(true);
-  const [admin, isAdmin] = useState(true);
+  const [loggin, isLoggin] = useState(false);
+  const [admin, isAdmin] = useState(false);
 
   const navigate = useNavigate();
 
@@ -103,6 +107,15 @@ function Header() {
       const hashTags = matches.map((tag) => tag.slice(1)); // '#'을 제거하고 순수 텍스트만 추출
       setHashTag(hashTags);
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetcher.post(
+        LOGOUT_API
+      );
+      console.log(response.data);
+    } catch(error) {console.error}
   };
 
   return (
@@ -220,7 +233,7 @@ function Header() {
                 >
                   마이페이지
                 </NavLi>
-                <NavLi href="#">로그아웃</NavLi>
+                <NavLi href="#" onClick={handleLogout}>로그아웃</NavLi>
               </>
             )
           ) : (
