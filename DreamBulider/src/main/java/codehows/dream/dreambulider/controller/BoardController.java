@@ -85,19 +85,17 @@ public class BoardController {
 	public ResponseEntity<?> searchBoardList(@PathVariable Optional<Integer> page,
 		@RequestParam(required = false, name = "search") String search,
 		@RequestParam(required = false, name = "criteria") String criteria,
-		@RequestParam(required = false) String sort
+		@RequestParam(required = false) String sort, Principal principal
 	) {
 		try {
 			int currentPage = page.orElse(0);
 			Pageable pageable = boardService.sorted(sort, currentPage);
-			List<BoardListResponseDTO> boardPage = boardService.searchBoard(pageable, criteria, search);
+			List<BoardListResponseDTO> boardPage = boardService.searchBoard(pageable, criteria, search, principal);
 			return new ResponseEntity<>(boardPage, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
-
-	//게시글 목록 조회
 
 	//게시글 상세 조회
 	@GetMapping("/api/board/{id}")
@@ -115,9 +113,10 @@ public class BoardController {
 	@PutMapping("/api/board/{id}")
 	public ResponseEntity<?> updateBoard(@PathVariable long id,
 		@RequestPart(name = "board") BoardRequestDTO boardDTO,
-		@RequestPart(name = "files", required = false) List<MultipartFile> multipartFile) {
+		@RequestPart(name = "files", required = false) List<MultipartFile> multipartFile,
+		Principal principal) {
 		try {
-			boardService.update(id, boardDTO);
+			boardService.update(id, boardDTO, principal);
 			hashTagService.updateHash(id, boardDTO.getHashTags());
 			boardFileService.updateFile(id, multipartFile);
 			return new ResponseEntity<>("업데이트 완료", HttpStatus.OK);
@@ -128,11 +127,9 @@ public class BoardController {
 
 	//비활성화
 	@DeleteMapping("/api/{id}")
-	public ResponseEntity<Board> deleteBoard(@PathVariable long id) {
-		Board updatedBoard = boardService.updateInvisible(id);
-
-		return ResponseEntity.ok()
-			.body(updatedBoard);
+	public ResponseEntity<?> deleteBoard(@PathVariable long id, Principal principal) {
+		Board updatedBoard = boardService.updateInvisible(id, principal);
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 }

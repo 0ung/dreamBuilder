@@ -25,6 +25,7 @@ public class BoardResponseDTO {
     private Date endDate;
     private Long cnt;
     private List<String> hashTags;
+
     private List<Map<String,String>> file;
     public BoardResponseDTO(Board board, List<String> hashTags,List<Map<String,String>> file) {
         this.id = board.getId();

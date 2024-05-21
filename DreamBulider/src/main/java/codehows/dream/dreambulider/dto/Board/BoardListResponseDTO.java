@@ -22,8 +22,8 @@ public class BoardListResponseDTO {
     private Date endDate;
     private List<String> hashTags;
     private Long cnt;
+    private Boolean deadLine;
     private Long countLike;
-
     private List<Boolean> likeList;
 
     public BoardListResponseDTO(Board board) {

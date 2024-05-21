@@ -1,5 +1,6 @@
 package codehows.dream.dreambulider.service;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
 import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
 import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.HashTagRepository;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +27,7 @@ public class BoardService {
 	private final HashTagService hashTagService;
 	private final LikedService likedService;
 	private final MemberRepository memberRepository;
+	private final HashTagRepository hashTagRepository;
 
 	public Board save(BoardRequestDTO boardDTO, String email) {
 		return boardRepository.save(Board.builder()
@@ -36,7 +40,7 @@ public class BoardService {
 
 	public List<BoardListResponseDTO> searchBoard(Pageable pageable
 		, String criteria
-		, String keyword
+		, String keyword, Principal principal
 	) {
 		Page<Board> boards = null;
 		String escapedKeyword = keyword.replace("\\", "\\\\");
@@ -49,10 +53,15 @@ public class BoardService {
 			case "content,member" -> boards = boardRepository.findByContentOrAuthor(escapedKeyword, pageable);
 			case "title,content,member" ->
 				boards = boardRepository.findByTitleOrContentOrAuthor(escapedKeyword, pageable);
+			case "hashtag" -> {
+				for (Long boardId : hashTagRepository.findHashTagByHashTag(escapedKeyword)) {
+					boards = boardRepository.findByboardId(boardId, pageable);
+				}
+			}
 			default -> boards = boardRepository.findAll(pageable);
 		}
 		;
-		return boardToList(boards);
+		return boardToList(boards, principal);
 	}
 
 	public Pageable sorted(String sort, int currentPage) {
@@ -85,29 +94,47 @@ public class BoardService {
 		//return (getCnt != null) ? getCnt : 1L;
 	}
 
+	//조회수 조회
 	public Long getCnt(long id) {
 		return boardRepository.getCntById(id);
 	}
 
+	//게시글 업데이트
 	@Transactional
-	public Board update(long id, BoardRequestDTO boardRequestDTO) {
-		Board board = boardRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("not found : " + id));
+	public Board update(long boardId, BoardRequestDTO request, Principal principal) {
+		Member member = boardRepository.findMemberByBoardId(boardId);
+		if (member.getEmail() == null) {
+			throw new IllegalArgumentException("Invalid board Id:" + boardId);
+		}
+		if (!principal.getName().equals(member.getEmail())) {
+			throw new SecurityException("You do not have permission to edit this board");
+		}
 
-		board.update(boardRequestDTO.getTitle(), boardRequestDTO.getContent(), boardRequestDTO.getEndDate());
-
+		Board board = boardRepository.findById(boardId)
+			.orElseThrow(() -> new IllegalArgumentException("not found : " + boardId));
+		board.update(request.getTitle(), request.getContent(), request.getEndDate());
 		return board;
 	}
+
+	//비활성화(삭제)
 	@Transactional
-	public void updateInvisible(long id) {
-		Board board = boardRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("not found:" + id));
+	public Board updateInvisible(long boardId, Principal principal) {
+		Member member = boardRepository.findMemberByBoardId(boardId);
+
+		if (member.getEmail() == null) {
+			throw new IllegalArgumentException("Invalid board Id:" + boardId);
+		}
+		if (!principal.getName().equals(member.getEmail())) {
+			throw new SecurityException("You do not have permission to edit this board");
+		}
+
+		Board board = boardRepository.findById(boardId)
+			.orElseThrow(() -> new IllegalArgumentException("not found:" + boardId));
 		board.updateInvisible();
-		System.out.println(board.getMember().getId());
 		return board;
 	}
 
-	public List<BoardListResponseDTO> boardToList(Page<Board> boardList) {
+	public List<BoardListResponseDTO> boardToList(Page<Board> boardList, Principal principal) {
 		List<BoardListResponseDTO> list = new ArrayList<>();
 
 		for (Board board : boardList) {
@@ -117,7 +144,7 @@ public class BoardService {
 			listResponseDTO.setEndDate(board.getEndDate());
 			listResponseDTO.setHashTags(hashTagService.findAll(board.getId()));
 			listResponseDTO.setCnt(getCnt(board.getId()));
-			listResponseDTO.setLikeList(likedService.LikeList(board.getId()));
+			listResponseDTO.setLikeList(likedService.LikeList(board.getId(), principal));
 			listResponseDTO.setCountLike(likedService.countLike(board.getId()));
 			list.add(listResponseDTO);
 		}
