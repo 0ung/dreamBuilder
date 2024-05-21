@@ -7,6 +7,7 @@ import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.HashTag;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.HashTagRepository;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ public class BoardService {
 	private final HashTagService hashTagService;
 	private final LikedService likedService;
 	private final MemberRepository memberRepository;
+	private final HashTagRepository hashTagRepository;
 
 	public Board save(BoardRequestDTO boardDTO, String email) {
 		return boardRepository.save(Board.builder()
@@ -39,7 +41,7 @@ public class BoardService {
 
 	public List<BoardListResponseDTO> searchBoard(Pageable pageable
 		, String criteria
-		, String keyword
+		, String keyword, Principal principal
 	) {
 		Page<Board> boards = null;
 		String escapedKeyword = keyword.replace("\\", "\\\\");
@@ -50,14 +52,16 @@ public class BoardService {
 			case "title,content" -> boards = boardRepository.findByTitleOrContent(escapedKeyword, pageable);
 			case "title,member" -> boards = boardRepository.findByTitleOrAuthor(escapedKeyword, pageable);
 			case "content,member" -> boards = boardRepository.findByContentOrAuthor(escapedKeyword, pageable);
-			case "hashtag":
-				Long boardId = hashTagRepository.findHashTagByHashTag(keyword);
-				return boardRepository.findByboardId(boardId, pageable);
-			case "title,content,member" ->
+            case "hashtag" -> {
+                for(Long boardId : hashTagRepository.findHashTagByHashTag(escapedKeyword)) {
+                    boards = boardRepository.findByboardId(boardId, pageable);
+                }
+            }
+            case "title,content,member" ->
 					boards = boardRepository.findByTitleOrContentOrAuthor(escapedKeyword, pageable);
 			default -> boards = boardRepository.findAll(pageable);
 		};
-		return boardToList(boards);
+		return boardToList(boards, principal);
 	}
 
 	public Pageable sorted(String sort, int currentPage) {
@@ -130,7 +134,7 @@ public class BoardService {
 		return board;
 	}
 
-	public List<BoardListResponseDTO> boardToList(Page<Board> boardList) {
+	public List<BoardListResponseDTO> boardToList(Page<Board> boardList, Principal principal) {
 		List<BoardListResponseDTO> list = new ArrayList<>();
 
 		for (Board board : boardList) {
@@ -140,7 +144,7 @@ public class BoardService {
 			listResponseDTO.setEndDate(board.getEndDate());
 			listResponseDTO.setHashTags(hashTagService.findAll(board.getId()));
 			listResponseDTO.setCnt(getCnt(board.getId()));
-			listResponseDTO.setLikeList(likedService.LikeList(board.getId()));
+			listResponseDTO.setLikeList(likedService.LikeList(board.getId(), principal));
 			listResponseDTO.setCountLike(likedService.countLike(board.getId()));
 			list.add(listResponseDTO);
 		}

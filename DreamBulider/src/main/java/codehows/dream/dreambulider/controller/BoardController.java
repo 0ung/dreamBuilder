@@ -74,22 +74,19 @@ public class BoardController {
 	//게시글 검색 and 목록 조회
 	@GetMapping("/api/boards/{page}")
 	public ResponseEntity<?> searchBoardList(@PathVariable Optional<Integer> page,
-		@RequestParam(name = "search") String search,
-		@RequestParam(name = "criteria") String criteria,
-		@RequestParam(required = false) String sort
+		@RequestParam(required = false, name = "search") String search,
+		@RequestParam(required = false, name = "criteria") String criteria,
+		@RequestParam(required = false) String sort, Principal principal
 	) {
 		try {
 			int currentPage = page.orElse(0);
 			Pageable pageable = boardService.sorted(sort, currentPage);
-			List<BoardListResponseDTO> boardPage = boardService.searchBoard(pageable, criteria, search);
+			List<BoardListResponseDTO> boardPage = boardService.searchBoard(pageable, criteria, search, principal);
 			return new ResponseEntity<>(boardPage, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
-
-	//게시글 목록 조회
-
 
 	//게시글 상세 조회
 	@GetMapping("/api/board/{id}")
@@ -105,8 +102,8 @@ public class BoardController {
 
 	//게시글 수정
 	@PutMapping("/api/board/{id}")
-	public ResponseEntity<BoardDTO> updateBoard(@PathVariable long id, @RequestBody BoardUpdateDTO requestBoard) {
-		Board board = boardService.update(id, requestBoard);
+	public ResponseEntity<BoardDTO> updateBoard(@PathVariable long id, @RequestBody BoardUpdateDTO requestBoard, Principal principal) {
+		Board board = boardService.update(id, requestBoard, principal);
 		hashTagService.updateHash(id, requestBoard.getHashTags());
 
 		List<String> hashTags = hashTagRepository.findByBoardId(board.getId());
@@ -118,8 +115,8 @@ public class BoardController {
 
 	//비활성화
 	@PutMapping("/api/{id}")
-	public ResponseEntity<Board> deleteBoard(@PathVariable long id) {
-		Board updatedBoard = boardService.updateInvisible(id);
+	public ResponseEntity<Board> deleteBoard(@PathVariable long id, Principal principal) {
+		Board updatedBoard = boardService.updateInvisible(id, principal);
 
 		return ResponseEntity.ok()
 			.body(updatedBoard);
