@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,11 @@ public class NestedController {
 
     @PostMapping("/reply/{id}/rereply")
     public ResponseEntity<?> saveNestedReply(@PathVariable(name = "id") Long id,
-                                                       @RequestBody NestedRequestDTO nestedRequestDTO) {
+                                             @RequestBody NestedRequestDTO nestedRequestDTO,
+                                             Principal principal) {
 
         try {
-            nestedService.saveNestedReply(id, nestedRequestDTO);
+            nestedService.saveNestedReply(id, nestedRequestDTO, principal.getName());
         } catch(IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (RuntimeException e) {
@@ -37,16 +39,11 @@ public class NestedController {
     }
 
     @GetMapping("/reply/{replyId}/rereply")
-    public ResponseEntity<?> findAllNestedReplys(@PathVariable(name = "replyId") long id) {
+    public ResponseEntity<?> findAllNestedReplys(@PathVariable(name = "replyId") Long replyId) {
 
-        NestedReply nestedReply = nestedService.findById(id);
+        List<NestedResponseDTO> nestedReplys = nestedService.findAllByReplyId(replyId);
 
-        List<NestedResponseDTO> nestedReplys = nestedService.findAll()
-                        .stream()
-                        .map(NestedResponseDTO::new)
-                        .toList();
-
-        return ResponseEntity.ok().body(nestedReplys);
+        return ResponseEntity.ok(nestedReplys);
     }
 
     @GetMapping("/reply/{replyId}/rereply/{id}")
