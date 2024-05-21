@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.*;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.sql.Date;
 
@@ -29,7 +30,8 @@ public class Liked {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "board_id")
 	private Board board;
-	@Column(nullable = false)
+
+	@Column(nullable = true)
 	private boolean isLike;
 
 //	public Liked(Board board, Member member) {

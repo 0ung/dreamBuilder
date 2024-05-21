@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
-import ViewBox from "../componets/ViewBox";
+import ViewBox from "../components/ViewBox";
 import styled from "styled-components";
 import InfiniteScroll from "react-infinite-scroll-component";
 import fetcher from "../fetcher";
 import { BOARD_VIEW } from "../constants/api_constants";
+import { useLocation } from "react-router-dom";
 
 interface Data {
   id: number;
@@ -38,10 +39,14 @@ export default function ProjectOverviewPage() {
   const [data, setData] = useState<Data[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState(0);
+  //검색결과 전달
+  const location = useLocation();
 
   const handleData = async () => {
     try {
-      const response = await fetcher.get(BOARD_VIEW + page);
+      const response = await fetcher.get(
+        `${BOARD_VIEW + page}?search=&criteria=`
+      );
       const newData = response.data;
       setData((prevData) => [...prevData, ...newData]);
       if (newData.length === 0) {
@@ -53,6 +58,12 @@ export default function ProjectOverviewPage() {
       setHasMore(false);
     }
   };
+  useEffect(() => {
+    // location.state?.data가 존재하면 초기 데이터로 설정
+    if (location.state?.data) {
+      setData(location.state.data);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     handleData();
@@ -95,7 +106,7 @@ export default function ProjectOverviewPage() {
           dataLength={data.length}
           next={fetchMoreData}
           hasMore={hasMore}
-          loader={<h4>Loading...</h4>}
+          loader={<h4></h4>}
         >
           <FlexContainer>
             {data.map((project) => (

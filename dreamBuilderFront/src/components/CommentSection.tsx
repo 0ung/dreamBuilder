@@ -3,7 +3,7 @@ import Comment from "./Comment";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 
-interface Reply {
+interface reply {
   id: number;
   comment: string;
   nickname: string;
@@ -23,7 +23,7 @@ interface NestedReply {
 }
 
 interface CommentSectionProps {
-  replies: Reply[];
+  replies: reply[] | null;
 }
 
 const CommentSection: React.FC<CommentSectionProps> = ({ replies }) => {
@@ -97,7 +97,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ replies }) => {
           </div>
         </>
       )}
-      {replies.map((reply) => (
+      {(replies || []).map((reply) => (
         <Comment
           key={reply.id}
           reply={reply}

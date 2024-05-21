@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
-import Markdown from "react-markdown";
+import ReactMarkdown from "react-markdown";
 import styled from "styled-components";
-import CommentSection from "../componets/CommentSection";
+import CommentSection from "../components/CommentSection";
 import { useLocation } from "react-router-dom";
+import fetcher from "../fetcher";
+import { BOARD_DEATIL_VIEW } from "../constants/api_constants";
+import VIDEO from "../image/video.png";
+import DOCS from "../image/docs.png";
 
-interface board {
+interface Board {
   id: number;
   title: string;
   content: string;
+  endDate: string;
+  cnt: number;
+  hashTags: string[];
   file: FileData[];
-  reply: reply[];
 }
 
 interface FileData {
@@ -19,149 +25,250 @@ interface FileData {
   url: string;
 }
 
-interface reply {
+interface Reply {
   id: number;
   comment: string;
   nickname: string;
   regDate: string;
   updateDate: string | null;
-  nestReply: nestedReply[];
+  nestReply: NestedReply[];
+  deactive: boolean;
 }
 
-interface nestedReply {
+interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
   regDate: string;
   updateDate: string;
+  deactive: boolean;
 }
-
-// 더미 데이터 생성
-const dummyBoard: board = {
-  id: 1,
-  title: "첫 번째 게시물",
-  content: `
-  ## 첫 번째 게시물 내용입니다
-  -----
-  ### 섹션 1
-  
-  여기에 첫 번째 섹션의 내용이 들어갑니다. **굵게** 표시하거나 _기울임_으로 표시할 수 있습니다.
-  
-  - 리스트 아이템 1
-  - 리스트 아이템 2
-  - 리스트 아이템 3
-  
-  ### 섹션 2
-  
-  여기에 두 번째 섹션의 내용이 들어갑니다. [링크](https://example.com)도 추가할 수 있습니다.
-  
-  \`\`\`javascript
-  // 코드 블록 예제
-  function greet() {
-    console.log("Hello, World!");
-  }
-  \`\`\`
-  
-  ### 섹션 3
-  
-  다음은 이미지 예제입니다.
-  
-  ![이미지 설명](https://via.placeholder.com/150)
-  
-  ### 섹션 4
-  
-  마지막 섹션입니다. 여기에 마지막 섹션의 내용이 들어갑니다.
-      `,
-  file: [
-    { name: "테스트", url: "http://www.naver.com" },
-    { name: "테스트", url: "http://www.naver.com" },
-    { name: "테스트", url: "http://www.naver.com" },
-  ],
-  reply: [
-    {
-      id: 1,
-      comment: "첫 번째 댓글입니다.",
-      nickname: "User1",
-      regDate: "2024-01-01",
-      updateDate: "2024-01-02",
-      nestReply: [
-        {
-          id: 1,
-          comment: "첫 번째 대댓글입니다.",
-          nickname: "User2",
-          regDate: "2024-01-01",
-          updateDate: "2024-01-02",
-        },
-        {
-          id: 2,
-          comment: "두 번째 대댓글입니다.",
-          nickname: "User3",
-          regDate: "2024-01-01",
-          updateDate: "2024-01-02",
-        },
-      ],
-    },
-    {
-      id: 2,
-      comment: "두 번째 댓글입니다.",
-      nickname: "User4",
-      regDate: "2024-01-03",
-      updateDate: null,
-      nestReply: [
-        {
-          id: 3,
-          comment: "세 번째 대댓글입니다.",
-          nickname: "User5",
-          regDate: "2024-01-03",
-          updateDate: "2024-01-04",
-        },
-      ],
-    },
-  ],
-};
 
 const Hr = styled.hr`
   border: none;
   border-top: 5px solid black;
 `;
 
+interface Extension {
+  video: Set<string>;
+  image: Set<string>;
+  docs: Set<string>;
+}
 const ProjectDetailView: React.FC = () => {
+  const [extension, setExtension] = useState<Extension>({
+    video: new Set([
+      "mp4",
+      "avi",
+      "mkv",
+      "mov",
+      "wmv",
+      "flv",
+      "webm",
+      "mpeg",
+      "mpg",
+      "3gp",
+    ]),
+    image: new Set([
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "bmp",
+      "tiff",
+      "svg",
+      "webp",
+      "ico",
+      "heic",
+    ]),
+    docs: new Set([
+      "pdf",
+      "docx",
+      "xlsx",
+      "pptx",
+      "txt",
+      "rtf",
+      "odt",
+      "ods",
+      "odp",
+      "csv",
+      "hwp",
+    ]),
+  });
+  const [hoveredFile, setHoveredFile] = useState<string | null>(null);
+  const getFileType = (fileName: string): string => {
+    const extensionMatch = fileName.split(".").pop()?.toLowerCase();
+    if (!extensionMatch) return "unknown";
+
+    if (extension.video.has(extensionMatch)) return "video";
+    if (extension.image.has(extensionMatch)) return "image";
+    if (extension.docs.has(extensionMatch)) return "docs";
+
+    return "unknown";
+  };
+
+  const renderFileIcon = (
+    fileType: string,
+    fileUrl: string,
+    fileName: string
+  ) => {
+    switch (fileType) {
+      case "image":
+        return (
+          <>
+            <img
+              src={`http://localhost:8080${fileUrl}`}
+              alt={fileName}
+              style={{ width: "50px", marginRight: "10px" }}
+            />
+            <span>{fileName}</span>
+          </>
+        );
+      case "video":
+        return (
+          <>
+            <img
+              src={VIDEO}
+              alt="video"
+              style={{ width: "50px", marginRight: "10px" }}
+            />
+            <span>{fileName}</span>
+          </>
+        );
+      case "docs":
+        return (
+          <>
+            <img
+              src={DOCS}
+              alt="docs"
+              style={{ width: "50px", marginRight: "10px" }}
+            />
+            <span>{fileName}</span>
+          </>
+        );
+      default:
+        return (
+          <>
+            <img
+              src={`http://localhost:8080${fileUrl}`}
+              alt="default"
+              style={{ width: "50px", marginRight: "10px" }}
+            />
+            <span>{fileName}</span>
+          </>
+        );
+    }
+  };
+
   const location = useLocation();
   const boardId = location.state;
 
-  const [data, setData] = useState<board>(dummyBoard);
+  const [board, setBoard] = useState<Board | null>(null);
+  const [reply, setReply] = useState<Reply[] | null>(null);
 
   useEffect(() => {
-    //대충 API로 데이터 받아오기
-    setData(Object);
-    console.log(boardId);
-  });
+    handleBoardData();
+  }, [boardId]);
+
+  const handleBoardData = async () => {
+    try {
+      const response = await fetcher.get(BOARD_DEATIL_VIEW + boardId);
+      const data = response.data;
+
+      // 데이터 변환 로직
+      const transformedBoard: Board = {
+        id: data.id,
+        title: data.title,
+        content: data.content,
+        endDate: data.endDate,
+        cnt: data.cnt,
+        hashTags: data.hashTags,
+        file: data.file.flatMap((fileMap: Map<string, string>) =>
+          Object.entries(fileMap).map(([name, url]) => ({
+            name,
+            url,
+          }))
+        ),
+      };
+
+      setBoard(transformedBoard);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
       <Header />
       <div className="container mb-5">
-        <h1 className="mt-5">{data.title}</h1>
-        <hr />
-        <Markdown className="mt-5 p-5 border rounded shadow">
-          {data.content}
-        </Markdown>
-        <div className="mt-3">
-          <h6>첨부 파일:</h6>
-          <ul className="list-group">
-            {data.file.map((file, index) => (
-              <li key={index} className="list-group-item">
-                <a href={file.url} download={file.name}>
-                  {file.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {board && (
+          <>
+            <h1 className="mt-5">{board.title}</h1>
+            <hr />
+            <div className="mt-5 p-5 border rounded shadow">
+              <ReactMarkdown
+                components={{
+                  img: ({ node, ...props }) => (
+                    <div>
+                      <img
+                        {...props}
+                        style={{ maxWidth: "50%", height: "auto" }}
+                        alt={props.alt}
+                      />
+                    </div>
+                  ),
+                }}
+              >
+                {board.content}
+              </ReactMarkdown>
+            </div>
+            <div className="d-flex justify-content-end mt-2">
+              <div>
+                <button
+                  className="btn btn-primary me-2"
+                  style={{
+                    backgroundColor: " #348f8f",
+                    border: "none",
+                    color: "white",
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  className="btn btn-primary"
+                  style={{
+                    backgroundColor: " #348f8f",
+                    border: "none",
+                    color: "white",
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+            <div className="mt-3">
+              <h6>첨부 파일:</h6>
+              <ul className="list-group">
+                {board.file.map((file, index) => (
+                  <li key={index} className="list-group-item">
+                    <a href={file.url} download={file.name}>
+                      <div>
+                        {renderFileIcon(
+                          getFileType(file.name),
+                          file.url,
+                          file.name
+                        )}
+                      </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
       </div>
 
       <Hr />
-      <CommentSection replies={data.reply} />
+      {<CommentSection replies={reply} />}
       <Footer />
     </>
   );

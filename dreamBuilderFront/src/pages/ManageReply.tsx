@@ -1,8 +1,8 @@
-import CommentSection from "../componets/CommentSection";
+import CommentSection from "../components/CommentSection";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import { useDispatch, useSelector } from "react-redux";
-import Pagination from "../componets/Pagination";
+import Pagination from "../components/Pagination";
 
 interface Reply {
   id: number;
