@@ -1,8 +1,5 @@
 package codehows.dream.dreambulider.entity;
 
-import java.sql.Date;
-import java.util.List;
-
 import codehows.dream.dreambulider.constats.Authority;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -10,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.sql.Date;
 
 @Entity
 @Getter
@@ -46,10 +45,11 @@ public class Board {
 //	private List<HashTag> hashTags;
 
 	@Builder
-	public Board(String title, String content, Date endDate) {
+	public Board(String title, String content, Date endDate, Member member) {
 		this.title = title;
 		this.content = content;
 		this.endDate = endDate;
+		this.member = member;
 	}
 
 	public void update(String title, String content, Date endDate) {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
-import Pagination from "../componets/Pagination";
+import Pagination from "../components/Pagination";
 
 type TableData = {
   id: number;

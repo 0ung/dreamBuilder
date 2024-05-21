@@ -27,30 +27,29 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
 
     //제목 조회
     Page<Board> findByTitleContainingIgnoreCase(String title, Pageable pageable);
-
     //내용 조회
     Page<Board> findByContentContainingIgnoreCase(String content, Pageable pageable);
-
-    //Page<Board> findByMemberContainingIgnoreCase(String keyword, Pageable pageable);
+    //맴버 조회
+    Page<Board> findByMemberContainingIgnoreCase(String keyword, Pageable pageable);
 
     @Query("select b from Board b where b.id = :boardId")
     Page<Board> findByboardId(@Param("boardId") Long boardId, Pageable pageable);
 
     //제목+내용 조회
     @Query("select b from Board b where b.title like %:keyword% or b.content like %:keyword%")
-    Page<Board> findByTitleOrContentContaining(@Param("keyword") String keyword, Pageable pageable);
+    Page<Board> findByTitleOrContent(@Param("keyword") String keyword, Pageable pageable);
 
     //제목+작성자 조회
     @Query("select b from Board b where b.title like %:keyword% or b.member.name like %:keyword%")
-    Page<Board> findByTitleOrAuthorContaining(@Param("keyword") String keyword, Pageable pageable);
+    Page<Board> findByTitleOrAuthor(@Param("keyword") String keyword, Pageable pageable);
 
     //내용+작성자 조회
     @Query("select b from Board b where b.content like %:keyword% or b.member.name like %:keyword%")
-    Page<Board> findByContentOrAuthorContaining(@Param("keyword") String keyword, Pageable pageable);
+    Page<Board> findByContentOrAuthor(@Param("keyword") String keyword, Pageable pageable);
 
     //제목+내용+작성자 조회
     @Query("select b from Board b where b.title like %:keyword% or b.content like %:keyword% or b.member.name like %:keyword%")
-    Page<Board> findByTitleOrContentOrAuthorContaining(@Param("keyword") String keyword, Pageable pageable);
+    Page<Board> findByTitleOrContentOrAuthor(@Param("keyword") String keyword, Pageable pageable);
 
     //조회수 추가
     @Modifying

@@ -5,7 +5,7 @@ interface AdminState {
 }
 
 const initialState: AdminState = {
-  isAdmin: true,
+  isAdmin: false,
 };
 
 const adminSlice = createSlice({

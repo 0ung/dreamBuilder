@@ -9,6 +9,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,6 +25,7 @@ public class BoardRepositoryTest {
 
     @Autowired
     private MemberRepository memberRepository;
+
 
     @Test
     public void testFindMemberByBoardId() {
@@ -43,5 +48,14 @@ public class BoardRepositoryTest {
         assertNotNull(foundMember);
         assertEquals(member.getId(), foundMember.getId());
         assertEquals(member.getUsername(), foundMember.getUsername());
+    }
+
+    @Test
+    public void testFindByTitleOrAuthor() {
+        Pageable pageable = PageRequest.of(0, 10);
+        String keyword = "더미";
+        String escapedKeyword = keyword.replace("\\", "\\\\");
+        Page<Board> results = boardRepository.findByTitleOrAuthor(escapedKeyword, pageable);
+        System.out.println(results);
     }
 }
