@@ -1,10 +1,7 @@
 package codehows.dream.dreambulider.jwt;
 
 import codehows.dream.dreambulider.entity.Member;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -66,16 +63,26 @@ public class TokenProvider {
                 .compact();
     }
 
-    public boolean validateToken(String token) {
-        try{
+    public int validateToken(String token) {
+        try {
             Jwts.parser()
                     .setSigningKey(jwtProperties.getSecretKey())
                     .parseClaimsJws(token);
-        }catch (Exception e){
-            log.info("유효하지 않는 JWT토큰 입니다.");
-            return false;
+            return 1;
+        } catch (ExpiredJwtException e) {
+            return 2;
+        } catch (UnsupportedJwtException e) {
+            log.info("지원되지 않는 JWT 토큰입니다.");
+        } catch (MalformedJwtException e) {
+            log.info("손상된 JWT 토큰입니다.");
+        } catch (SignatureException e) {
+            log.info("잘못된 JWT 서명입니다.");
+        } catch (IllegalArgumentException e) {
+            log.info("잘못된 JWT 토큰입니다.");
+        } catch (Exception e) {
+            log.info("유효하지 않는 JWT 토큰입니다.");
         }
-        return true;
+        return 0;
     }
 
     public Claims getClaims(String token) {

@@ -50,8 +50,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(
                         session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                ).addFilterBefore(new JwtFilter(tokenProvider)
-                        , UsernamePasswordAuthenticationFilter.class)
+                ).addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(
                         request ->{
                             request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
