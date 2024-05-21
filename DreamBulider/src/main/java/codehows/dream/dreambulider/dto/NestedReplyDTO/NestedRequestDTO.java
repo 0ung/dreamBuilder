@@ -6,6 +6,8 @@ import codehows.dream.dreambulider.entity.Reply;
 import lombok.*;
 import org.springframework.boot.context.properties.bind.Nested;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,14 +16,8 @@ import org.springframework.boot.context.properties.bind.Nested;
 public class NestedRequestDTO {
 
     private String comment;
+    private boolean invisible;
     private Reply reply;
-
-    public NestedReply toEntity() {
-
-        return NestedReply.builder()
-                .comment(comment)
-                .reply(reply)
-                .build();
-    }
+    private LocalDateTime regDate = LocalDateTime.now();
 
 }
