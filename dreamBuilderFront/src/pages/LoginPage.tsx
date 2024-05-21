@@ -6,6 +6,7 @@ import { MAIN, SIGNUP } from "../constants/page_constants";
 import styled from "styled-components";
 import axios from "axios";
 import { LOGIN_API } from "../constants/api_constants";
+import fetcher from "../fetcher";
 
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
@@ -44,8 +45,8 @@ export default function LoginPage() {
         email: email,
         password: password,
       };
-      const response = await axios.post(
-        "http://localhost:8080" + LOGIN_API,
+      const response = await fetcher.post(
+        LOGIN_API,
         JSON.stringify(formData),
         {
           headers: {
@@ -54,7 +55,12 @@ export default function LoginPage() {
         }
       );
       console.log(response.data);
-    } catch {}
+      
+      navigator(MAIN);
+    } catch(error) {
+      console.error
+      alert("아이디 또는 비밀번호를 다시 확인해주세요");
+    }
   };
 
   useEffect(() => {
@@ -114,7 +120,7 @@ export default function LoginPage() {
             <div className="row mb-2">
               <div className="col d-flex justify-content-center">
                 <a
-                  href="https://kauth.kakao.com/oauth/authorize?client_id=95a542009e6abdf2635c87b2de0b4c5f&redirect_uri=http://localhost:8080/auth/callback&response_type=code"
+                  href="https://kauth.kakao.com/oauth/authorize?client_id=95a542009e6abdf2635c87b2de0b4c5f&redirect_uri=http://localhost:8080/member/auth/callback&response_type=code"
                   className="w-100"
                 >
                   <img
