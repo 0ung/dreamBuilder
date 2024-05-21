@@ -12,6 +12,9 @@ import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.ReplyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -48,8 +51,8 @@ public class ReplyService {
        return result;
     }
 
-    public List<Reply> findAll() {
-        return replyRepository.findAll();
+    public Page<Reply> findAll(Pageable pageable) {
+        return replyRepository.findAll(pageable);
     }
 
     /*public Reply findById(long id) {

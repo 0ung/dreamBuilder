@@ -9,11 +9,12 @@ import fetcher from "../fetcher";
 import {
   BOARD_DEATIL_VIEW,
   BOARD_DELETE,
-  BOARD_REGISTRATION,
+  REPLY_READ_ALL,
 } from "../constants/api_constants";
 import VIDEO from "../image/video.png";
 import DOCS from "../image/docs.png";
 import { PROJECT_DETAIL_VIEW, PROJECT_REG } from "../constants/page_constants";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 interface Board {
   id: number;
@@ -59,6 +60,7 @@ interface Extension {
   image: Set<string>;
   docs: Set<string>;
 }
+
 const ProjectDetailView: React.FC = () => {
   const navigator = useNavigate();
   const [extension, setExtension] = useState<Extension>({
@@ -169,10 +171,14 @@ const ProjectDetailView: React.FC = () => {
   const boardId = location.state;
 
   const [board, setBoard] = useState<Board | null>(null);
-  const [reply, setReply] = useState<Reply[] | null>(null);
+  const [reply, setReply] = useState<Reply[]>([]);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
   const handleModify = () => {
     navigator(PROJECT_REG, { state: { boardId: boardId, modify: true } });
   };
+
   const handleDelete = async () => {
     if (confirm("삭제하시겠습니까?")) {
       try {
@@ -183,8 +189,10 @@ const ProjectDetailView: React.FC = () => {
       }
     }
   };
+
   useEffect(() => {
     handleBoardData();
+    fetchMoreData();
   }, []);
 
   const handleBoardData = async () => {
@@ -192,7 +200,6 @@ const ProjectDetailView: React.FC = () => {
       const response = await fetcher.get(BOARD_DEATIL_VIEW + boardId);
       const data = response.data;
 
-      // 데이터 변환 로직
       const transformedBoard: Board = {
         id: data.id,
         title: data.title,
@@ -211,6 +218,22 @@ const ProjectDetailView: React.FC = () => {
       setBoard(transformedBoard);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const fetchMoreData = async () => {
+    try {
+      const response = await fetcher.get(
+        `${REPLY_READ_ALL}?boardId=${boardId}&page=${page}`
+      );
+      const data = response.data;
+
+      setReply((prevReplies) => [...prevReplies, ...data.replies]);
+      setPage((prevPage) => prevPage + 1);
+      setHasMore(data.replies.length > 0);
+    } catch (error) {
+      console.log(error);
+      setHasMore(false);
     }
   };
 
@@ -266,7 +289,12 @@ const ProjectDetailView: React.FC = () => {
               </div>
             </div>
             <div className="mt-3">
-              <h6>첨부 파일:</h6>
+              {board.file.length === 0 ? (
+                <p>첨부 파일 없음</p>
+              ) : (
+                <h6>첨부 파일:</h6>
+              )}
+
               <ul className="list-group">
                 {board.file.map((file, index) => (
                   <li key={index} className="list-group-item">
@@ -288,7 +316,14 @@ const ProjectDetailView: React.FC = () => {
       </div>
 
       <Hr />
-      {<CommentSection replies={reply} />}
+      <InfiniteScroll
+        dataLength={reply.length}
+        next={fetchMoreData}
+        hasMore={hasMore}
+        loader={<h4></h4>}
+      >
+        <CommentSection replies={reply} boardId={boardId} />
+      </InfiniteScroll>
       <Footer />
     </>
   );

@@ -128,8 +128,12 @@ public class BoardController {
 	//비활성화
 	@DeleteMapping("/api/{id}")
 	public ResponseEntity<?> deleteBoard(@PathVariable long id, Principal principal) {
-		Board updatedBoard = boardService.updateInvisible(id, principal);
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		try {
+			boardService.updateInvisible(id, principal);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 	}
 
 }

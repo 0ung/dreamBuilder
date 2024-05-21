@@ -1,14 +1,24 @@
 package codehows.dream.dreambulider.entity;
 
+import java.sql.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
 import codehows.dream.dreambulider.constats.Authority;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.sql.Date;
 
 @Entity
 @Getter
@@ -33,16 +43,18 @@ public class Board {
 	@Column(nullable = false)
 	private boolean invisible = false;
 
+	@Enumerated(EnumType.STRING)
 	private Authority deleteBy;
+
 	private boolean deadLine;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	private Long cnt=0L;
+	private Long cnt = 0L;
 
-//	@OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//	private List<HashTag> hashTags;
+	//	@OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	//	private List<HashTag> hashTags;
 
 	@Builder
 	public Board(String title, String content, Date endDate, Member member) {

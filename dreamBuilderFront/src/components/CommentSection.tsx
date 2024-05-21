@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Comment from "./Comment";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import fetcher from "../fetcher";
+import { REPLY_POST } from "../constants/api_constants";
 
 interface reply {
   id: number;
@@ -24,28 +26,28 @@ interface NestedReply {
 
 interface CommentSectionProps {
   replies: reply[] | null;
+  boardId: number;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ replies }) => {
+const CommentSection: React.FC<CommentSectionProps> = ({
+  replies,
+  boardId,
+}) => {
   const isAdmin = useSelector((state: any) => state.admin.isAdmin);
   const dispatch = useDispatch();
 
   const [comment, setComment] = useState("");
-
   const handleReply = async () => {
     const data = {
       comment: comment,
+      boardId: boardId,
     };
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/reply",
-        JSON.stringify(data),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetcher.post(REPLY_POST, JSON.stringify(data), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       alert(response.status);
     } catch (error) {
       alert("에러임");
