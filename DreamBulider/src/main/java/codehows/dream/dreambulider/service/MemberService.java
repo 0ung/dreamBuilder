@@ -1,9 +1,9 @@
 package codehows.dream.dreambulider.service;
 
 import codehows.dream.dreambulider.constats.Authority;
-import codehows.dream.dreambulider.dto.MemberFormDTO;
-import codehows.dream.dreambulider.dto.MemberLoginDTO;
-import codehows.dream.dreambulider.dto.TokenResponse;
+import codehows.dream.dreambulider.dto.Member.MemberFormDTO;
+import codehows.dream.dreambulider.dto.Member.MemberLoginDTO;
+import codehows.dream.dreambulider.dto.Member.TokenResponse;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.RefreshToken;
 import codehows.dream.dreambulider.jwt.TokenProvider;
@@ -22,7 +22,8 @@ import lombok.RequiredArgsConstructor;
 //import org.springframework.security.core.userdetails.UsernameNotFoundException;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 //import org.springframework.security.crypto.password.PasswordEncoder;
-import org.apache.catalina.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -31,6 +32,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.View;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,12 +40,14 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
+
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final View error;
 
     Map map = new HashMap();
 
@@ -70,6 +74,10 @@ public class MemberService implements UserDetailsService {
 
         Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
 
+        if(member.isWithdrawal()){
+            throw new IllegalStateException("탈퇴한 회원");
+        }
+
         String newRefreshToken =tokenProvider.createRefreshToken();
         String accessToken = tokenProvider.createToken(member);
 
@@ -83,18 +91,12 @@ public class MemberService implements UserDetailsService {
         }
 
         // 액세스 토큰을 쿠키에 설정
-        addCookies(response,accessToken,newRefreshToken);
-        map.put("Role",member.getAuthority());
+        addCookies(response,newRefreshToken);
+        map.put("AccessToken",accessToken);
         return map;
     }
 
-    public void addCookies(HttpServletResponse response, String accessToken, String newRefreshToken) {
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(60 * 60);
-        accessTokenCookie.setSecure(true);
-
+    public void addCookies(HttpServletResponse response, String newRefreshToken) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
@@ -103,9 +105,7 @@ public class MemberService implements UserDetailsService {
 
 
         // 쿠키를 응답에 추가
-        response.addCookie(accessTokenCookie);
         response.addCookie(refreshTokenCookie);
-
     }
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -131,12 +131,6 @@ public class MemberService implements UserDetailsService {
         Member member = memberRepository.findMemberByEmail(email).orElse(null);
         refreshTokenService.removeRefreshToken(member);
 
-        Cookie accessTokenCookie = new Cookie("accessToken","");
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(0);
-        accessTokenCookie.setSecure(true);
-
         Cookie refreshTokenCookie = new Cookie("refreshToken","");
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
@@ -144,26 +138,42 @@ public class MemberService implements UserDetailsService {
         refreshTokenCookie.setSecure(true);
 
         // 쿠키를 응답에 추가
-        response.addCookie(accessTokenCookie);
         response.addCookie(refreshTokenCookie);
 
     }
 
-    public String getRefreshToken(HttpServletRequest request) {
-        // 요청에서 쿠키 배열을 가져옴
-        Cookie[] cookies = request.getCookies();
+//    public String getRefreshToken(HttpServletRequest request) {
+//        // 요청에서 쿠키 배열을 가져옴
+//        Cookie[] cookies = request.getCookies();
+//
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                // 쿠키 이름이 'refreshToken'과 일치하는지 확인
+//                if ("refreshToken".equals(cookie.getName())) {
+//                    // refreshToken 값을 반환
+//                    return cookie.getValue();
+//                }
+//            }
+//        }
+//        // refreshToken 쿠키가 없으면 메시지를 반환
+//        return "Refresh Token not found";
+//    }
 
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                // 쿠키 이름이 'refreshToken'과 일치하는지 확인
-                if ("refreshToken".equals(cookie.getName())) {
-                    // refreshToken 값을 반환
-                    return cookie.getValue();
-                }
-            }
-        }
-        // refreshToken 쿠키가 없으면 메시지를 반환
-        return "Refresh Token not found";
+    public void withdrawal(String email) {
+        Member member = memberRepository.findMemberByEmail(email).orElseThrow();
+        member.updatewithdrawal(true);
+        memberRepository.save(member);
+    }
+
+    public void restore (String email) {
+        Member member = memberRepository.findMemberByEmail(email).orElseThrow();
+        member.updatewithdrawal(false);
+        memberRepository.save(member);
+    }
+
+
+    public Page<Member> findAll(Pageable pageable){
+        return memberRepository.findAll(pageable);
     }
 
 

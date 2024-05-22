@@ -15,7 +15,6 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class NestedReply {
 
 	@Id

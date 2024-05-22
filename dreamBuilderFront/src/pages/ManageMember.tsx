@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import Pagination from "../componets/Pagination";
+import fetcher from "../fetcher";
+import { MANAGE_MEMBERS,withdrawal_API,restore_API } from "../constants/api_constants";
 
 type TableData = {
   id: number;
-  userId: string;
+  name: string;
   email: string;
-  regDate: string;
-  updateDate: string;
-  role: string;
+  regTime: string;
+  updateTime: string;
+  authority: string;
   deactive: boolean;
 };
 
@@ -18,6 +20,47 @@ type TableComponentProps = {
 };
 
 const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
+
+  
+  const handleWithdrawal = async (email: string)=>{
+    try{
+      const formData = {
+        email: email
+      };
+      const request = await fetcher.post(
+        withdrawal_API,
+        JSON.stringify(formData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }catch(error){
+
+    }
+  }
+
+    const handleRestore = async (email: string)=>{
+      try{
+        const formData = {
+          email: email
+        };
+        const request = await fetcher.post(
+          restore_API,
+          JSON.stringify(formData),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }catch(error){
+  
+      }
+  };
+  
+
   return (
     <table className="table table-striped table-bordered">
       <thead className="thead-dark">
@@ -36,19 +79,28 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
         {data.map((row, index) => (
           <tr key={index}>
             <td>{row.id}</td>
-            <td>{row.userId}</td>
+            <td>{row.name}</td>
             <td>{row.email}</td>
-            <td>{row.regDate}</td>
-            <td>{row.updateDate}</td>
-            <td>{row.role}</td>
+            <td>{row.regTime}</td>
+            <td>{row.updateTime}</td>
+            <td>{row.authority}</td>
             <td>{row.deactive ? "Yes" : "No"}</td>
             <td>
+              {row.deactive ?
               <button
-                className={`btn ${row.deactive ? "btn-success" : "btn-danger"}`}
-                onClick={() => console.log("히히")}
+                className={`btn "btn-success"`}
+                onClick={() => handleRestore(row.email)}
               >
-                {row.deactive ? "복구" : "삭제"}
+                "복구"
               </button>
+              : 
+              <button
+                className={`btn "btn-danger"`}
+                onClick={() => handleWithdrawal(row.email)}
+              >
+                "삭제"
+              </button>}
+              
             </td>
           </tr>
         ))}
@@ -57,27 +109,24 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
   );
 };
 
-function ManageMember() {
-  const [userData, setUserData] = useState([
-    {
-      id: 1,
-      userId: "user1",
-      email: "user1@example.com",
-      regDate: "2024-01-01",
-      updateDate: "2024-06-01",
-      role: "Admin",
-      deactive: true,
-    },
-    {
-      id: 2,
-      userId: "user2",
-      email: "user2@example.com",
-      regDate: "2025-01-01",
-      updateDate: "2025-06-01",
-      role: "User",
-      deactive: false,
-    },
-  ]);
+  const ManageMember: React.FC = () => {
+  const [userData, setUserData] = useState<TableData[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
+  const handleMemberData = async ()=>{
+    try {
+      const response = await fetcher.get(`${MANAGE_MEMBERS}${currentPage}`)
+      setUserData(response.data);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+  useEffect(() => {
+    handleMemberData();
+  }, []);
 
   return (
     <>
@@ -96,5 +145,6 @@ function ManageMember() {
     </>
   );
 }
+
 
 export default ManageMember;
