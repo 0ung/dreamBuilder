@@ -18,6 +18,4 @@ public class NestedRequestDTO {
     private String comment;
     private boolean invisible;
     private Reply reply;
-    private LocalDateTime regDate = LocalDateTime.now();
-
 }

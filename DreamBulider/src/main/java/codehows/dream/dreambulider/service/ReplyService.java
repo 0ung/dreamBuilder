@@ -1,5 +1,10 @@
 package codehows.dream.dreambulider.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyResponseDTO;
@@ -12,10 +17,6 @@ import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.ReplyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,15 +42,16 @@ public class ReplyService {
                 .invisible(replyRequestDTO.isInvisible())
                 .board(board)
                 .member(member)
-                .createdDate(replyRequestDTO.getRegDate())
                 .build();
        replyRepository.save(result);
 
        return result;
     }
 
-    public List<Reply> findAll() {
-        return replyRepository.findAll();
+
+    public Page<Reply> findAll(Long boardId, Pageable pageable) {
+        return replyRepository.findByBoard(boardRepository.findById(boardId).orElse(null)
+                , pageable);
     }
 
     /*public Reply findById(long id) {
@@ -61,7 +63,6 @@ public class ReplyService {
                 .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
         return new ReplyResponseDTO(reply);
     }
-
 
     @Transactional
     public ReplyDeleteDTO deleteInvisible (long id) {
