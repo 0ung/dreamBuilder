@@ -17,8 +17,7 @@ import {
 import { LOGOUT_API } from "../constants/api_constants";
 import fetcher from "../fetcher";
 import { BOARD_SEARCH } from "../constants/api_constants";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/index";
+import base64 from "base-64";
 
 const StyledLink = styled.a`
   color: white !important;
@@ -91,15 +90,38 @@ function NavLi({ children, href, onClick }: NavLiProps) {
 
 function Header() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [loggin, setLoggin] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [hashTag, setHashTag] = useState<ReactNode>([]);
+  const [accessToken, setAccessToken] = useState<string>("");
+
+  useEffect(() => {
+    const sendAccessToken: string | null = localStorage.getItem("accessToken");
+    if (sendAccessToken !== null && sendAccessToken !== undefined) {
+      setAccessToken(sendAccessToken);
+      setLoggin(true);
+      console.log("호출 됨");
+      if (handleJWT(sendAccessToken) === "ROLE_ADMIN") {
+        setAdmin(true);
+      }
+    } else {
+      setLoggin(false);
+      setAdmin(false);
+    }
+  }, [accessToken]); // 빈 배열을 전달하여 처음 렌더링될 때만 실행되도록 함
 
   const [criteria, setCriteria] = useState("검색");
   const [criteriaEng, setCriteriaEng] = useState("search");
 
-  const loggin = useSelector((state: RootState) => state.login.isLogin);
-  const admin = useSelector((state: RootState) => state.admin.isAdmin);
-
   const navigate = useNavigate();
+
+  const handleJWT = (jwt: string) => {
+    const paylaod = jwt.substring(jwt.indexOf(".") + 1, jwt.lastIndexOf("."));
+    const decodeInfo = base64.decode(paylaod);
+    const json = JSON.parse(decodeInfo);
+
+    return json.auth;
+  };
 
   const handleSearch = async (text: string) => {
     console.log(searchQuery + " 검색 문");
@@ -122,6 +144,8 @@ function Header() {
   const handleLogout = async () => {
     try {
       const response = await fetcher.post(LOGOUT_API);
+      localStorage.removeItem("accessToken");
+      setAccessToken("");
       console.log(response.data);
     } catch (error) {
       console.error;
@@ -287,7 +311,9 @@ function Header() {
                 >
                   파일 관리
                 </NavLi>
-                <NavLi href="#">로그아웃</NavLi>
+                <NavLi href="#" onClick={handleLogout}>
+                  로그아웃
+                </NavLi>
               </>
             ) : (
               <>

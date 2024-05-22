@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import NestedComment from "./NestedComment";
-import { useDispatch, useSelector } from "react-redux";
-import { toggleAdmin, setAdmin } from "../store/slices/adminSlice"; // adminSlice 파일의 경로
 
 interface Reply {
   id: number;
@@ -33,8 +31,7 @@ const Comment: React.FC<CommentProps> = ({
   openReplies,
   toggleReplies,
 }) => {
-  const isAdmin = useSelector((state: any) => state.admin.isAdmin);
-
+  const [isAdmin, setAdmin] = useState(true);
   return (
     <div className="card mb-3">
       <div className="card-body">

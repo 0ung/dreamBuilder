@@ -25,10 +25,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-
+import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -94,7 +95,7 @@ public class MemberController {
     }
 
     @GetMapping("/auth/callback")
-    public void authCallback(String code, HttpServletResponse servletResponse) {
+    public void authCallback(String code, HttpServletResponse servletResponse) throws IOException {
         RestTemplate rt = new RestTemplate();
 
         //HttpHeader 오브젝트 생성
@@ -172,7 +173,7 @@ public class MemberController {
 
         Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
 
-        String newRefreshToken = tokenProvider.createRefreshToken();
+        String newRefreshToken = tokenProvider.createRefreshToken(member);
         String accessToken = tokenProvider.createToken(member);
 
         RefreshToken refreshToken = refreshTokenRepository.findByMember(member).orElse(null);
@@ -186,9 +187,9 @@ public class MemberController {
 
         // 액세스 토큰을 쿠키에 설정
         Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true); // 자바스크립트에서 접근하지 못하게 설정
+        accessTokenCookie.setHttpOnly(false); // 자바스크립트에서 접근하지 못하게 설정
         accessTokenCookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능하도록 설정
-        accessTokenCookie.setMaxAge(60 * 60); // 1시간 동안 유효
+        accessTokenCookie.setMaxAge(10); // 1시간 동안 유효
 
         // 리프레시 토큰을 쿠키에 설정
         Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
@@ -200,10 +201,10 @@ public class MemberController {
         servletResponse.addCookie(accessTokenCookie);
         servletResponse.addCookie(refreshTokenCookie);
 
-        servletResponse.addHeader("Role", member.getAuthority().toString());
         try {
             servletResponse.sendRedirect("http://localhost:5173/main");
         } catch (Exception e) {
+            servletResponse.sendRedirect("http://localhost:5173/error");
         }
 
     }

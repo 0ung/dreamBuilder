@@ -4,7 +4,6 @@ import Footer from "../layout/Footer";
 import Pagination from "../components/Pagination";
 import userDefaultImage from "../image/userDefaultImage.jpg";
 import styled from "styled-components";
-import SignUpPage from "./SignUpPage";
 import { Button, Modal } from "react-bootstrap";
 
 const dumpData = [

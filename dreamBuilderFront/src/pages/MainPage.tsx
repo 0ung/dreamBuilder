@@ -1,25 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import main from "../image/mainImage.png";
 import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
-import { PROJECT_REG } from "../constants/page_constants";
+import { MAIN, PROJECT_REG } from "../constants/page_constants";
 
 function MainPage() {
   const navigator = useNavigate();
-  const [markdown, setMarkdown] = useState(`## 창의적 여정을 시작하세요
+  const [markdown, setMarkdown] = useState();
 
-  여러분의 창의력을 마음껏 발휘하고, 실현 가능한 아이디어로 세상에 영향을 미치세요. **드림 빌더**는 모든 창조적 개인과 팀을 위한 공간을 제공합니다. 우리는 여러분이 세상을 바꾸는 아이디어를 현실로 만들 수 있도록 지원합니다.
-  
-  - **프로젝트 제안**: 아이디어를 제안하고 팀원을 모집하세요.
-  - **협업**: 다양한 전문가와 함께 아이디어를 구체화하고, 실행 계획을 세우세요.
-  - **실현**: 프로젝트를 완성하고, 그 결과를 공유하여 영감을 주세요.
-  
-  > "함께라면, 불가능이란 없습니다. 오늘 바로 시작해 보세요!"
-  
-  [프로젝트 등록하기](#) - 새로운 가능성을 향한 첫걸음을 내딛어 보세요!`);
-
+  useEffect(() => {
+    const kakaoAccessToken = document.cookie.split("=")[1];
+    const kakaoAccessTokenKey = document.cookie.split("=")[0];
+    if (kakaoAccessTokenKey === "accessToken") {
+      localStorage.setItem("accessToken", kakaoAccessToken);
+    }
+  }, []);
   return (
     <>
       <Header />

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
 import fetcher from "../fetcher";
 import { REPLY_POST } from "../constants/api_constants";
 import Comment from "./Comment";
@@ -34,8 +33,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   boardId,
   setReplies,
 }) => {
-  const isAdmin = useSelector((state: any) => state.admin.isAdmin);
   const [comment, setComment] = useState<string>("");
+  const [isAdmin, setAdmin] = useState(false);
 
   const handleReply = async () => {
     const data = {

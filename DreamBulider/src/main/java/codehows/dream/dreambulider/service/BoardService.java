@@ -144,11 +144,16 @@ public class BoardService {
 			listResponseDTO.setEndDate(board.getEndDate());
 			listResponseDTO.setHashTags(hashTagService.findAll(board.getId()));
 			listResponseDTO.setCnt(getCnt(board.getId()));
-			listResponseDTO.setLikeList(likedService.LikeList(board.getId(), principal));
 			listResponseDTO.setCountLike(likedService.countLike(board.getId()));
+
+			if (principal != null) {
+				listResponseDTO.setLikeList(likedService.LikeList(board.getId(), principal));
+			}
+
 			list.add(listResponseDTO);
 		}
 
-		return list; // 새로운 Page 객체 생성
+		return list;
 	}
+
 }

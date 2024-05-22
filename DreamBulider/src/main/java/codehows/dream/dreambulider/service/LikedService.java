@@ -75,7 +75,6 @@ public class LikedService {
 
         List<Boolean> like = likedRepository.findByBoardId(board.getId());
 
-
         return like;
 
     }

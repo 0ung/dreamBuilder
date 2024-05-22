@@ -11,6 +11,11 @@ const fetcher = axios.create({
 // 요청을 가로채서 핸들링
 fetcher.interceptors.request.use(
   (request) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken !== null && accessToken !== undefined) {
+      request.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    console.log(request);
     return request;
   },
   (error) => {
@@ -22,14 +27,14 @@ fetcher.interceptors.request.use(
 //응답을 가로채서 핸들링
 fetcher.interceptors.response.use(
   (response) => {
+    console.log(response);
     return response;
   },
 
   async (error) => {
     console.log(error);
     if (error.response.status === 401) {
-      await tokenRefresh();
-      const accessToken = localStorage.getItem("access_token");
+      const accessToken = localStorage.getItem("accessoken");
       error.config.headers["Authorization"] = `Bearer ${accessToken}`;
       const response = await axios.request(error.config);
       return response;
@@ -37,7 +42,6 @@ fetcher.interceptors.response.use(
 
     if (error.response.status === 403) {
       alert("해당 페이지 접근 권한이 없습니다.");
-      window.location.href = LOGIN;
     }
     return Promise.reject(error);
   }
