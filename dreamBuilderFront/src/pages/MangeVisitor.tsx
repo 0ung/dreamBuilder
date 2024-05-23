@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import {
@@ -12,6 +12,12 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import fetcher from "../fetcher";
+import {
+  VISITED_DAILY,
+  VISITED_MONTHLY,
+  VISITED_WEEKLY,
+} from "../constants/api_constants";
 
 ChartJS.register(
   CategoryScale,
@@ -72,20 +78,44 @@ const PeriodVisitsTable: React.FC<PeriodVisitsTableProps> = ({ data }) => {
 };
 
 function MangeVisitor() {
-  const [data, setData] = useState<periodData[]>([
-    { period: "2021 Q1~2022 Q2", visits: 100 },
-    { period: "2021 Q2", visits: 150 },
-    { period: "2021 Q3", visits: 200 },
-    { period: "2021 Q4", visits: 250 },
-    { period: "2022 Q1", visits: 300 },
-    { period: "2022 Q2", visits: 350 },
-    { period: "2022 Q3", visits: 400 },
-    { period: "2022 Q4", visits: 450 },
-    { period: "2023 Q1", visits: 500 },
-    { period: "2023 Q2", visits: 550 },
-    { period: "2023 Q3", visits: 600 },
-    // Add more rows as needed
-  ]);
+  const [data, setData] = useState<periodData[]>([]);
+  const [kindsOfData, setKindsOfData] = useState("일간");
+
+  const handleDaily = async () => {
+    const response = await fetcher.get(VISITED_DAILY);
+    setData(response.data);
+    setKindsOfData("일간");
+  };
+
+  const handleWeekly = async () => {
+    const response = await fetcher.get(VISITED_WEEKLY);
+    setData(response.data);
+    setKindsOfData("주간");
+  };
+
+  const handleMonthly = async () => {
+    const response = await fetcher.get(VISITED_MONTHLY);
+    setData(response.data);
+    setKindsOfData("월간");
+  };
+
+  useEffect(() => {
+    setChartData({
+      labels: data.map((e) => e.period),
+      datasets: [
+        {
+          label: kindsOfData,
+          data: data.map((e) => e.visits),
+          borderColor: "rgb(255, 99, 132)",
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+        },
+      ],
+    });
+  }, [data]);
+
+  useEffect(() => {
+    handleDaily();
+  }, []);
 
   const [chartData, setChartData] = useState({
     labels: data.map((e) => e.period),
@@ -105,34 +135,24 @@ function MangeVisitor() {
         <h1 className="text-center">방문자 수 현황</h1>
         <hr />
         <div className="d-flex justify-content-end mb-2">
-          <button
-            className="btn btn-primary mx-0"
-            onClick={() => console.log("일간")}
-          >
+          <button className="btn btn-primary mx-0" onClick={handleDaily}>
             일간
           </button>
-          <button
-            className="btn btn-primary mx-1"
-            onClick={() => console.log("주간")}
-          >
+          <button className="btn btn-primary mx-1" onClick={handleWeekly}>
             주간
           </button>
-          <button
-            className="btn btn-primary mx-0"
-            onClick={() => console.log("월간")}
-          >
+          <button className="btn btn-primary mx-0" onClick={handleMonthly}>
             월간
           </button>
         </div>
         <Line data={chartData} />
-        <div className="row mt-5">
-          <h3>기간별 방문자</h3>
-          <hr></hr>
-          <div className="col-md-6">
-            <PeriodVisitsTable data={data} />
-          </div>
-          <div className="col-md-6">
-            <PeriodVisitsTable data={data} />
+        <div className="container my-5">
+          <div className="d-flex flex-column align-items-center">
+            <h3 className="mb-4">{`${kindsOfData}별 방문자`}</h3>
+            <hr className="w-100" />
+            <div className="col-md-6 mt-4">
+              <PeriodVisitsTable data={data} />
+            </div>
           </div>
         </div>
       </div>
