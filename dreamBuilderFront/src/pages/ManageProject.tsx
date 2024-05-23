@@ -3,7 +3,7 @@ import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import Pagination from "../components/Pagination";
 import fetcher from "../fetcher";
-import { MANAGE_MEMBER_API } from "../constants/api_constants";
+import { MANAGE_MEBEER_DELETE, MANAGE_MEBEER_RESOTRE, MANAGE_MEMBER_API } from "../constants/api_constants";
 
 type TableData = {
   id: number;
@@ -19,12 +19,12 @@ type TableComponentProps = {
 };
 
 const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
-  const handleRestore = ()=>{
-
+  const handleRestore = async (id: number)=>{
+    await fetcher.put(`${MANAGE_MEBEER_RESOTRE}${id}`)
   }
 
-  const handleDelete = ()=>{
-    
+  const handleDelete = async (id: number)=>{
+    await fetcher.put(`${MANAGE_MEBEER_DELETE}${id}`)
   }
   return (
     <table className="table table-striped table-bordered">
@@ -52,12 +52,12 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
               {
                 row.invisible ? <button
                 className="btn-success"
-                onClick={handleRestore}
+                onClick={()=>{handleRestore(row.id)}}
               >
                 복구
               </button> : <button
                 className="btn-danger"
-                onClick={handleDelete}
+                onClick={()=>{handleDelete(row.id)}}
               >
                 삭제
               </button>
@@ -74,7 +74,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
 function ManageProject() {
   const [projectData, setProjectData] = useState([]);
   const [page, setPage] = useState(1);
-
+  const [totalPages, setTotalPages] = useState(1);
   const handleManangeProject = async () => {
     const response = await fetcher.get(`${MANAGE_MEMBER_API}${page - 1}`);
     setProjectData(response.data);
@@ -92,9 +92,11 @@ function ManageProject() {
         <hr />
         <TableComponent data={projectData}></TableComponent>
         <Pagination
-          currentPage={1}
-          onPageChange={() => {}}
-          totalPages={10}
+          currentPage={page}
+          onPageChange={() => {
+            setPage(page+1)
+          }}
+          totalPages={totalPages}
         ></Pagination>
       </div>
 

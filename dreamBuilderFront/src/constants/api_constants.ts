@@ -33,3 +33,5 @@ export const VISITED_DAILY = "/visits/daily";
 export const VISITED_WEEKLY = "/visits/weekly";
 export const VISITED_MONTHLY = "/visits/monthly";
 export const MANAGE_MEMBER_API = "/api/admin/";
+export const MANAGE_MEBEER_RESOTRE = "/api/admin/;"
+export const MANAGE_MEBEER_DELETE = "/api/admin/del/;"
