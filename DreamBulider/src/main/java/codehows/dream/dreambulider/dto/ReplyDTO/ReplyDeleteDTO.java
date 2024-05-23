@@ -14,7 +14,7 @@ public class ReplyDeleteDTO {
 
     private String comment;
     private boolean invisible = true;
-    private LocalDateTime updateDate = LocalDateTime.now();
+    //private LocalDateTime updateDate = LocalDateTime.now();
 
     public ReplyDeleteDTO(Reply reply) {
         this.comment = reply.getComment();

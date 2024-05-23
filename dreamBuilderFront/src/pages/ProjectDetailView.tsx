@@ -4,11 +4,18 @@ import Footer from "../layout/Footer";
 import ReactMarkdown from "react-markdown";
 import styled from "styled-components";
 import CommentSection from "../components/CommentSection";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import fetcher from "../fetcher";
-import { BOARD_DEATIL_VIEW } from "../constants/api_constants";
+import {
+  BOARD_DEATIL_VIEW,
+  BOARD_DELETE,
+  REPLY_READ_ALL,
+  REPLY_TOTAL,
+} from "../constants/api_constants";
 import VIDEO from "../image/video.png";
 import DOCS from "../image/docs.png";
+import { PROJECT_DETAIL_VIEW, PROJECT_REG } from "../constants/page_constants";
+import Pagination from "../components/Pagination";
 
 interface Board {
   id: number;
@@ -32,7 +39,7 @@ interface Reply {
   regDate: string;
   updateDate: string | null;
   nestReply: NestedReply[];
-  deactive: boolean;
+  invisible: boolean;
 }
 
 interface NestedReply {
@@ -40,8 +47,8 @@ interface NestedReply {
   comment: string;
   nickname: string;
   regDate: string;
-  updateDate: string;
-  deactive: boolean;
+  updateDate: string | null;
+  invisible: boolean;
 }
 
 const Hr = styled.hr`
@@ -54,8 +61,10 @@ interface Extension {
   image: Set<string>;
   docs: Set<string>;
 }
+
 const ProjectDetailView: React.FC = () => {
-  const [extension, setExtension] = useState<Extension>({
+  const navigator = useNavigate();
+  const [extension] = useState<Extension>({
     video: new Set([
       "mp4",
       "avi",
@@ -94,7 +103,7 @@ const ProjectDetailView: React.FC = () => {
       "hwp",
     ]),
   });
-  const [hoveredFile, setHoveredFile] = useState<string | null>(null);
+
   const getFileType = (fileName: string): string => {
     const extensionMatch = fileName.split(".").pop()?.toLowerCase();
     if (!extensionMatch) return "unknown";
@@ -161,20 +170,43 @@ const ProjectDetailView: React.FC = () => {
 
   const location = useLocation();
   const boardId = location.state;
+  console.log("boardId: ", boardId); // boardId 확인
 
   const [board, setBoard] = useState<Board | null>(null);
-  const [reply, setReply] = useState<Reply[] | null>(null);
+  const [reply, setReply] = useState<Reply[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
+
+  const handleModify = () => {
+    navigator(PROJECT_REG, { state: { boardId: boardId, modify: true } });
+  };
+
+  const handleDelete = async () => {
+    if (confirm("삭제하시겠습니까?")) {
+      try {
+        await fetcher.delete(BOARD_DELETE + boardId);
+        alert("삭제 성공");
+        navigator(PROJECT_DETAIL_VIEW); // 삭제 후 프로젝트 목록으로 이동
+      } catch (error) {
+        alert("삭제 실패");
+      }
+    }
+  };
 
   useEffect(() => {
     handleBoardData();
-  }, [boardId]);
+  }, []);
+
+  useEffect(() => {
+    fetchMoreData();
+    handldePage();
+  }, [page]);
 
   const handleBoardData = async () => {
     try {
       const response = await fetcher.get(BOARD_DEATIL_VIEW + boardId);
       const data = response.data;
 
-      // 데이터 변환 로직
       const transformedBoard: Board = {
         id: data.id,
         title: data.title,
@@ -189,11 +221,39 @@ const ProjectDetailView: React.FC = () => {
           }))
         ),
       };
-
       setBoard(transformedBoard);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handlePageChange = (pageNumber: number) => {
+    setPage(pageNumber);
+    console.log("페이지 설정");
+  };
+
+  const handldePage = async () => {
+    try {
+      const total = await fetcher.get(`${REPLY_TOTAL}${boardId}`);
+      setTotalPage(total.data);
+      return total.data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchMoreData = async () => {
+    try {
+      const response = await fetcher.get(
+        `${REPLY_READ_ALL}${boardId}/${page - 1}`
+      );
+      const data = response.data;
+      setReply(data);
+    } catch (error) {
+      console.log(error);
+    }
+
+    console.log("댓글 호출 확인" + page);
   };
 
   return (
@@ -230,6 +290,7 @@ const ProjectDetailView: React.FC = () => {
                     border: "none",
                     color: "white",
                   }}
+                  onClick={handleModify}
                 >
                   수정
                 </button>
@@ -240,17 +301,26 @@ const ProjectDetailView: React.FC = () => {
                     border: "none",
                     color: "white",
                   }}
+                  onClick={handleDelete}
                 >
                   삭제
                 </button>
               </div>
             </div>
             <div className="mt-3">
-              <h6>첨부 파일:</h6>
+              {board.file.length === 0 ? (
+                <p>첨부 파일 없음</p>
+              ) : (
+                <h6>첨부 파일:</h6>
+              )}
+
               <ul className="list-group">
                 {board.file.map((file, index) => (
-                  <li key={index} className="list-group-item">
-                    <a href={file.url} download={file.name}>
+                  <li key={`${file.name}-${index}`} className="list-group-item">
+                    <a
+                      href={`http://localhost:8080/download${file.url}/${file.name}`}
+                      download={file.name}
+                    >
                       <div>
                         {renderFileIcon(
                           getFileType(file.name),
@@ -268,7 +338,19 @@ const ProjectDetailView: React.FC = () => {
       </div>
 
       <Hr />
-      {<CommentSection replies={reply} />}
+
+      <CommentSection
+        key={"dummpy"}
+        replies={reply}
+        boardId={boardId}
+        setReplies={setReply}
+      />
+      <Pagination
+        key={"pagination"}
+        currentPage={page}
+        onPageChange={handlePageChange}
+        totalPages={totalPage}
+      ></Pagination>
       <Footer />
     </>
   );

@@ -1,23 +1,85 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
+
 import Pagination from "../components/Pagination";
+import fetcher from "../fetcher";
+import { MANAGE_MEMBERS,withdrawal_API,restore_API } from "../constants/api_constants";
 
 type TableData = {
   id: number;
-  userId: string;
+  name: string;
   email: string;
-  regDate: string;
-  updateDate: string;
-  role: string;
-  deactive: boolean;
+  regTime: string;
+  updateTime: string;
+  authority: string;
+  withdrawal: boolean;
 };
 
 type TableComponentProps = {
   data: TableData[];
+  onWithdrawalChange: (updatedUser: TableData) => void;
 };
 
-const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ data,onWithdrawalChange }) => {
+
+  const handleWithdrawal = async (email: string)=>{
+    try{
+      const formData = {
+        email: email,
+      };
+      const request = await fetcher.post(
+        withdrawal_API,
+        JSON.stringify(formData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (request.status === 200) {
+        const updatedUser = request.data; // 여기서 response.data로 데이터에 접근합니다.
+        onWithdrawalChange(updatedUser);
+        console.log(updatedUser); // 서버로부터 받은 데이터를 출력합니다.
+      } else {
+        console.error("서버 응답 오류:", request.data);
+      }
+  
+    }catch(error){
+
+    }
+  }
+
+    const handleRestore = async (email: string)=>{
+      try{
+        const formData = {
+          email: email
+        };
+        const request = await fetcher.post(
+          restore_API,
+          JSON.stringify(formData),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (request.status === 200) {
+          const updatedUser = request.data; // 여기서 response.data로 데이터에 접근합니다.
+          onWithdrawalChange(updatedUser);
+          console.log(updatedUser); // 서버로부터 받은 데이터를 출력합니다.
+        } else {
+          console.error("서버 응답 오류:", request.data);
+        }
+      }catch(error){
+  
+      }
+  };
+
+  
+  
+
   return (
     <table className="table table-striped table-bordered">
       <thead className="thead-dark">
@@ -36,19 +98,28 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
         {data.map((row, index) => (
           <tr key={index}>
             <td>{row.id}</td>
-            <td>{row.userId}</td>
+            <td>{row.name}</td>
             <td>{row.email}</td>
-            <td>{row.regDate}</td>
-            <td>{row.updateDate}</td>
-            <td>{row.role}</td>
-            <td>{row.deactive ? "Yes" : "No"}</td>
+            <td>{row.regTime}</td>
+            <td>{row.updateTime}</td>
+            <td>{row.authority}</td>
+            <td>{row.withdrawal ? "Yes" : "No"}</td>
             <td>
+              {row.withdrawal ?
               <button
-                className={`btn ${row.deactive ? "btn-success" : "btn-danger"}`}
-                onClick={() => console.log("히히")}
+                className={`btn ${"btn-success"}`}
+                onClick={() => handleRestore(row.email)}
               >
-                {row.deactive ? "복구" : "삭제"}
+                "복구"
               </button>
+              : 
+              <button
+                className={`btn ${"btn-danger"}`}
+                onClick={() => handleWithdrawal(row.email)}
+              >
+                "삭제"
+              </button>}
+              
             </td>
           </tr>
         ))}
@@ -57,27 +128,32 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
   );
 };
 
-function ManageMember() {
-  const [userData, setUserData] = useState([
-    {
-      id: 1,
-      userId: "user1",
-      email: "user1@example.com",
-      regDate: "2024-01-01",
-      updateDate: "2024-06-01",
-      role: "Admin",
-      deactive: true,
-    },
-    {
-      id: 2,
-      userId: "user2",
-      email: "user2@example.com",
-      regDate: "2025-01-01",
-      updateDate: "2025-06-01",
-      role: "User",
-      deactive: false,
-    },
-  ]);
+  const ManageMember: React.FC = () => {
+  const [userData, setUserData] = useState<TableData[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+
+  const handleMemberData = async ()=>{
+    try {
+      const response = await fetcher.get(`${MANAGE_MEMBERS}${currentPage}`)
+      setUserData(response.data);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const handleWithdrawalChange = (updatedUser: TableData) => {
+    setUserData(prevData =>
+      prevData.map(user =>
+        user.email === updatedUser.email ? updatedUser : user
+      )
+    );
+  };
+
+
+  useEffect(() => {
+    handleMemberData();
+  }, []);
 
   return (
     <>
@@ -85,7 +161,7 @@ function ManageMember() {
       <div className="container mt-5">
         <h1>아이디 관리</h1>
         <hr />
-        <TableComponent data={userData}></TableComponent>
+        <TableComponent data={userData} onWithdrawalChange={handleWithdrawalChange}></TableComponent>
         <Pagination
           currentPage={1}
           onPageChange={() => {}}
@@ -96,5 +172,6 @@ function ManageMember() {
     </>
   );
 }
+
 
 export default ManageMember;

@@ -1,5 +1,18 @@
 package codehows.dream.dreambulider.controller;
 
+import java.security.Principal;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import codehows.dream.dreambulider.dto.NestedReplyDTO.NestedRequestDTO;
 import codehows.dream.dreambulider.dto.NestedReplyDTO.NestedResponseDTO;
@@ -7,68 +20,59 @@ import codehows.dream.dreambulider.dto.NestedReplyDTO.NestedUpdateDTO;
 import codehows.dream.dreambulider.entity.NestedReply;
 import codehows.dream.dreambulider.service.NestedService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class NestedController {
 
-    private final NestedService nestedService;
+	private final NestedService nestedService;
 
-    @PostMapping("/reply/{id}/rereply")
-    public ResponseEntity<?> saveNestedReply(@PathVariable(name = "id") Long id,
-                                             @RequestBody NestedRequestDTO nestedRequestDTO,
-                                             Principal principal) {
+	@PostMapping("/rereply/{id}")
+	public ResponseEntity<?> saveNestedReply(@PathVariable(name = "id") Long id,
+		@RequestBody NestedRequestDTO nestedRequestDTO,
+		Principal principal) {
 
-        try {
-            nestedService.saveNestedReply(id, nestedRequestDTO, principal.getName());
-        } catch(IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
+		try {
+			NestedReply reply = nestedService.saveNestedReply(id, nestedRequestDTO, principal.getName());
+			NestedResponseDTO nestedResponseDTO = new NestedResponseDTO(reply);
+			return new ResponseEntity<>(nestedResponseDTO, HttpStatus.CREATED);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		} catch (RuntimeException e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-    @GetMapping("/reply/{replyId}/rereply")
-    public ResponseEntity<?> findAllNestedReplys(@PathVariable(name = "replyId") Long replyId) {
+	}
 
-        List<NestedResponseDTO> nestedReplys = nestedService.findAllByReplyId(replyId);
+	@GetMapping("/rereply/{replyId}")
+	public ResponseEntity<?> findAllNestedReplys(@PathVariable(name = "replyId") Long replyId) {
 
-        return ResponseEntity.ok(nestedReplys);
-    }
+		List<NestedResponseDTO> nestedReplys = nestedService.findAllByReplyId(replyId);
 
-    @GetMapping("/reply/{replyId}/rereply/{id}")
-    public ResponseEntity<NestedResponseDTO> findNestedReply(@PathVariable(name = "id") long id) {
-        NestedReply nestedReply = nestedService.findById(id);
+		return ResponseEntity.ok(nestedReplys);
+	}
 
-        return ResponseEntity.ok()
-                .body(new NestedResponseDTO(nestedReply));
-    }
+	@GetMapping("/rereply/{replyId}/{id}")
+	public ResponseEntity<NestedResponseDTO> findNestedReply(@PathVariable(name = "id") long id) {
+		NestedReply nestedReply = nestedService.findById(id);
 
-    @PatchMapping("/reply/{replyId}/rereply/{id}")
-    public ResponseEntity<Long> deleteNestedReply(@PathVariable (name = "id") long id) {
+		return ResponseEntity.ok()
+			.body(new NestedResponseDTO(nestedReply));
+	}
 
-       NestedReply deleteNestedReply =  nestedService.deleteInvisible(id);
+	@PatchMapping("/rereply/{id}")
+	public ResponseEntity<Long> deleteNestedReply(@PathVariable(name = "id") long id) {
+		NestedReply deleteNestedReply = nestedService.deleteInvisible(id);
+		return ResponseEntity.ok().body(deleteNestedReply.getId());
+	}
 
-        return ResponseEntity.ok().body(deleteNestedReply.getId());
-    }
-
-    @PutMapping("/reply/{replyId}/rereply/{id}")
-    public ResponseEntity<?> update(@PathVariable (name = "replyId") long replyId,
-                                       @PathVariable (name = "id") long id,
-                                       @RequestBody NestedUpdateDTO request) {
-        nestedService.update(replyId, id, request);
-        return ResponseEntity.ok(id);
-    }
-
+	@PutMapping("/rereply/{id}")
+	public ResponseEntity<?> update(
+		@PathVariable(name = "id") long id,
+		@RequestBody NestedUpdateDTO request) {
+		nestedService.update(id, request);
+		return ResponseEntity.ok(id);
+	}
 
 }

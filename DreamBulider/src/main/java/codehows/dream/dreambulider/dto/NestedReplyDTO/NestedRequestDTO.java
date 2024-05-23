@@ -1,12 +1,12 @@
 package codehows.dream.dreambulider.dto.NestedReplyDTO;
 
-
-import codehows.dream.dreambulider.entity.NestedReply;
-import codehows.dream.dreambulider.entity.Reply;
-import lombok.*;
-import org.springframework.boot.context.properties.bind.Nested;
-
 import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -15,9 +15,9 @@ import java.time.LocalDateTime;
 @Builder
 public class NestedRequestDTO {
 
-    private String comment;
-    private boolean invisible;
-    private Reply reply;
-    private LocalDateTime regDate = LocalDateTime.now();
+	private String comment;
+	private boolean invisible ;
+	private Long replyId;
+	private LocalDateTime regDate = LocalDateTime.now();
 
 }

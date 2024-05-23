@@ -15,12 +15,10 @@ import {
   PROJECT_OVERVIEW,
 } from "../constants/page_constants";
 import { LOGOUT_API } from "../constants/api_constants";
-import axios from "axios";
-import LOGOIMAGE from "../image/LogoImage.png";
-import MangeVisitor from "../pages/MangeVisitor";
-import { useEffect } from "react";
 import fetcher from "../fetcher";
 import { BOARD_SEARCH } from "../constants/api_constants";
+import base64 from "base-64";
+import handleJWT from "../paserJWT";
 
 const StyledLink = styled.a`
   color: white !important;
@@ -93,13 +91,28 @@ function NavLi({ children, href, onClick }: NavLiProps) {
 
 function Header() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [loggin, setLoggin] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [hashTag, setHashTag] = useState<ReactNode>([]);
+  const [accessToken, setAccessToken] = useState<string>("");
+
+  useEffect(() => {
+    const sendAccessToken: string | null = localStorage.getItem("accessToken");
+    if (sendAccessToken !== null && sendAccessToken !== undefined) {
+      setAccessToken(sendAccessToken);
+      setLoggin(true);
+      console.log("호출 됨");
+      if (handleJWT(sendAccessToken).auth === "ROLE_ADMIN") {
+        setAdmin(true);
+      }
+    } else {
+      setLoggin(false);
+      setAdmin(false);
+    }
+  }, []);
 
   const [criteria, setCriteria] = useState("검색");
   const [criteriaEng, setCriteriaEng] = useState("search");
-  const [loggin, isLoggin] = useState(true);
-  const [admin, isAdmin] = useState(true);
-
 
   const navigate = useNavigate();
 
@@ -123,11 +136,13 @@ function Header() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetcher.post(
-        LOGOUT_API
-      );
+      const response = await fetcher.post(LOGOUT_API);
+      localStorage.removeItem("accessToken");
+      setAccessToken("");
       console.log(response.data);
-    } catch(error) {console.error}
+    } catch (error) {
+      console.error;
+    }
   };
 
   return (
@@ -289,7 +304,9 @@ function Header() {
                 >
                   파일 관리
                 </NavLi>
-                <NavLi href="#">로그아웃</NavLi>
+                <NavLi href="#" onClick={handleLogout}>
+                  로그아웃
+                </NavLi>
               </>
             ) : (
               <>
@@ -310,7 +327,9 @@ function Header() {
                 >
                   마이페이지
                 </NavLi>
-                <NavLi href="#" onClick={handleLogout}>로그아웃</NavLi>
+                <NavLi href="#" onClick={handleLogout}>
+                  로그아웃
+                </NavLi>
               </>
             )
           ) : (

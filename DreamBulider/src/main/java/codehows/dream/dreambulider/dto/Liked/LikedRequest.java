@@ -14,6 +14,4 @@ import lombok.Setter;
 public class LikedRequest {
 //좋아요 버튼 누르고 취소할때 받는 dto
     private Long boardId;
-    private Long memberId;
-
 }

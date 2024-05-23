@@ -6,6 +6,8 @@ import heartFill from "../image/heart-fill.svg";
 import heart from "../image/heart.svg";
 import views from "../image/views.svg";
 import { PROJECT_DETAIL_VIEW } from "../constants/page_constants";
+import fetcher from "../fetcher";
+import { BOARD_LIKED } from "../constants/api_constants";
 
 interface ViewBoxProps {
   data: {
@@ -16,7 +18,7 @@ interface ViewBoxProps {
     countLike: number;
     likeList: boolean | null;
     replyCnt: number;
-    viewCnt: number;
+    cnt: number;
   };
 }
 
@@ -49,18 +51,30 @@ const StyledLink = styled.a`
 
 const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
   const [liked, setLiked] = useState(data.likeList ?? false);
+
   const navigate = useNavigate();
 
-  const handleDisliked = () => {
-    console.log(data.id + "싫어요");
+  const handleDisliked = async () => {
+    try {
+      await fetcher.put(BOARD_LIKED, {
+        boardId: data.id,
+      });
+    } catch (error) {
+      console.error("Error updating liked status:", error);
+    }
     setLiked(false);
   };
 
-  const handleLiked = () => {
-    console.log(data.id + "좋아요");
+  const handleLiked = async () => {
+    try {
+      await fetcher.put(BOARD_LIKED, {
+        boardId: data.id,
+      });
+    } catch (error) {
+      console.error("Error updating liked status:", error);
+    }
     setLiked(true);
   };
-
   const handleTitle = (id: number) => {
     navigate(PROJECT_DETAIL_VIEW, { state: id });
   };
@@ -70,7 +84,7 @@ const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
   }, [data]);
 
   return (
-    <Card className="card mb-2">
+    <Card key={data.id} className="card mb-2">
       <div className="row g-0 h-100">
         <div className="col-md-6 d-flex flex-column justify-content-center">
           <span className="ms-1">
@@ -113,7 +127,7 @@ const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
         </span>
         <span>
           <img className="pe-1" src={views} alt="조회수 아이콘" />:{" "}
-          {data.viewCnt ?? 0}
+          {data.cnt ?? 0}
         </span>
       </div>
     </Card>

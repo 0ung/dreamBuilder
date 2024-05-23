@@ -16,7 +16,7 @@ interface Data {
   hashTags: string[];
   likedCnt: number;
   replyCnt: number;
-  viewCnt: number;
+  cnt: number;
   liked: boolean;
   countLike: number;
   likeList: boolean | null;
@@ -26,8 +26,8 @@ const FlexContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  justify-content: flex-start; /* 왼쪽 정렬 */
-  align-items: flex-start; /* 항목들을 상단에 정렬 */
+  justify-content: flex-start;
+  align-items: flex-start;
 `;
 
 const FlexItem = styled.div`
@@ -39,7 +39,6 @@ export default function ProjectOverviewPage() {
   const [data, setData] = useState<Data[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState(0);
-  //검색결과 전달
   const location = useLocation();
 
   const handleData = async () => {
@@ -52,14 +51,13 @@ export default function ProjectOverviewPage() {
       if (newData.length === 0) {
         setHasMore(false);
       }
-      console.log(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
       setHasMore(false);
     }
   };
+
   useEffect(() => {
-    // location.state?.data가 존재하면 초기 데이터로 설정
     if (location.state?.data) {
       setData(location.state.data);
     }
@@ -68,6 +66,10 @@ export default function ProjectOverviewPage() {
   useEffect(() => {
     handleData();
   }, [page]);
+
+  useEffect(() => {
+    setData([]); // 초기 상태로 빈 배열 설정
+  }, []);
 
   const fetchMoreData = () => {
     setPage((prevPage) => prevPage + 1);
@@ -102,20 +104,24 @@ export default function ProjectOverviewPage() {
             </div>
           </div>
         </div>
-        <InfiniteScroll
-          dataLength={data.length}
-          next={fetchMoreData}
-          hasMore={hasMore}
-          loader={<h4></h4>}
-        >
-          <FlexContainer>
-            {data.map((project) => (
-              <FlexItem key={project.id}>
-                <ViewBox data={project} />
-              </FlexItem>
-            ))}
-          </FlexContainer>
-        </InfiniteScroll>
+        {data.length > 0 ? (
+          <InfiniteScroll
+            dataLength={data.length}
+            next={fetchMoreData}
+            hasMore={hasMore}
+            loader={<h4>Loading...</h4>}
+          >
+            <FlexContainer>
+              {data.map((project, index) => (
+                <FlexItem key={project.id + 10 * index}>
+                  <ViewBox data={project} />
+                </FlexItem>
+              ))}
+            </FlexContainer>
+          </InfiniteScroll>
+        ) : (
+          <div>데이터가 없어용</div>
+        )}
       </div>
       <Footer />
     </>

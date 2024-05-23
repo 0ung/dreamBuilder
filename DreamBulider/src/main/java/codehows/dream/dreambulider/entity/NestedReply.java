@@ -20,7 +20,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class NestedReply {
+public class NestedReply extends BaseTimeEntity {
+
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,25 +42,15 @@ public class NestedReply {
 	@JoinColumn(name = "reply_id")
 	private Reply reply;
 
-	@Column(name = "reg_date")
-	@CreatedDate
-	private LocalDateTime createdDate;
-
-	@Column(name = "update_date")
-	@LastModifiedDate
-	private LocalDateTime modifiedDate;
-
-
-
 	/* 대댓글 수정 */
 	public void update(String comment) {
 		this.comment = comment;
-		this.modifiedDate = modifiedDate.now();
+
 	}
 	/* 대댓글 삭제(비활성화) */
 	public void delete() {
 		this.invisible = true;
-		this.modifiedDate = modifiedDate.now();
+
 	}
 }
 

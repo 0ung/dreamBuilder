@@ -14,5 +14,4 @@ public class ReplyUpdateDTO {
 
     private String comment;
     private Long boardId;
-    private LocalDateTime updateDate = LocalDateTime.now();
 }

@@ -2,10 +2,6 @@ import React, { useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import kakao from "../image/kakao.png";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { SIGNUP } from "../constants/api_constants";
-import { LOGIN, MAIN } from "../constants/page_constants";
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
   placeholder: string;
@@ -60,11 +56,11 @@ export default function SignUpPage() {
   const [checkPassword, setCheckPassword] = useState("");
 
   const handleUserId = (e: string) => {
-    const regExp = new RegExp("^[A-Za-z0-9]+@[A-Za-z0-9]+\\.[A-Za-z]{2,6}$");
+    const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
     return regExp.test(e);
   };
   const handleNickName = (e: string) => {
-    const regExp = new RegExp("^[A-Za-z0-9]{2,15}$");
+    const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
     return regExp.test(e);
   };
   const handlePassword = (e: string) => {
@@ -81,31 +77,6 @@ export default function SignUpPage() {
     return false;
   };
 
-  const navigator = useNavigate();
-
-    const handleSignUp = async () => {
-      try {
-        const formData = {
-          email: userId,
-          name: nickName,
-          password: password,
-        };
-        const response = await axios.post(
-          "http://localhost:8080" + SIGNUP,
-          JSON.stringify(formData),
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        alert("회원가입 완료되었습니다.");
-        console.log(response.data);
-        navigator(LOGIN);
-      } catch(error) {console.error}
-    };
-  
-
   return (
     <>
       <>
@@ -114,7 +85,7 @@ export default function SignUpPage() {
           <h1>회원가입</h1>
           <hr></hr>
           <SignupInput
-            placeholder="이메일를 입력해주세요"
+            placeholder="아이디를 입력해주세요 (8~15자 영대소문자, 숫자만 가능)"
             type="text"
             onChange={(e) => {
               setUserId(e.target.value);
@@ -127,10 +98,10 @@ export default function SignUpPage() {
               return handleUserId(userId);
             }}
           >
-            이메일
+            아이디
           </Inputvalidation>
           <SignupInput
-            placeholder="닉네임을 입력해주세요 (2~15자)"
+            placeholder="닉네임을 입력해주세요 (8~15자)"
             type="text"
             onChange={(e) => {
               setNickName(e.target.value);
@@ -181,7 +152,6 @@ export default function SignUpPage() {
             <button
               className="btn btn-primary"
               style={{ width: "15%", backgroundColor: "#348f8f" }}
-              onClick={handleSignUp}
             >
               가입
             </button>

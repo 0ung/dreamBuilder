@@ -18,7 +18,7 @@ import java.sql.Date;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Liked {
+public class Liked extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

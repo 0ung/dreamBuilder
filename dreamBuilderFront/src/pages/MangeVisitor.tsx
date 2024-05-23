@@ -73,7 +73,7 @@ const PeriodVisitsTable: React.FC<PeriodVisitsTableProps> = ({ data }) => {
 
 function MangeVisitor() {
   const [data, setData] = useState<periodData[]>([
-    { period: "2021 Q1", visits: 100 },
+    { period: "2021 Q1~2022 Q2", visits: 100 },
     { period: "2021 Q2", visits: 150 },
     { period: "2021 Q3", visits: 200 },
     { period: "2021 Q4", visits: 250 },

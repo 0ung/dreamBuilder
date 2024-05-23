@@ -1,6 +1,9 @@
 package codehows.dream.dreambulider.controller;
 
-import codehows.dream.dreambulider.dto.*;
+import codehows.dream.dreambulider.dto.Member.KakaoProfile;
+import codehows.dream.dreambulider.dto.Member.MemberFormDTO;
+import codehows.dream.dreambulider.dto.Member.MemberLoginDTO;
+import codehows.dream.dreambulider.dto.Member.OAuthToken;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.RefreshToken;
 import codehows.dream.dreambulider.jwt.TokenProvider;
@@ -12,7 +15,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,10 +27,12 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-
+import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.HashMap;
+
 import java.util.Map;
 
 @RestController
@@ -69,7 +73,9 @@ public class MemberController {
     public ResponseEntity<?> login(@RequestBody MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
         try {
             return new ResponseEntity<>(memberService.login(memberLoginDTO, response), HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (IllegalStateException illegalStateException) {
+            return new ResponseEntity<>("탈퇴한 회원입니다.", HttpStatus.BAD_REQUEST);
+        } catch (Exception exception) {
             return new ResponseEntity<>("입력정보를 확인해주세요", HttpStatus.BAD_REQUEST);
         }
     }
@@ -93,8 +99,18 @@ public class MemberController {
         }
     }
 
+    @GetMapping("/withdrawal")
+    public ResponseEntity<?> withdrawal(Principal principal) {
+        try{
+            memberService.withdrawal(principal.getName());
+            return ResponseEntity.ok("탈퇴 되었습니다.");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("잘못된 요청");
+        }
+    }
+
     @GetMapping("/auth/callback")
-    public void authCallback(String code, HttpServletResponse servletResponse) {
+    public void authCallback(String code, HttpServletResponse servletResponse) throws IOException {
         RestTemplate rt = new RestTemplate();
 
         //HttpHeader 오브젝트 생성
@@ -172,7 +188,7 @@ public class MemberController {
 
         Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
 
-        String newRefreshToken = tokenProvider.createRefreshToken();
+        String newRefreshToken = tokenProvider.createRefreshToken(member);
         String accessToken = tokenProvider.createToken(member);
 
         RefreshToken refreshToken = refreshTokenRepository.findByMember(member).orElse(null);
@@ -184,11 +200,12 @@ public class MemberController {
             refreshTokenService.saveRefreshToken(refreshToken);
         }
 
+
         // 액세스 토큰을 쿠키에 설정
         Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true); // 자바스크립트에서 접근하지 못하게 설정
+        accessTokenCookie.setHttpOnly(false); // 자바스크립트에서 접근하지 못하게 설정
         accessTokenCookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능하도록 설정
-        accessTokenCookie.setMaxAge(60 * 60); // 1시간 동안 유효
+        accessTokenCookie.setMaxAge(10); // 1시간 동안 유효
 
         // 리프레시 토큰을 쿠키에 설정
         Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
@@ -197,15 +214,16 @@ public class MemberController {
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
 
         // 쿠키를 응답에 추가
-        servletResponse.addCookie(accessTokenCookie);
         servletResponse.addCookie(refreshTokenCookie);
+        servletResponse.addCookie(accessTokenCookie);
+
 
         try {
             servletResponse.sendRedirect("http://localhost:5173/main");
         } catch (Exception e) {
+            servletResponse.sendRedirect("http://localhost:5173/error");
         }
 
-        servletResponse.addHeader("Role", member.getAuthority().toString());
     }
 
 

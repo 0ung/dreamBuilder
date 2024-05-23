@@ -4,7 +4,6 @@ import kakaoLogin from "../image/kakaoLogin.png";
 import { useNavigate } from "react-router-dom";
 import { MAIN, SIGNUP } from "../constants/page_constants";
 import styled from "styled-components";
-import axios from "axios";
 import { LOGIN_API } from "../constants/api_constants";
 import fetcher from "../fetcher";
 
@@ -39,26 +38,25 @@ export default function LoginPage() {
   const navigator = useNavigate();
   const [email, setEamil] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+
   const handleLogin = async () => {
     try {
       const formData = {
         email: email,
         password: password,
       };
-      const response = await fetcher.post(
-        LOGIN_API,
-        JSON.stringify(formData),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log(response.data);
-      
-      navigator(MAIN);
-    } catch(error) {
-      console.error
+      const response = await fetcher.post(LOGIN_API, JSON.stringify(formData), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const accessToken = response.data.accessToken;
+      console.log(accessToken);
+      if (accessToken !== null || undefined) {
+        window.localStorage.setItem("accessToken", accessToken);
+        navigator(MAIN);
+      }
+    } catch (error) {
       alert("아이디 또는 비밀번호를 다시 확인해주세요");
     }
   };

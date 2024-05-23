@@ -10,20 +10,26 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BoardRepository extends JpaRepository<Board,Long> {
 
-    //List<Board> findAllByBoardByTitle();
-
+    //페이징
     Page<Board> findAll(Pageable pageable);
 
+    @Query(value = "select * from Board where invisible=1 AND delete_by = 1", nativeQuery = true)
+    List<Board> findAll();
+
+    //보드 아이디로 멤버 조회
     @Query("SELECT b.member FROM Board b WHERE b.id = :id")
     Member findMemberByBoardId(Long id);
 
-//    @Query("SELECT p FROM Board p WHERE p.deadline > :currentDateTime OR p.deadline IS NULL")
-//    List<Board> findAllActivePosts(@Param("currentDateTime") LocalDateTime currentDateTime);
+    @Query("SELECT b FROM Board b WHERE b.id = :id")
+    Page<Board> findBoardByMemberId(Long id, Pageable pageable);
+
+    //
+   // @Query(SELECT b.invisible  FROM Board b WHERE b.id = :id" )
+    //BoardAdminUpdateDTO findByBoardId(Long id);
 
     //제목 조회
     Page<Board> findByTitleContainingIgnoreCase(String title, Pageable pageable);
@@ -59,5 +65,9 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     //추가된 조회수 값 반환
     @Query("select b.cnt from Board b where b.id = :id")
     Long getCntById(@Param("id") Long id);
+
+    //이번 달 작성한 게시글 개수
+    @Query(value = "SELECT COUNT(*) FROM board WHERE member_id = :memberId AND MONTH(regTime) = MONTH(CURRENT_DATE)", nativeQuery = true)
+    Long countBoardByMember(@Param("memberId") Long memberId);
 
 }

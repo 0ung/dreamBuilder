@@ -29,7 +29,7 @@ const MyComponent: React.FC<DropZoneProps> = ({
       const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
       return handleFileExtension(fileExtension) && handleFileSize(file.size);
     });
-    setFilteredFiles(filteredFiles);
+    setFilteredFiles((prevFiles) => [...prevFiles, ...filteredFiles]);
     console.log(filteredFiles);
   }, []);
 
@@ -58,6 +58,10 @@ const MyComponent: React.FC<DropZoneProps> = ({
     }
     return true;
   };
+
+  const clearDropZone = () => {
+    setFilteredFiles([]);
+  };
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } =
     useDropzone({ onDrop });
 
@@ -77,7 +81,7 @@ const MyComponent: React.FC<DropZoneProps> = ({
   };
 
   return (
-    <div className="container mt-3">
+    <div className="container mt-3 mb-3">
       <h3 className="mb-3">파일 업로드</h3>
       <div
         {...getRootProps({ className: "dropzone" })}
@@ -94,6 +98,17 @@ const MyComponent: React.FC<DropZoneProps> = ({
         <h4 className="mt-4">업로드된 파일</h4>
         <ul className="list-group">{files}</ul>
       </aside>
+      <button
+        className="mt-2 btn btn-primary"
+        style={{
+          backgroundColor: " #348f8f",
+          border: "none",
+          color: "white",
+        }}
+        onClick={clearDropZone}
+      >
+        파일 초기화
+      </button>
     </div>
   );
 };
