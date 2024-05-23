@@ -9,7 +9,7 @@ type TableData = {
   endDate: string;
   regDate: string;
   updateDate: string;
-  deactive: boolean;
+  invisable: boolean;
 };
 
 type TableComponentProps = {
@@ -17,6 +17,13 @@ type TableComponentProps = {
 };
 
 const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
+  const handleRestore = ()=>{
+
+  }
+
+  const handleDelete = ()=>{
+    
+  }
   return (
     <table className="table table-striped table-bordered">
       <thead className="thead-dark">
@@ -38,14 +45,22 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
             <td>{row.endDate}</td>
             <td>{row.regDate}</td>
             <td>{row.updateDate}</td>
-            <td>{row.deactive ? "Yes" : "No"}</td>
+            <td>{row.invisable ? "Yes" : "No"}</td>
             <td>
-              <button
-                className={`btn ${row.deactive ? "btn-success" : "btn-danger"}`}
-                onClick={() => console.log("히히")}
+              {
+                row.invisable ? <button
+                className="btn-success"
+                onClick={handleRestore}
               >
-                {row.deactive ? "복구" : "삭제"}
+                복구
+              </button> : <button
+                className="btn-danger"
+                onClick={handleDelete}
+              >
+                삭제
               </button>
+              }
+              
             </td>
           </tr>
         ))}

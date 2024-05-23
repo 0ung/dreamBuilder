@@ -29,3 +29,6 @@ export const RE_REPLY_DELETE = "/api/rereply/";
 export const RE_REPLY_READ_ALL = "/api/rereply/";
 
 export const BOARD_LIKED = "/api/liked";
+
+
+export const 
