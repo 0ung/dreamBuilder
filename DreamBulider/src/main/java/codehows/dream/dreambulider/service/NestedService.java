@@ -12,6 +12,8 @@ import codehows.dream.dreambulider.repository.NestedRepository;
 import codehows.dream.dreambulider.repository.ReplyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +52,7 @@ public class NestedService {
     @Transactional
     public List<NestedResponseDTO> findAllByReplyId(Long replyId) {
 
-        List<NestedReply> nestedReplies = nestedRepository.findByReplyId(replyId);
+        List<NestedReply> nestedReplies = nestedRepository.findByReplyIdOrderByIdDesc(replyId);
         return nestedReplies.stream()
                 .map(NestedResponseDTO::new)
                 .collect(Collectors.toList());
@@ -71,8 +73,8 @@ public class NestedService {
         return nestedReply;
     }
     @Transactional
-    public void update(Long replyId, Long id, NestedUpdateDTO request) {
-        NestedReply nestedReply = nestedRepository.findByReplyIdAndId(replyId, id)
+    public void update(Long id, NestedUpdateDTO request) {
+        NestedReply nestedReply = nestedRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글 수정이 안됨." + id));
 
         nestedReply.update(request.getComment());

@@ -1,5 +1,7 @@
 package codehows.dream.dreambulider.controller;
 
+import java.security.Principal;
+
 import codehows.dream.dreambulider.dto.Liked.LikedRequest;
 import codehows.dream.dreambulider.entity.Liked;
 import codehows.dream.dreambulider.service.LikedService;
@@ -19,8 +21,8 @@ public class LikedController {
 
     //좋아요 추가/삭제
     @PutMapping("/api/liked")
-    public ResponseEntity<?> insert(@RequestBody LikedRequest likedRequest) {
-        likedService.insert(likedRequest);
+    public ResponseEntity<?> insert(@RequestBody LikedRequest likedRequest, Principal principal) {
+        likedService.insert(likedRequest,principal);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

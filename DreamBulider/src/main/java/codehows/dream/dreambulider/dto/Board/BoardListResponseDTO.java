@@ -25,7 +25,7 @@ public class BoardListResponseDTO {
     private Boolean deadLine;
     private Long countLike;
     private Boolean likeList;
-
+    private long replyCnt;
     public BoardListResponseDTO(Board board) {
         this.id = board.getId();
         this.title = board.getTitle();

@@ -28,6 +28,8 @@ public class BoardService {
 	private final LikedService likedService;
 	private final MemberRepository memberRepository;
 	private final HashTagRepository hashTagRepository;
+	private final ReplyService replyService;
+
 
 	public Board save(BoardRequestDTO boardDTO, String email) {
 		return boardRepository.save(Board.builder()
@@ -145,7 +147,7 @@ public class BoardService {
 			listResponseDTO.setHashTags(hashTagService.findAll(board.getId()));
 			listResponseDTO.setCnt(getCnt(board.getId()));
 			listResponseDTO.setCountLike(likedService.countLike(board.getId()));
-
+			listResponseDTO.setReplyCnt(replyService.getReplyCnt(board.getId()));
 			if (principal != null) {
 				listResponseDTO.setLikeList(likedService.LikeList(board.getId(), principal));
 			}

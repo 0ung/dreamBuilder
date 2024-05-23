@@ -70,7 +70,6 @@ public class ReplyService {
 	public ReplyDeleteDTO deleteInvisible(long id) {
 		Reply reply = replyRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("not found : " + id));
-
 		reply.delete();
 		replyRepository.save(reply);
 		return new ReplyDeleteDTO(reply);
@@ -84,6 +83,10 @@ public class ReplyService {
 		reply.update(replyUpdateDTO.getComment());
 
 		return reply;
+	}
+
+	public Long getReplyCnt(long boardId){
+		return replyRepository.countReplyByBoardId(boardId);
 	}
 
 }

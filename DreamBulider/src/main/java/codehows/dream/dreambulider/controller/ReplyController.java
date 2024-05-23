@@ -67,6 +67,7 @@ public class ReplyController {
 		int total = replyService.getTotal(boardId);
 		return new ResponseEntity<>(total,HttpStatus.OK);
 	}
+
 	@GetMapping("/reply/{id}")
 	public ResponseEntity<ReplyResponseDTO> findReply(@PathVariable(name = "id") long id) {
 
