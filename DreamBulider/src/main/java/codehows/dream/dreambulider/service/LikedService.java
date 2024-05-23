@@ -60,20 +60,15 @@ public class LikedService {
     }
 
     //좋아요 상태 리스트 출력
-    public List<Boolean> LikeList(long boardId, Principal principal) {
+    //좋아요 상태 리스트 출력
+    public Boolean LikeList(long boardId, Principal principal) {
 
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new IllegalArgumentException("not found:" + boardId));
-        Member member = boardRepository.findMemberByBoardId(boardId);
+        Board board = boardRepository.findById(boardId) //해당 게시글 찾고
+            .orElseThrow(() -> new IllegalArgumentException("not found:" + boardId));
+        Member member = memberRepository.findMemberByEmail(principal.getName())
+            .orElseThrow(() -> new IllegalArgumentException("not found member"));
 
-        if (member.getEmail() == null) {
-            throw new IllegalArgumentException("Invalid board Id:" + boardId);
-        }
-        if(!principal.getName().equals(member.getEmail())) {
-            throw new SecurityException("You do not have permission to edit this board");
-        }
-
-        List<Boolean> like = likedRepository.findByBoardId(board.getId());
+        Boolean like = likedRepository.findByBoardIdAndMemberId(board.getId(), member.getId());
 
         return like;
 

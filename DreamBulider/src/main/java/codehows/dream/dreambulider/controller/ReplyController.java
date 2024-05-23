@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,18 +48,25 @@ public class ReplyController {
 	}
 
 	@GetMapping("/read/{boardId}/{page}")
-	public ResponseEntity<List<ReplyResponseDTO>> findAllReplys(@PathVariable Optional<Integer> page,
+	public ResponseEntity<?> findAllReplys(@PathVariable Optional<Integer> page,
 		@PathVariable(name = "boardId") Long boardId) {
 		Pageable pageable = PageRequest.of(page.orElse(0), 5,
 			Sort.by(Sort.Direction.DESC, "id"));
-		List<ReplyResponseDTO> replys = replyService.findAll(boardId, pageable)
-			.stream()
+		Page<Reply> replys = replyService.findAll(boardId, pageable);
+
+		List<ReplyResponseDTO> result = replys.stream()
 			.map(ReplyResponseDTO::new)
 			.toList();
+
 		return ResponseEntity.ok()
-			.body(replys);
+			.body(result);
 	}
 
+	@GetMapping("/read/total/{boardId}")
+	public ResponseEntity<?> getTotal(@PathVariable Long boardId){
+		int total = replyService.getTotal(boardId);
+		return new ResponseEntity<>(total,HttpStatus.OK);
+	}
 	@GetMapping("/reply/{id}")
 	public ResponseEntity<ReplyResponseDTO> findReply(@PathVariable(name = "id") long id) {
 

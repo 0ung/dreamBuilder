@@ -106,6 +106,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         <Comment
           key={`${reply.id}-${index}`} // 고유한 key 보장
           reply={reply}
+          boardId={boardId}
           openReplies={openReplies}
           toggleReplies={toggleReplies}
         />

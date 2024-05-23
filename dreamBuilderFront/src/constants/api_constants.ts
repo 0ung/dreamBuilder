@@ -17,3 +17,4 @@ export const REPLY_POST = "/api/reply";
 export const REPLY_DETAIL = "/api/reply/";
 export const REPLY_READ_ALL = "/api/read/";
 export const REPLY_UPDATE = "/api/reply/";
+export const REPLY_TOTAL = "/api/read/total/";

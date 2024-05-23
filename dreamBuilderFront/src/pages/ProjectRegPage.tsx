@@ -118,7 +118,6 @@ export default function ProjectRegPage() {
         .get(`${BOARD_DEATIL_VIEW}${location.state?.boardId}`)
         .then((response) => {
           const existingBoard = response.data;
-          console.log(existingBoard);
           setBoard({
             title: existingBoard.title,
             content: existingBoard.content,
@@ -193,7 +192,6 @@ export default function ProjectRegPage() {
       } else {
         await fetcher.post(url, sendData);
       }
-      console.log(url);
       alert(modify ? "업데이트 성공" : "등록 성공");
       navigate(PROJECT_OVERVIEW);
     } catch (error) {

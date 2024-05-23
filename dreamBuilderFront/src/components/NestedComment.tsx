@@ -15,7 +15,7 @@ interface NestedCommentProps {
 
 const NestedComment: React.FC<NestedCommentProps> = ({ nestedReply }) => {
   const isAdmin = useSelector((state: any) => state.admin.isAdmin);
-
+  console.log("대댓글 호출");
   return (
     <div className="card mb-2 ms-3">
       <div className="card-body">

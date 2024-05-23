@@ -1,5 +1,7 @@
 package codehows.dream.dreambulider.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
@@ -7,8 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,7 +50,8 @@ public class BoardController {
 	private final HashTagRepository hashTagRepository;
 	private final LikedService likedService;
 	private final BoardFileService boardFileService;
-
+	@Value("${savePath}")
+	private String savePath;
 	//게시글 작성
 	@PostMapping("/api/addBoard")
 	public ResponseEntity<Board> addBoard(
@@ -134,6 +142,27 @@ public class BoardController {
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
+	}
+
+	@GetMapping("/download/files/{fileName}/{name}")
+	public ResponseEntity<Resource> downloadFile(@PathVariable String fileName,@PathVariable String name) throws IOException {
+		File file = new File(savePath + fileName);
+
+		if (!file.exists()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + name);
+		headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+
+		return ResponseEntity.ok()
+			.headers(headers)
+			.contentLength(file.length())
+			.contentType(MediaType.APPLICATION_OCTET_STREAM)
+			.body(resource);
 	}
 
 }

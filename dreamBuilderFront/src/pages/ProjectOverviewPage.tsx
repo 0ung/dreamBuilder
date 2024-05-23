@@ -52,7 +52,6 @@ export default function ProjectOverviewPage() {
       if (newData.length === 0) {
         setHasMore(false);
       }
-      console.log(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
       setHasMore(false);

@@ -1,6 +1,7 @@
 package codehows.dream.dreambulider.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.nio.file.Files;
@@ -13,10 +14,15 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.webjars.NotFoundException;
 
 import codehows.dream.dreambulider.entity.BoardFile;
 import codehows.dream.dreambulider.repository.BoardFileRepository;
@@ -149,4 +155,5 @@ public class BoardFileService {
 		});
 		saveFiles(multipartFile, boardId);
 	}
+
 }

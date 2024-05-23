@@ -11,7 +11,7 @@ const Pagination = ({
   totalPages,
   onPageChange,
 }: PaginationProps) => {
-  const groupSize: number = 10;
+  const groupSize: number = 5;
   const groupStart: number =
     Math.floor((currentPage - 1) / groupSize) * groupSize + 1;
   const groupEnd: number = Math.min(groupStart + groupSize - 1, totalPages);

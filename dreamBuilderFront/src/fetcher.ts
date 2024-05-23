@@ -15,7 +15,6 @@ fetcher.interceptors.request.use(
     if (accessToken !== null && accessToken !== undefined) {
       request.headers.Authorization = `Bearer ${accessToken}`;
     }
-    console.log(request);
     return request;
   },
   (error) => {
@@ -27,7 +26,6 @@ fetcher.interceptors.request.use(
 //응답을 가로채서 핸들링
 fetcher.interceptors.response.use(
   (response) => {
-    console.log(response);
     return response;
   },
 

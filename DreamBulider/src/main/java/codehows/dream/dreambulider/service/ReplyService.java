@@ -1,6 +1,7 @@
 package codehows.dream.dreambulider.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -50,14 +51,15 @@ public class ReplyService {
 	}
 
 	public Page<Reply> findAll(Long boardId, Pageable pageable) {
-		return replyRepository.findByBoard(boardRepository.findById(boardId).orElse(null)
+		return replyRepository.findByBoardId(boardId
 			, pageable);
 	}
 
-	/*public Reply findById(long id) {
-		return replyRepository.findById(id)
-				.orElseThrow(() -> new IllegalArgumentException("not found : " + id));
-	}*/
+	public int getTotal(Long boardId) {
+		Pageable pageable = PageRequest.of(0,5);
+		return replyRepository.findByBoardId(boardId,pageable).getTotalPages();
+	}
+
 	public ReplyResponseDTO findById(long id) {
 		Reply reply = replyRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("not found : " + id));
@@ -83,4 +85,5 @@ public class ReplyService {
 
 		return reply;
 	}
+
 }

@@ -10,11 +10,12 @@ import {
   BOARD_DEATIL_VIEW,
   BOARD_DELETE,
   REPLY_READ_ALL,
+  REPLY_TOTAL,
 } from "../constants/api_constants";
 import VIDEO from "../image/video.png";
 import DOCS from "../image/docs.png";
 import { PROJECT_DETAIL_VIEW, PROJECT_REG } from "../constants/page_constants";
-import InfiniteScroll from "react-infinite-scroll-component";
+import Pagination from "../components/Pagination";
 
 interface Board {
   id: number;
@@ -173,8 +174,8 @@ const ProjectDetailView: React.FC = () => {
 
   const [board, setBoard] = useState<Board | null>(null);
   const [reply, setReply] = useState<Reply[]>([]);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
 
   const handleModify = () => {
     navigator(PROJECT_REG, { state: { boardId: boardId, modify: true } });
@@ -194,8 +195,12 @@ const ProjectDetailView: React.FC = () => {
 
   useEffect(() => {
     handleBoardData();
-    fetchMoreData();
   }, []);
+
+  useEffect(() => {
+    fetchMoreData();
+    handldePage();
+  }, [page]);
 
   const handleBoardData = async () => {
     try {
@@ -216,8 +221,22 @@ const ProjectDetailView: React.FC = () => {
           }))
         ),
       };
-
       setBoard(transformedBoard);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePageChange = (pageNumber: number) => {
+    setPage(pageNumber);
+    console.log("페이지 설정");
+  };
+
+  const handldePage = async () => {
+    try {
+      const total = await fetcher.get(`${REPLY_TOTAL}${boardId}`);
+      setTotalPage(total.data);
+      return total.data;
     } catch (error) {
       console.log(error);
     }
@@ -225,24 +244,16 @@ const ProjectDetailView: React.FC = () => {
 
   const fetchMoreData = async () => {
     try {
-      console.log("호출"); // 함수 호출 확인
-      console.log(`${REPLY_READ_ALL}${boardId}/${page}`); // 요청 URL 확인
-      const response = await fetcher.get(`${REPLY_READ_ALL}${boardId}/${page}`);
+      const response = await fetcher.get(
+        `${REPLY_READ_ALL}${boardId}/${page - 1}`
+      );
       const data = response.data;
-      console.log(data);
-      setReply((prevReplies) => [...prevReplies, ...data]);
-
-      if (data.length === 5) {
-        // 데이터 길이가 정확히 5인지 확인
-        setPage((prevPage) => prevPage + 1);
-        setHasMore(true);
-      } else {
-        setHasMore(false);
-      }
+      setReply(data);
     } catch (error) {
       console.log(error);
-      setHasMore(false);
     }
+
+    console.log("댓글 호출 확인" + page);
   };
 
   return (
@@ -306,7 +317,10 @@ const ProjectDetailView: React.FC = () => {
               <ul className="list-group">
                 {board.file.map((file, index) => (
                   <li key={`${file.name}-${index}`} className="list-group-item">
-                    <a href={file.url} download={file.name}>
+                    <a
+                      href={`http://localhost:8080/download${file.url}/${file.name}`}
+                      download={file.name}
+                    >
                       <div>
                         {renderFileIcon(
                           getFileType(file.name),
@@ -324,19 +338,19 @@ const ProjectDetailView: React.FC = () => {
       </div>
 
       <Hr />
-      <InfiniteScroll
-        dataLength={reply.length}
-        next={fetchMoreData}
-        hasMore={hasMore}
-        loader={<h4>Loading...</h4>}
-      >
-        <CommentSection
-          key={boardId}
-          replies={reply}
-          boardId={boardId}
-          setReplies={setReply}
-        />
-      </InfiniteScroll>
+
+      <CommentSection
+        key={"dummpy"}
+        replies={reply}
+        boardId={boardId}
+        setReplies={setReply}
+      />
+      <Pagination
+        key={"pagination"}
+        currentPage={page}
+        onPageChange={handlePageChange}
+        totalPages={totalPage}
+      ></Pagination>
       <Footer />
     </>
   );

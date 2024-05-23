@@ -9,5 +9,5 @@ import codehows.dream.dreambulider.entity.Reply;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
-	Page<Reply> findByBoard(Board board, Pageable pageable);
+	Page<Reply> findByBoardId(Long boardId, Pageable pageable);
 }

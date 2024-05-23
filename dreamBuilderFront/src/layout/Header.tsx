@@ -18,6 +18,7 @@ import { LOGOUT_API } from "../constants/api_constants";
 import fetcher from "../fetcher";
 import { BOARD_SEARCH } from "../constants/api_constants";
 import base64 from "base-64";
+import handleJWT from "../paserJWT";
 
 const StyledLink = styled.a`
   color: white !important;
@@ -101,27 +102,19 @@ function Header() {
       setAccessToken(sendAccessToken);
       setLoggin(true);
       console.log("호출 됨");
-      if (handleJWT(sendAccessToken) === "ROLE_ADMIN") {
+      if (handleJWT(sendAccessToken).auth === "ROLE_ADMIN") {
         setAdmin(true);
       }
     } else {
       setLoggin(false);
       setAdmin(false);
     }
-  }, [accessToken]); // 빈 배열을 전달하여 처음 렌더링될 때만 실행되도록 함
+  }, []);
 
   const [criteria, setCriteria] = useState("검색");
   const [criteriaEng, setCriteriaEng] = useState("search");
 
   const navigate = useNavigate();
-
-  const handleJWT = (jwt: string) => {
-    const paylaod = jwt.substring(jwt.indexOf(".") + 1, jwt.lastIndexOf("."));
-    const decodeInfo = base64.decode(paylaod);
-    const json = JSON.parse(decodeInfo);
-
-    return json.auth;
-  };
 
   const handleSearch = async (text: string) => {
     console.log(searchQuery + " 검색 문");
