@@ -2,7 +2,6 @@ package codehows.dream.dreambulider.controller;
 
 import codehows.dream.dreambulider.dto.Board.BoardAdminListDTO;
 import codehows.dream.dreambulider.dto.Board.FileDTO;
-import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.FileManage;
 import codehows.dream.dreambulider.service.BoardFileService;
 import codehows.dream.dreambulider.service.BoardService;

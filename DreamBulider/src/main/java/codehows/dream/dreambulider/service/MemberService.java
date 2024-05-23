@@ -7,6 +7,7 @@ import codehows.dream.dreambulider.dto.TokenResponse;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.RefreshToken;
 import codehows.dream.dreambulider.jwt.TokenProvider;
+import codehows.dream.dreambulider.repository.LikedRepository;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.RefreshTokenRepository;
 import jakarta.servlet.http.Cookie;
@@ -30,6 +31,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +44,7 @@ public class MemberService implements UserDetailsService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final LikedRepository likedRepository;
 
     Map map = new HashMap();
 
@@ -126,6 +129,8 @@ public class MemberService implements UserDetailsService {
         Member member = refreshTokenService.findByRefreshToken(refreshToken.getRefreshToken()).getMember();
         refreshTokenService.removeRefreshToken(member);
     }
+
+
 
 
 

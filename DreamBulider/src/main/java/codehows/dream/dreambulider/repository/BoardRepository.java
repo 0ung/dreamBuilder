@@ -1,6 +1,5 @@
 package codehows.dream.dreambulider.repository;
 
-import codehows.dream.dreambulider.dto.Board.BoardAdminUpdateDTO;
 import codehows.dream.dreambulider.entity.Board;
 
 import codehows.dream.dreambulider.entity.Member;
@@ -11,13 +10,15 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BoardRepository extends JpaRepository<Board,Long> {
 
     //페이징
     Page<Board> findAll(Pageable pageable);
+
+    @Query(value = "select * from Board where invisible=1 AND delete_by = 1", nativeQuery = true)
+    List<Board> findAll();
 
     //보드 아이디로 멤버 조회
     @Query("SELECT b.member FROM Board b WHERE b.id = :id")
@@ -64,5 +65,9 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     //추가된 조회수 값 반환
     @Query("select b.cnt from Board b where b.id = :id")
     Long getCntById(@Param("id") Long id);
+
+    //이번 달 작성한 게시글 개수
+    @Query(value = "SELECT COUNT(*) FROM board WHERE member_id = :memberId AND MONTH(regTime) = MONTH(CURRENT_DATE)", nativeQuery = true)
+    Long countBoardByMember(@Param("memberId") Long memberId);
 
 }

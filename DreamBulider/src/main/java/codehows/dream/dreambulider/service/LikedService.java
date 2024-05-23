@@ -23,6 +23,7 @@ public class LikedService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
 
+
 //좋아요 추가/삭제
     public void insert(LikedRequest likedRequest) {
 
@@ -71,6 +72,19 @@ public class LikedService {
 
         return like;
 
+    }
+
+
+
+    //이번 달 받은 좋아요 개수
+    public Long likedCount(Principal principal) {
+
+        Member member = memberRepository.findMemberByEmail(principal.getName()) //principal 이메일로 member를 먼저 찾고
+                .orElseThrow(() -> new IllegalArgumentException("not found member"));
+
+        Long count = likedRepository.countByMemberId(member.getId()); //memberId로 count 찾기
+
+        return count;
     }
 
 

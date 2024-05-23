@@ -2,12 +2,16 @@ package codehows.dream.dreambulider.service;
 
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyUpdateDTO;
+import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.Reply;
+import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.ReplyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -15,6 +19,8 @@ import java.util.List;
 public class ReplyService {
 
     private final ReplyRepository replyRepository;
+    private final MemberRepository memberRepository;
+
     public Reply saveReply(ReplyRequestDTO replyRequestDTO){
         if(replyRequestDTO.getComment() == null){
             throw new IllegalArgumentException("데이터 없음");
@@ -64,5 +70,15 @@ public class ReplyService {
         reply.update(replyUpdateDTO.getComment());
 
         return reply;
+    }
+
+    //이번 달 작성한 댓글 개수
+    public Long countReply(Principal principal) {
+        Member member = memberRepository.findMemberByEmail(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("not found member" ));
+
+        Long count = replyRepository.countReplyByMember(member.getId());
+
+        return count;
     }
 }

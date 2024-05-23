@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class BoardService {
 	private final LikedService likedService;
 	private final MemberRepository memberRepository;
 	private final HashTagRepository hashTagRepository;
+	private final BoardFileService boardFileService;
 
 	public Board save(BoardRequestDTO boardDTO, String email) {
 		return boardRepository.save(Board.builder()
@@ -81,6 +83,13 @@ public class BoardService {
 	//관리자 게시물 조회 페이지
 	public Page<Board> getAdminBoardList(Pageable pageable) {
 		return boardRepository.findAll(pageable);
+	}
+
+	//게시물 엑셀 조회 페이지
+	public List<Board> excelBoardList() {
+		List<Board> boardList = boardRepository.findAll();
+
+		return boardList;
 	}
 
 	//게시글 상세 조회
@@ -186,4 +195,15 @@ public class BoardService {
 
 		return boardRepository.findBoardByMemberId(member.getId(), pageable);
 	}
+
+	//이번 달 작성한 글 개수
+	public Long countBoard(Principal principal) {
+		Member member = memberRepository.findMemberByEmail(principal.getName())
+				.orElseThrow(() -> new IllegalArgumentException("not found member" ));
+
+		Long count = boardRepository.countBoardByMember(member.getId());
+
+		return count;
+	}
+
 }
