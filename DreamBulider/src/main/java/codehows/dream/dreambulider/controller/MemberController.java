@@ -215,8 +215,8 @@ public class MemberController {
 
         // 쿠키를 응답에 추가
         servletResponse.addCookie(refreshTokenCookie);
+        servletResponse.addCookie(accessTokenCookie);
 
-        servletResponse.addHeader("AccessToekn", accessToken);
 
         try {
             servletResponse.sendRedirect("http://localhost:5173/main");

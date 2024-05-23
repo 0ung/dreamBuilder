@@ -2,7 +2,7 @@ import React, { useState,useEffect } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 
-import Pagination from "../componets/Pagination";
+import Pagination from "../components/Pagination";
 import fetcher from "../fetcher";
 import { MANAGE_MEMBERS,withdrawal_API,restore_API } from "../constants/api_constants";
 

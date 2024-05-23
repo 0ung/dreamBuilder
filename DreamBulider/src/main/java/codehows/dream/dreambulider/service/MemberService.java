@@ -69,6 +69,10 @@ public class MemberService implements UserDetailsService {
 
 		Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
 
+		if(member.isWithdrawal()==true){
+			throw new IllegalArgumentException("탈퇴한 회원입니다.");
+		}
+
 		String newRefreshToken = tokenProvider.createRefreshToken(member);
 		String accessToken = tokenProvider.createToken(member);
 

@@ -1,10 +1,13 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useState, useEffect } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import Pagination from "../components/Pagination";
 import userDefaultImage from "../image/userDefaultImage.jpg";
 import styled from "styled-components";
 import { Button, Modal } from "react-bootstrap";
+import base64 from "base-64";
+import fetcher from "../fetcher";
+import { withdrawal_API } from "../constants/api_constants";
 
 const dumpData = [
   {
@@ -105,6 +108,31 @@ function MyPage() {
   );
   const [currentPage, setCurrentPage] = useState(1);
 
+  //kakaouser 구분
+  const [accessToken, setAccessToken] = useState<string>("");
+  const regex = /\w*_kakao/;
+  const [kakaouser, setKakaouser] = useState(false);
+  useEffect(() => {
+    const sendAccessToken: string | null = localStorage.getItem("accessToken");
+    if (sendAccessToken !== null && sendAccessToken !== undefined) {
+      setAccessToken(sendAccessToken);
+      console.log(setAccessToken(sendAccessToken));
+      if(regex.test(handleJWT(sendAccessToken))){
+        setKakaouser(true)
+      }else{
+        setKakaouser(false)
+      }
+    }
+  }, [accessToken]);
+
+  const handleJWT = (jwt: string) => {
+    const paylaod = jwt.substring(jwt.indexOf(".") + 1, jwt.lastIndexOf("."));
+    const decodeInfo = base64.decode(paylaod);
+    const json = JSON.parse(decodeInfo);
+
+    return json.sub;
+  };
+
   // 모달 상태 관리
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -113,6 +141,28 @@ function MyPage() {
   const handleShowUpdateModal = () => setShowUpdateModal(true);
 
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
+  const handleCloseDeleteModal1 = async ()=>{
+    try{
+      const sendAccessToken: string | null = localStorage.getItem("accessToken");
+      if (sendAccessToken !== null) {
+        const formData = {
+          email: handleJWT(sendAccessToken),
+        };
+        const request = await fetcher.post(
+          withdrawal_API,
+          JSON.stringify(formData),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+  
+    }catch(error){
+
+    }
+  }
   const handleShowDeleteModal = () => setShowDeleteModal(true);
 
   //입력 검증
@@ -266,6 +316,7 @@ function MyPage() {
             >
               닉네임
             </SignupInput>
+            
             <Inputvalidation
               data={() => {
                 return handleNickName(nickName);
@@ -273,7 +324,12 @@ function MyPage() {
             >
               닉네임
             </Inputvalidation>
-            <SignupInput
+          </div>
+          <div>
+            { kakaouser ? (
+                <></>
+            ):(<>
+                            <SignupInput
               placeholder="비밀번호를 입력해주세요 (8~20자 영대소문자, 숫자, 특수문자 하나씩 기입 )"
               type="password"
               onChange={(e) => {
@@ -305,6 +361,8 @@ function MyPage() {
             >
               비밀번호 확인
             </Inputvalidation>
+            </>)}
+
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -324,6 +382,13 @@ function MyPage() {
         </Modal.Header>
         <Modal.Body>
           <div className="mb-3">
+            { kakaouser ? (
+                <>
+                <label>
+                  정말 탈퇴하시겠습니까?
+                </label>
+                </>
+            ):(<>
             <label htmlFor="passwordInput" className="form-label">
               탈퇴하시려면 비밀번호를 입력해주세요
             </label>
@@ -334,13 +399,15 @@ function MyPage() {
               placeholder="비밀번호 입력"
               onChange={(e) => setPassword(e.target.value)}
             />
+            </>)}
           </div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseDeleteModal}>
             닫기
           </Button>
-          <Button variant="danger" onClick={handleCloseDeleteModal}>
+          <Button variant="danger" 
+          onClick={handleCloseDeleteModal1}>
             탈퇴
           </Button>
         </Modal.Footer>
