@@ -10,4 +10,6 @@ export const BOARD_VIEW_SEARCH = "/api/boardList/";
 export const BOARD_VIEW = "/api/boards/";
 
 
-export const MANAGE_MEMBERS = "/memberList/"
+export const MANAGE_MEMBERS = "/memberList/";
+export const withdrawal_API = "/memberlist/withdrawl";
+export const restore_API = "/memberlist/restore";

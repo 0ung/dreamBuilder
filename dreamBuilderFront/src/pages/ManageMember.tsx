@@ -12,20 +12,20 @@ type TableData = {
   regTime: string;
   updateTime: string;
   authority: string;
-  deactive: boolean;
+  withdrawal: boolean;
 };
 
 type TableComponentProps = {
   data: TableData[];
+  onWithdrawalChange: (updatedUser: TableData) => void;
 };
 
-const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ data,onWithdrawalChange }) => {
 
-  
   const handleWithdrawal = async (email: string)=>{
     try{
       const formData = {
-        email: email
+        email: email,
       };
       const request = await fetcher.post(
         withdrawal_API,
@@ -36,6 +36,15 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
           },
         }
       );
+
+      if (request.status === 200) {
+        const updatedUser = request.data; // 여기서 response.data로 데이터에 접근합니다.
+        onWithdrawalChange(updatedUser);
+        console.log(updatedUser); // 서버로부터 받은 데이터를 출력합니다.
+      } else {
+        console.error("서버 응답 오류:", request.data);
+      }
+  
     }catch(error){
 
     }
@@ -55,10 +64,19 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
             },
           }
         );
+        if (request.status === 200) {
+          const updatedUser = request.data; // 여기서 response.data로 데이터에 접근합니다.
+          onWithdrawalChange(updatedUser);
+          console.log(updatedUser); // 서버로부터 받은 데이터를 출력합니다.
+        } else {
+          console.error("서버 응답 오류:", request.data);
+        }
       }catch(error){
   
       }
   };
+
+  
   
 
   return (
@@ -84,18 +102,18 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
             <td>{row.regTime}</td>
             <td>{row.updateTime}</td>
             <td>{row.authority}</td>
-            <td>{row.deactive ? "Yes" : "No"}</td>
+            <td>{row.withdrawal ? "Yes" : "No"}</td>
             <td>
-              {row.deactive ?
+              {row.withdrawal ?
               <button
-                className={`btn "btn-success"`}
+                className={`btn ${"btn-success"}`}
                 onClick={() => handleRestore(row.email)}
               >
                 "복구"
               </button>
               : 
               <button
-                className={`btn "btn-danger"`}
+                className={`btn ${"btn-danger"}`}
                 onClick={() => handleWithdrawal(row.email)}
               >
                 "삭제"
@@ -123,6 +141,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
     }
   }
 
+  const handleWithdrawalChange = (updatedUser: TableData) => {
+    setUserData(prevData =>
+      prevData.map(user =>
+        user.email === updatedUser.email ? updatedUser : user
+      )
+    );
+  };
+
 
   useEffect(() => {
     handleMemberData();
@@ -134,7 +160,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
       <div className="container mt-5">
         <h1>아이디 관리</h1>
         <hr />
-        <TableComponent data={userData}></TableComponent>
+        <TableComponent data={userData} onWithdrawalChange={handleWithdrawalChange}></TableComponent>
         <Pagination
           currentPage={1}
           onPageChange={() => {}}

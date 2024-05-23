@@ -3,6 +3,7 @@ package codehows.dream.dreambulider.Controller;
 import codehows.dream.dreambulider.dto.Member.MemberListResponseDTO;
 import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.Member;
+import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.service.MemberService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -21,6 +23,7 @@ import java.util.Optional;
 public class ManageController {
 
     private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
     @GetMapping("/memberList/{page}")
     public ResponseEntity<?> findAllMemberList(@PathVariable Optional<Integer> page) {
@@ -46,20 +49,24 @@ public class ManageController {
     }
 
     @PostMapping("/memberlist/withdrawl")
-    public ResponseEntity<?> withdrawal(String email){
+    public ResponseEntity<?> withdrawal(@RequestBody Map<String, String> requestBody){
         try{
+            String email = requestBody.get("email");
             memberService.withdrawal(email);
-            return ResponseEntity.ok("탈퇴 되었습니다.");
+            Optional<Member> updatedMember = memberRepository.findMemberByEmail(email);
+            return ResponseEntity.ok(updatedMember);
         }catch (Exception e){
             return ResponseEntity.badRequest().body("잘못된 요청(멤버매니지)");
         }
     }
 
     @PostMapping("/memberlist/restore")
-    public ResponseEntity<?> restore(String email){
+    public ResponseEntity<?> restore(@RequestBody Map<String, String> requestBody){
         try{
+            String email = requestBody.get("email");
             memberService.restore(email);
-            return ResponseEntity.ok("탈퇴 되었습니다.");
+            Optional<Member> updatedMember = memberRepository.findMemberByEmail(email);
+            return ResponseEntity.ok(updatedMember);
         }catch (Exception e){
             return ResponseEntity.badRequest().body("잘못된 요청(멤버매니지)");
         }
