@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class NestedReply {
 
 	@Id
