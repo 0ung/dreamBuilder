@@ -3,6 +3,9 @@ export const EMAILCHECK = "/member/useremail/exist";
 export const LOGIN_API = "/member/login";
 export const LOGOUT_API = "/member/logout";
 export const TOKEN_REFRESH_API = "/member/refresh";
+export const MANAGE_MEMBERS = "/memberList/";
+export const withdrawal_API = "/memberlist/withdrawl";
+export const restore_API = "/memberlist/restore";
 
 export const BOARD_REGISTRATION = "/api/addBoard";
 export const BOARD_UPDATE = "/api/board/";

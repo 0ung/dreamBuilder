@@ -1,6 +1,9 @@
 package codehows.dream.dreambulider.controller;
 
-import codehows.dream.dreambulider.dto.*;
+import codehows.dream.dreambulider.dto.Member.KakaoProfile;
+import codehows.dream.dreambulider.dto.Member.MemberFormDTO;
+import codehows.dream.dreambulider.dto.Member.MemberLoginDTO;
+import codehows.dream.dreambulider.dto.Member.OAuthToken;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.RefreshToken;
 import codehows.dream.dreambulider.jwt.TokenProvider;
@@ -12,7 +15,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,7 @@ import java.net.http.HttpResponse;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
+
 import java.util.Map;
 
 @RestController
@@ -70,7 +73,9 @@ public class MemberController {
     public ResponseEntity<?> login(@RequestBody MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
         try {
             return new ResponseEntity<>(memberService.login(memberLoginDTO, response), HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (IllegalStateException illegalStateException) {
+            return new ResponseEntity<>("탈퇴한 회원입니다.", HttpStatus.BAD_REQUEST);
+        } catch (Exception exception) {
             return new ResponseEntity<>("입력정보를 확인해주세요", HttpStatus.BAD_REQUEST);
         }
     }
@@ -90,6 +95,16 @@ public class MemberController {
             memberService.logout(principal.getName(),response);
             return ResponseEntity.ok("로그아웃 되었습니다.");
         } catch (Exception e) {
+            return ResponseEntity.badRequest().body("잘못된 요청");
+        }
+    }
+
+    @GetMapping("/withdrawal")
+    public ResponseEntity<?> withdrawal(Principal principal) {
+        try{
+            memberService.withdrawal(principal.getName());
+            return ResponseEntity.ok("탈퇴 되었습니다.");
+        }catch (Exception e){
             return ResponseEntity.badRequest().body("잘못된 요청");
         }
     }
@@ -185,6 +200,7 @@ public class MemberController {
             refreshTokenService.saveRefreshToken(refreshToken);
         }
 
+
         // 액세스 토큰을 쿠키에 설정
         Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
         accessTokenCookie.setHttpOnly(false); // 자바스크립트에서 접근하지 못하게 설정
@@ -198,8 +214,9 @@ public class MemberController {
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
 
         // 쿠키를 응답에 추가
-        servletResponse.addCookie(accessTokenCookie);
         servletResponse.addCookie(refreshTokenCookie);
+        servletResponse.addCookie(accessTokenCookie);
+
 
         try {
             servletResponse.sendRedirect("http://localhost:5173/main");

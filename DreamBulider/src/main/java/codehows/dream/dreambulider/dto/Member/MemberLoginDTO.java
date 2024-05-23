@@ -1,4 +1,4 @@
-package codehows.dream.dreambulider.dto;
+package codehows.dream.dreambulider.dto.Member;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

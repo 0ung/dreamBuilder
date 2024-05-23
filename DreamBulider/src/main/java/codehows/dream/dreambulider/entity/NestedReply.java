@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 
 public class NestedReply extends BaseTimeEntity {
 
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "NestedReply_id")

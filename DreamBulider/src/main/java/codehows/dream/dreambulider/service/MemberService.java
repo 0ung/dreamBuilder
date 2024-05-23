@@ -13,9 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import codehows.dream.dreambulider.constats.Authority;
-import codehows.dream.dreambulider.dto.MemberFormDTO;
-import codehows.dream.dreambulider.dto.MemberLoginDTO;
-import codehows.dream.dreambulider.dto.TokenResponse;
+import codehows.dream.dreambulider.dto.Member.MemberFormDTO;
+import codehows.dream.dreambulider.dto.Member.MemberLoginDTO;
+import codehows.dream.dreambulider.dto.Member.TokenResponse;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.RefreshToken;
 import codehows.dream.dreambulider.jwt.TokenProvider;
@@ -26,6 +26,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.servlet.View;
+
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +68,10 @@ public class MemberService implements UserDetailsService {
 		Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
 		Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
+
+		if(member.isWithdrawal()==true){
+			throw new IllegalArgumentException("탈퇴한 회원입니다.");
+		}
 
 		String newRefreshToken = tokenProvider.createRefreshToken(member);
 		String accessToken = tokenProvider.createToken(member);
@@ -149,5 +161,23 @@ public class MemberService implements UserDetailsService {
 		// refreshToken 쿠키가 없으면 메시지를 반환
 		return "Refresh Token not found";
 	}
+  
+      public void withdrawal(String email) {
+        Member member = memberRepository.findMemberByEmail(email).orElseThrow();
+        member.updatewithdrawal(true);
+        memberRepository.save(member);
+    }
+
+    public void restore (String email) {
+        Member member = memberRepository.findMemberByEmail(email).orElseThrow();
+        member.updatewithdrawal(false);
+        memberRepository.save(member);
+    }
+
+
+    public Page<Member> findAll(Pageable pageable){
+        return memberRepository.findAll(pageable);
+    }
+
 
 }

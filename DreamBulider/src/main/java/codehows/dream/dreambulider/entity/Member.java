@@ -14,13 +14,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 
+@Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @Builder
-public class Member implements UserDetails {
+public class Member extends BaseTimeEntity implements UserDetails {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +38,11 @@ public class Member implements UserDetails {
 	private Authority authority;
 
 	private boolean isWithdrawal;
+
+	public Member updatewithdrawal(boolean withdrawal) {
+		this.isWithdrawal = withdrawal;
+		return this;
+	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
