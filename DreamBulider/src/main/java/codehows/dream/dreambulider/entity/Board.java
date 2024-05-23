@@ -1,15 +1,24 @@
 package codehows.dream.dreambulider.entity;
 
 import java.sql.Date;
-import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import codehows.dream.dreambulider.constats.Authority;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Getter
@@ -34,23 +43,25 @@ public class Board {
 	@Column(nullable = false)
 	private boolean invisible = false;
 
+	@Enumerated(EnumType.STRING)
 	private Authority deleteBy;
+
 	private boolean deadLine;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	private Long cnt ;
+	private Long cnt = 0L;
 
-
-//	@OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//	private List<HashTag> hashTags;
+	//	@OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	//	private List<HashTag> hashTags;
 
 	@Builder
-	public Board(String title, String content, Date endDate) {
+	public Board(String title, String content, Date endDate, Member member) {
 		this.title = title;
 		this.content = content;
 		this.endDate = endDate;
+		this.member = member;
 	}
 
 	public void update(String title, String content, Date endDate) {
@@ -60,7 +71,7 @@ public class Board {
 	}
 
 	//게시글 비활성화(삭제)
-	public void update1() {
+	public void updateInvisible() {
 		this.invisible = true;
 	}
 }

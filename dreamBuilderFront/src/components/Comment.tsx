@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import NestedComment from "./NestedComment";
-import { useDispatch, useSelector } from "react-redux";
-import { toggleAdmin, setAdmin } from "../store/slices/adminSlice"; // adminSlice 파일의 경로
 
 interface Reply {
   id: number;
@@ -10,7 +8,7 @@ interface Reply {
   regDate: string;
   updateDate: string | null;
   nestReply: NestedReply[];
-  deactive: boolean;
+  invisible: boolean;
 }
 
 interface NestedReply {
@@ -19,7 +17,7 @@ interface NestedReply {
   nickname: string;
   regDate: string;
   updateDate: string | null;
-  deactive: boolean;
+  invisible: boolean;
 }
 
 interface CommentProps {
@@ -33,23 +31,16 @@ const Comment: React.FC<CommentProps> = ({
   openReplies,
   toggleReplies,
 }) => {
-  const isAdmin = useSelector((state: any) => state.admin.isAdmin);
-  const dispatch = useDispatch();
-
-  const handleToggleAdmin = () => {
-    dispatch(toggleAdmin());
-  };
-
+  const [isAdmin, setAdmin] = useState(true);
   return (
     <div className="card mb-3">
-      <button onClick={handleToggleAdmin}>변경</button>
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-2">
           {isAdmin ? (
             <h5 className="card-title mb-0">
               {reply.nickname}{" "}
               <small className="text-muted" style={{ fontSize: "15px" }}>
-                {reply.deactive ? `(삭제됨)` : <></>}
+                {reply.invisible ? `(삭제됨)` : <></>}
               </small>
             </h5>
           ) : (

@@ -30,6 +30,10 @@ spring:
 
 uploadPath: file:///C:/dreamBuilder/
 savePath: C:/dreamBuilder/
+temp:
+  uploadPath: file:///C:/dreamBuilder/temp/
+  savePath: C:/dreamBuilder/temp/
+
 
 
 cos:

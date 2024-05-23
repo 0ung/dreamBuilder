@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import SearchLi from "../componets/SearchLi";
-import { ReactNode, useState } from "react";
+import SearchLi from "../components/SearchLi";
+import { ReactNode, useEffect, useState } from "react";
 import search from "../image/search.svg";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,11 +15,9 @@ import {
   PROJECT_OVERVIEW,
 } from "../constants/page_constants";
 import { LOGOUT_API } from "../constants/api_constants";
-import axios from "axios";
-import LOGOIMAGE from "../image/LogoImage.png";
-import MangeVisitor from "../pages/MangeVisitor";
-import { useEffect } from "react";
 import fetcher from "../fetcher";
+import { BOARD_SEARCH } from "../constants/api_constants";
+import base64 from "base-64";
 
 const StyledLink = styled.a`
   color: white !important;
@@ -92,14 +90,40 @@ function NavLi({ children, href, onClick }: NavLiProps) {
 
 function Header() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [loggin, setLoggin] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [hashTag, setHashTag] = useState<ReactNode>([]);
+  const [accessToken, setAccessToken] = useState<string>("");
 
-  const [loggin, isLoggin] = useState(false);
-  const [admin, isAdmin] = useState(false);
+  useEffect(() => {
+    const sendAccessToken: string | null = localStorage.getItem("accessToken");
+    if (sendAccessToken !== null && sendAccessToken !== undefined) {
+      setAccessToken(sendAccessToken);
+      setLoggin(true);
+      console.log("호출 됨");
+      if (handleJWT(sendAccessToken) === "ROLE_ADMIN") {
+        setAdmin(true);
+      }
+    } else {
+      setLoggin(false);
+      setAdmin(false);
+    }
+  }, [accessToken]); // 빈 배열을 전달하여 처음 렌더링될 때만 실행되도록 함
+
+  const [criteria, setCriteria] = useState("검색");
+  const [criteriaEng, setCriteriaEng] = useState("search");
 
   const navigate = useNavigate();
 
-  const handleSearch = (text: string) => {
+  const handleJWT = (jwt: string) => {
+    const paylaod = jwt.substring(jwt.indexOf(".") + 1, jwt.lastIndexOf("."));
+    const decodeInfo = base64.decode(paylaod);
+    const json = JSON.parse(decodeInfo);
+
+    return json.auth;
+  };
+
+  const handleSearch = async (text: string) => {
     console.log(searchQuery + " 검색 문");
     const hashTagRegex = new RegExp("#(\\S+)", "g");
     const matches = text.match(hashTagRegex);
@@ -107,15 +131,25 @@ function Header() {
       const hashTags = matches.map((tag) => tag.slice(1)); // '#'을 제거하고 순수 텍스트만 추출
       setHashTag(hashTags);
     }
+    try {
+      const response = await fetcher.get(
+        `${BOARD_SEARCH}0?search=${searchQuery}&criteria=${criteriaEng}`
+      );
+      navigate(PROJECT_OVERVIEW, { state: { data: response.data } });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleLogout = async () => {
     try {
-      const response = await fetcher.post(
-        LOGOUT_API
-      );
+      const response = await fetcher.post(LOGOUT_API);
+      localStorage.removeItem("accessToken");
+      setAccessToken("");
       console.log(response.data);
-    } catch(error) {console.error}
+    } catch (error) {
+      console.error;
+    }
   };
 
   return (
@@ -137,22 +171,87 @@ function Header() {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              검색
+              {criteria}
             </SearchDropdownButton>
             <ul className="dropdown-menu">
-              <SearchLi href="#">제목</SearchLi>
-              <SearchLi href="#">작성자</SearchLi>
-              <SearchLi href="#">내용</SearchLi>
-              <SearchLi href="#">제목 + 작성자</SearchLi>
-              <SearchLi href="#">제목 + 내용</SearchLi>
-              <SearchLi href="#">작성자 + 내용</SearchLi>
-              <SearchLi href="#">제목 + 작성자 + 내용</SearchLi>
+              <SearchLi
+                href="#"
+                onClick={() => {
+                  setCriteria("해시태그");
+                  setCriteriaEng("hashTag");
+                }}
+              >
+                해시태그
+              </SearchLi>
+              <SearchLi
+                href="#"
+                onClick={() => {
+                  setCriteria("제목");
+                  setCriteriaEng("title");
+                }}
+              >
+                제목
+              </SearchLi>
+              <SearchLi
+                href="#"
+                onClick={() => {
+                  setCriteria("작성자");
+                  setCriteriaEng("member");
+                }}
+              >
+                작성자
+              </SearchLi>
+              <SearchLi
+                href="#"
+                onClick={() => {
+                  setCriteria("내용");
+                  setCriteriaEng("content");
+                }}
+              >
+                내용
+              </SearchLi>
+              <SearchLi
+                href="#"
+                onClick={() => {
+                  setCriteria("제목 + 작성자");
+                  setCriteriaEng("title,member");
+                }}
+              >
+                제목 + 작성자
+              </SearchLi>
+              <SearchLi
+                href="#"
+                onClick={() => {
+                  setCriteria("제목 + 내용");
+                  setCriteriaEng("title,content");
+                }}
+              >
+                제목 + 내용
+              </SearchLi>
+              <SearchLi
+                href="#"
+                onClick={() => {
+                  setCriteria("작성자 + 내용");
+                  setCriteriaEng("content,member");
+                }}
+              >
+                작성자 + 내용
+              </SearchLi>
+              <SearchLi
+                href="#"
+                onClick={() => {
+                  setCriteria("제목 + 작성자 + 내용");
+                  setCriteriaEng("title,content,member");
+                }}
+              >
+                제목 + 작성자 + 내용
+              </SearchLi>
             </ul>
             <input
               type="text"
               className="form-control"
               aria-label="Text input with dropdown button"
-              placeholder="검색어를 입력하세요...  (해시태그는 #으로 시작, 띄어쓰기로 구분해주세요)"
+              placeholder="검색어를 입력하세요... "
               onChange={(e) => {
                 setSearchQuery(e.target.value);
               }}
@@ -212,7 +311,9 @@ function Header() {
                 >
                   파일 관리
                 </NavLi>
-                <NavLi href="#">로그아웃</NavLi>
+                <NavLi href="#" onClick={handleLogout}>
+                  로그아웃
+                </NavLi>
               </>
             ) : (
               <>
@@ -233,7 +334,9 @@ function Header() {
                 >
                   마이페이지
                 </NavLi>
-                <NavLi href="#" onClick={handleLogout}>로그아웃</NavLi>
+                <NavLi href="#" onClick={handleLogout}>
+                  로그아웃
+                </NavLi>
               </>
             )
           ) : (

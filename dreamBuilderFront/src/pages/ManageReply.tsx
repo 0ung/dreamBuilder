@@ -1,8 +1,7 @@
-import CommentSection from "../componets/CommentSection";
+import CommentSection from "../components/CommentSection";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
-import { useDispatch, useSelector } from "react-redux";
-import Pagination from "../componets/Pagination";
+import Pagination from "../components/Pagination";
 
 interface Reply {
   id: number;
@@ -24,9 +23,6 @@ interface nestedReply {
 }
 
 function ManageReply() {
-  const isAdmin = useSelector((state: any) => state.admin.isAdmin);
-  const dispatch = useDispatch();
-
   const dummyData: Reply[] = [
     {
       id: 1,

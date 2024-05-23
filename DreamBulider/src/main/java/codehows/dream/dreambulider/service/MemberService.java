@@ -1,5 +1,17 @@
 package codehows.dream.dreambulider.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import codehows.dream.dreambulider.constats.Authority;
 import codehows.dream.dreambulider.dto.Member.MemberFormDTO;
 import codehows.dream.dreambulider.dto.Member.MemberLoginDTO;
@@ -14,152 +26,139 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-//import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.core.userdetails.UserDetails;
-//import org.springframework.security.core.userdetails.UserDetailsService;
-//import org.springframework.security.core.userdetails.UsernameNotFoundException;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.View;
 
 import java.util.HashMap;
 import java.util.Map;
 
+
 @Service
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
+	private final MemberRepository memberRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final TokenProvider tokenProvider;
+	private final RefreshTokenRepository refreshTokenRepository;
+	private final RefreshTokenService refreshTokenService;
+	private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final RefreshTokenService refreshTokenService;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final View error;
+	public Member save(MemberFormDTO member) {
+		if (member == null) {
+			throw new IllegalArgumentException("회원정보를 입력해주세요");
+		}
+		return memberRepository.save(Member.builder()
+			.name(member.getName())
+			.password(passwordEncoder.encode(member.getPassword()))
+			.email(member.getEmail())
+			.authority(Authority.ROLE_USER)
+			.build());
+	}
 
-    Map map = new HashMap();
+	public boolean duplicateMemberEmail(String email) {
+		return memberRepository.existsMemberByEmail(email);
+	}
 
-    public Member save(MemberFormDTO member) {
-        if(member == null) {
-            throw new IllegalArgumentException("회원정보를 입력해주세요");
-        }
-        return memberRepository.save(Member.builder()
-                .name(member.getName())
-                .password(passwordEncoder.encode(member.getPassword()))
-                .email(member.getEmail())
-                .authority(Authority.ROLE_USER)
-                .build());
-    }
+	public Map<String, String> login(MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
+		UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+			memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
 
-    public boolean duplicateMemberEmail(String email) {
-        return memberRepository.existsMemberByEmail(email);
-    }
+		Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
-    public Map<String,String> login (MemberLoginDTO memberLoginDTO, HttpServletResponse response) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberLoginDTO.getEmail(), memberLoginDTO.getPassword());
+		Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
 
-        Authentication authentication =authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+		String newRefreshToken = tokenProvider.createRefreshToken(member);
+		String accessToken = tokenProvider.createToken(member);
 
-        Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
+		RefreshToken refreshToken = refreshTokenRepository.findByMember(member).orElse(null);
 
-        if(member.isWithdrawal()){
-            throw new IllegalStateException("탈퇴한 회원");
-        }
+		if (refreshToken == null) {
+			refreshTokenService.saveRefreshToken(new RefreshToken(member, newRefreshToken));
+		} else {
+			refreshToken.update(newRefreshToken);
+			refreshTokenService.saveRefreshToken(refreshToken);
+		}
+		Map<String,String> map = new HashMap<>();
+		// 액세스 토큰을 쿠키에 설정
+		addCookies(response, newRefreshToken);
+		map.put("accessToken", accessToken);
+		return map;
+	}
 
-        String newRefreshToken =tokenProvider.createRefreshToken();
-        String accessToken = tokenProvider.createToken(member);
+	public void addCookies(HttpServletResponse response, String newRefreshToken) {
+		Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
+		refreshTokenCookie.setHttpOnly(true);
+		refreshTokenCookie.setPath("/");
+		refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+		refreshTokenCookie.setSecure(true);
 
-        RefreshToken refreshToken = refreshTokenRepository.findByMember(member).orElse(null);
+		// 쿠키를 응답에 추가
+		response.addCookie(refreshTokenCookie);
 
-        if(refreshToken == null) {
-            refreshTokenService.saveRefreshToken(new RefreshToken(member, newRefreshToken));
-        }else{
-            refreshToken.update(newRefreshToken);
-            refreshTokenService.saveRefreshToken(refreshToken);
-        }
+	}
 
-        // 액세스 토큰을 쿠키에 설정
-        addCookies(response,newRefreshToken);
-        map.put("AccessToken",accessToken);
-        return map;
-    }
+	@Override
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		return memberRepository.findMemberByEmail(email).orElseThrow();
+	}
 
-    public void addCookies(HttpServletResponse response, String newRefreshToken) {
-        Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-        refreshTokenCookie.setSecure(true);
+	public TokenResponse tokenRefresh(String refreshToken) {
+		if (tokenProvider.validateToken(refreshToken) != 1) {
+			throw new IllegalArgumentException("잘못된 토큰");
+		}
+		RefreshToken existRefreshToken = refreshTokenService.findByRefreshToken(refreshToken);
 
+		Member member = existRefreshToken.getMember();
 
-        // 쿠키를 응답에 추가
-        response.addCookie(refreshTokenCookie);
-    }
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return memberRepository.findMemberByEmail(email).orElseThrow();
-    }
+		String accessToken = tokenProvider.createToken(member);
+		String newRefreshToken = existRefreshToken.update(tokenProvider.createRefreshToken(member)).getRefreshToken();
 
-    public TokenResponse tokenRefresh(String refreshToken) {
-        if(tokenProvider.validateToken(refreshToken) != 1) {
-            throw new IllegalArgumentException("잘못된 토큰");
-        }
-        RefreshToken existRefreshToken = refreshTokenService.findByRefreshToken(refreshToken);
+		return new TokenResponse(accessToken, newRefreshToken);
+	}
 
-        Member member = existRefreshToken.getMember();
+	@Transactional
+	public void logout(String email, HttpServletResponse response) {
+		Member member = memberRepository.findMemberByEmail(email).orElse(null);
+		refreshTokenService.removeRefreshToken(member);
 
-        String accessToken = tokenProvider.createToken(member);
-        String newRefreshToken = existRefreshToken.update(tokenProvider.createRefreshToken()).getRefreshToken();
+		Cookie accessTokenCookie = new Cookie("accessToken", "");
+		accessTokenCookie.setHttpOnly(true);
+		accessTokenCookie.setPath("/");
+		accessTokenCookie.setMaxAge(0);
+		accessTokenCookie.setSecure(true);
 
-        return new TokenResponse(accessToken, newRefreshToken);
-    }
+		Cookie refreshTokenCookie = new Cookie("refreshToken", "");
+		refreshTokenCookie.setHttpOnly(true);
+		refreshTokenCookie.setPath("/");
+		refreshTokenCookie.setMaxAge(0);
+		refreshTokenCookie.setSecure(true);
 
-    @Transactional
-    public void logout(String email,HttpServletResponse response) {
-        Member member = memberRepository.findMemberByEmail(email).orElse(null);
-        refreshTokenService.removeRefreshToken(member);
+		// 쿠키를 응답에 추가
+		response.addCookie(accessTokenCookie);
+		response.addCookie(refreshTokenCookie);
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken","");
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(0);
-        refreshTokenCookie.setSecure(true);
+	}
 
-        // 쿠키를 응답에 추가
-        response.addCookie(refreshTokenCookie);
+	public String getRefreshToken(HttpServletRequest request) {
+		// 요청에서 쿠키 배열을 가져옴
+		Cookie[] cookies = request.getCookies();
 
-    }
-
-//    public String getRefreshToken(HttpServletRequest request) {
-//        // 요청에서 쿠키 배열을 가져옴
-//        Cookie[] cookies = request.getCookies();
-//
-//        if (cookies != null) {
-//            for (Cookie cookie : cookies) {
-//                // 쿠키 이름이 'refreshToken'과 일치하는지 확인
-//                if ("refreshToken".equals(cookie.getName())) {
-//                    // refreshToken 값을 반환
-//                    return cookie.getValue();
-//                }
-//            }
-//        }
-//        // refreshToken 쿠키가 없으면 메시지를 반환
-//        return "Refresh Token not found";
-//    }
-
-    public void withdrawal(String email) {
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				// 쿠키 이름이 'refreshToken'과 일치하는지 확인
+				if ("refreshToken".equals(cookie.getName())) {
+					// refreshToken 값을 반환
+					return cookie.getValue();
+				}
+			}
+		}
+		// refreshToken 쿠키가 없으면 메시지를 반환
+		return "Refresh Token not found";
+	}
+  
+      public void withdrawal(String email) {
         Member member = memberRepository.findMemberByEmail(email).orElseThrow();
         member.updatewithdrawal(true);
         memberRepository.save(member);
@@ -175,7 +174,6 @@ public class MemberService implements UserDetailsService {
     public Page<Member> findAll(Pageable pageable){
         return memberRepository.findAll(pageable);
     }
-
 
 
 }

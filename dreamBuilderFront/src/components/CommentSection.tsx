@@ -1,7 +1,16 @@
 import React, { useState } from "react";
+import fetcher from "../fetcher";
+import { REPLY_POST } from "../constants/api_constants";
 import Comment from "./Comment";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+
+interface NestedReply {
+  id: number;
+  comment: string;
+  nickname: string;
+  regDate: string;
+  updateDate: string | null;
+  invisible: boolean;
+}
 
 interface Reply {
   id: number;
@@ -10,43 +19,38 @@ interface Reply {
   regDate: string;
   updateDate: string | null;
   nestReply: NestedReply[];
-  deactive: boolean;
-}
-
-interface NestedReply {
-  id: number;
-  comment: string;
-  nickname: string;
-  regDate: string;
-  updateDate: string | null;
-  deactive: boolean;
+  invisible: boolean;
 }
 
 interface CommentSectionProps {
-  replies: Reply[];
+  replies: Reply[] | null;
+  boardId: number;
+  setReplies: React.Dispatch<React.SetStateAction<Reply[]>>;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ replies }) => {
-  const isAdmin = useSelector((state: any) => state.admin.isAdmin);
-  const dispatch = useDispatch();
-
-  const [comment, setComment] = useState("");
+const CommentSection: React.FC<CommentSectionProps> = ({
+  replies,
+  boardId,
+  setReplies,
+}) => {
+  const [comment, setComment] = useState<string>("");
+  const [isAdmin, setAdmin] = useState(false);
 
   const handleReply = async () => {
     const data = {
       comment: comment,
+      boardId: boardId,
     };
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/reply",
-        JSON.stringify(data),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      alert(response.status);
+      const response = await fetcher.post(REPLY_POST, JSON.stringify(data), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const newReply = response.data;
+      console.log(newReply);
+      setReplies((prevReplies) => [newReply, ...prevReplies]); // 새로운 댓글을 추가
+      setComment(""); // 댓글 작성 후 입력 필드 초기화
     } catch (error) {
       alert("에러임");
     }
@@ -83,6 +87,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ replies }) => {
               className="form-control"
               placeholder="댓글을 작성하세요..."
               aria-describedby="basic-addon1"
+              value={comment}
               onChange={(e) => {
                 setComment(e.target.value);
               }}
@@ -97,9 +102,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ replies }) => {
           </div>
         </>
       )}
-      {replies.map((reply) => (
+      {(replies || []).map((reply, index) => (
         <Comment
-          key={reply.id}
+          key={`${reply.id}-${index}`} // 고유한 key 보장
           reply={reply}
           openReplies={openReplies}
           toggleReplies={toggleReplies}

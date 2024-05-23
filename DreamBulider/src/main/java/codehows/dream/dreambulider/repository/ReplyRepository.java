@@ -1,13 +1,13 @@
 package codehows.dream.dreambulider.repository;
 
-import codehows.dream.dreambulider.entity.NestedReply;
-import codehows.dream.dreambulider.entity.Reply;
-import codehows.dream.dreambulider.service.ReplyService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.entity.Reply;
 
-public interface ReplyRepository extends JpaRepository<Reply,Long> {
+public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
-
+	Page<Reply> findByBoard(Board board, Pageable pageable);
 }

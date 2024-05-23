@@ -70,7 +70,7 @@ const ViewBox: React.FC<ViewBoxProps> = ({ data }) => {
   }, [data]);
 
   return (
-    <Card className="card mb-2">
+    <Card key={data.id} className="card mb-2">
       <div className="row g-0 h-100">
         <div className="col-md-6 d-flex flex-column justify-content-center">
           <span className="ms-1">

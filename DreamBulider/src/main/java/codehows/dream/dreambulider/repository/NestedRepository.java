@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface NestedRepository extends JpaRepository <NestedReply,Long> {
 
     List<NestedReply> getNestedReplyByReplyOrderById(Reply reply);
+    List<NestedReply> findByReplyId(Long replyId);
     Optional<NestedReply> findByReplyIdAndId(Long replyId, Long id);
 
 }
