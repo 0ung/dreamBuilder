@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,7 +36,6 @@ public class ReplyController {
 
 	@PostMapping("/reply")
 	public ResponseEntity<?> saveReply(@RequestBody ReplyRequestDTO replyRequestDTO, Principal principal) {
-
 		try {
 			Reply reply = replyService.saveReply(replyRequestDTO, principal.getName());
 			ReplyResponseDTO replyResponseDTO = new ReplyResponseDTO(reply);
@@ -57,7 +57,6 @@ public class ReplyController {
 		List<ReplyResponseDTO> result = replys.stream()
 			.map(ReplyResponseDTO::new)
 			.toList();
-
 		return ResponseEntity.ok()
 			.body(result);
 	}

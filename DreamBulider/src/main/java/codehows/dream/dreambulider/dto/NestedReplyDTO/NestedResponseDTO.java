@@ -13,17 +13,18 @@ public class NestedResponseDTO {
     private Long id;
     private String comment;
     private boolean invisible;
-    private LocalDateTime regDate = LocalDateTime.now();
-    private LocalDateTime updateDate = LocalDateTime.now();
+    private LocalDateTime regDate;
+    private LocalDateTime updateDate;
     private String nickname;
+
 
     @Builder
     public NestedResponseDTO(NestedReply nestedReply) {
         this.id = nestedReply.getId();
         this.comment = nestedReply.getComment();
         this.nickname = nestedReply.getMember().getName();
-        this.regDate = nestedReply.getCreatedDate();
-        this.updateDate = nestedReply.getModifiedDate();
         this.invisible = nestedReply.isInvisible();
+        this.regDate = nestedReply.getRegTime();
+        this.updateDate = nestedReply.getUpdateTime();
     }
 }

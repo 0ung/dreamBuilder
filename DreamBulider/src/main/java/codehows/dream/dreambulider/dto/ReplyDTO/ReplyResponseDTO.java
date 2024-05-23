@@ -12,17 +12,18 @@ public class ReplyResponseDTO {
     private final Long id;
     private final String comment;
     private final boolean invisible;
-    private LocalDateTime regDate = LocalDateTime.now();
-    private LocalDateTime updateDate = LocalDateTime.now();
     private String nickname;
+    private LocalDateTime regTime;
+    private LocalDateTime updateTime;
+
 
 
     public ReplyResponseDTO(Reply reply) {
         this.id = reply.getId();
         this.comment = reply.getComment();
         this.nickname = reply.getMember().getName();
-        this.regDate = reply.getCreatedDate();
-        this.updateDate =reply.getModifiedDate();
+        this.regTime = reply.getRegTime();
+        this.updateTime = reply.getUpdateTime();
         this.invisible = reply.isInvisible();
     }
 }

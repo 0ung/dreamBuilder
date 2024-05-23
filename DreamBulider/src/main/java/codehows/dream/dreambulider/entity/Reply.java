@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Reply {
+public class Reply extends BaseTimeEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,21 +37,13 @@ public class Reply {
 	@JoinColumn(name = "board_id")
 	private Board board;
 
-	@Column(name = "reg_date")
-	@CreatedDate
-	private LocalDateTime createdDate;
-
-	@Column(name = "update_date")
-	@LastModifiedDate
-	private LocalDateTime modifiedDate;
-
 	public void update(String comment) {
 		this.comment = comment;
-		this.modifiedDate = modifiedDate.now();
+
 	}
 
 	public void delete() {
 		this.invisible = true;
-		this.modifiedDate = modifiedDate.now();
+
 	}
 }

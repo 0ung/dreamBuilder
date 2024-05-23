@@ -38,14 +38,14 @@ public class ReplyService {
 			throw new IllegalArgumentException("데이터 없음");
 		}
 
-		Reply result = Reply.builder()
-			.comment(replyRequestDTO.getComment())
-			.invisible(replyRequestDTO.isInvisible())
-			.board(board)
-			.member(member)
-			.createdDate(replyRequestDTO.getRegDate())
-			.build();
-		replyRepository.save(result);
+
+        Reply result = Reply.builder()
+                .comment(replyRequestDTO.getComment())
+                .invisible(replyRequestDTO.isInvisible())
+                .board(board)
+                .member(member)
+                .build();
+       replyRepository.save(result);
 
 		return result;
 	}
@@ -74,6 +74,7 @@ public class ReplyService {
 		replyRepository.save(reply);
 		return new ReplyDeleteDTO(reply);
 	}
+
 
 	@Transactional
 	public Reply update(long id, ReplyUpdateDTO replyUpdateDTO) {

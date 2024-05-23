@@ -42,7 +42,6 @@ public class NestedService {
                 .invisible(nestedRequestDTO.isInvisible())
                 .member(member)
                 .reply(reply)
-                .createdDate(nestedRequestDTO.getRegDate())
                 .build();
         nestedRepository.save(result);
 
