@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import Pagination from "../components/Pagination";
+import fetcher from "../fetcher";
+import { MANAGE_MEMBER_API } from "../constants/api_constants";
 
 type TableData = {
   id: number;
   title: string;
   endDate: string;
-  regDate: string;
-  updateDate: string;
-  invisable: boolean;
+  regTime: string;
+  updateTime: string;
+  invisible: boolean;
 };
 
 type TableComponentProps = {
@@ -43,12 +45,12 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
             <td>{row.id}</td>
             <td>{row.title}</td>
             <td>{row.endDate}</td>
-            <td>{row.regDate}</td>
-            <td>{row.updateDate}</td>
-            <td>{row.invisable ? "Yes" : "No"}</td>
+            <td>{row.regTime}</td>
+            <td>{row.updateTime}</td>
+            <td>{row.invisible ? "Yes" : "No"}</td>
             <td>
               {
-                row.invisable ? <button
+                row.invisible ? <button
                 className="btn-success"
                 onClick={handleRestore}
               >
@@ -70,24 +72,18 @@ const TableComponent: React.FC<TableComponentProps> = ({ data }) => {
 };
 
 function ManageProject() {
-  const [projectData, setProjectData] = useState([
-    {
-      id: 1,
-      title: "Project 1",
-      endDate: "2024-12-31",
-      regDate: "2024-01-01",
-      updateDate: "2024-06-01",
-      deactive: true,
-    },
-    {
-      id: 2,
-      title: "Project 2",
-      endDate: "2025-12-31",
-      regDate: "2025-01-01",
-      updateDate: "2025-06-01",
-      deactive: false,
-    },
-  ]);
+  const [projectData, setProjectData] = useState([]);
+  const [page, setPage] = useState(1);
+
+  const handleManangeProject = async () => {
+    const response = await fetcher.get(`${MANAGE_MEMBER_API}${page - 1}`);
+    setProjectData(response.data);
+    console.log(response.data);
+  };
+
+  useEffect(() => {
+    handleManangeProject();
+  }, []);
   return (
     <>
       <Header />

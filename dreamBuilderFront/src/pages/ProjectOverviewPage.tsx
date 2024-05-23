@@ -35,6 +35,19 @@ const FlexItem = styled.div`
   box-sizing: border-box;
 `;
 
+function LoadingSpinner() {
+  return (
+    <div
+      className="d-flex justify-content-center align-items-center"
+      style={{ height: "100vh" }}
+    >
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  );
+}
+
 export default function ProjectOverviewPage() {
   const [data, setData] = useState<Data[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -109,7 +122,7 @@ export default function ProjectOverviewPage() {
             dataLength={data.length}
             next={fetchMoreData}
             hasMore={hasMore}
-            loader={<h4>Loading...</h4>}
+            loader={<div>{LoadingSpinner()}</div>}
           >
             <FlexContainer>
               {data.map((project, index) => (
