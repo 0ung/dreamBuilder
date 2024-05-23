@@ -4,6 +4,15 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
+import codehows.dream.dreambulider.constats.Authority;
+import codehows.dream.dreambulider.dto.Board.*;
+import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.entity.HashTag;
+import codehows.dream.dreambulider.entity.Member;
+import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.HashTagRepository;
+import codehows.dream.dreambulider.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,12 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
 import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
-import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.Member;
-import codehows.dream.dreambulider.repository.BoardRepository;
-import codehows.dream.dreambulider.repository.HashTagRepository;
-import codehows.dream.dreambulider.repository.MemberRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +32,7 @@ public class BoardService {
 	private final MemberRepository memberRepository;
 	private final HashTagRepository hashTagRepository;
 	private final ReplyService replyService;
-
+	private final BoardFileService boardFileService;
 
 	public Board save(BoardRequestDTO boardDTO, String email) {
 		return boardRepository.save(Board.builder()
@@ -79,6 +82,18 @@ public class BoardService {
 			default -> PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id"));
 		};
 		return pageable;
+	}
+
+	//관리자 게시물 조회 페이지
+	public Page<Board> getAdminBoardList(Pageable pageable) {
+		return boardRepository.findAll(pageable);
+	}
+
+	//게시물 엑셀 조회 페이지
+	public List<Board> excelBoardList() {
+		List<Board> boardList = boardRepository.findAll();
+
+		return boardList;
 	}
 
 	//게시글 상세 조회
@@ -136,6 +151,7 @@ public class BoardService {
 		return board;
 	}
 
+	//리스트 만들기
 	public List<BoardListResponseDTO> boardToList(Page<Board> boardList, Principal principal) {
 		List<BoardListResponseDTO> list = new ArrayList<>();
 
@@ -156,6 +172,44 @@ public class BoardService {
 		}
 
 		return list;
+	}
+
+	//관리자 게시글 삭제
+	@Transactional
+	public void invisible(long boardId) {
+		Board board = boardRepository.findById(boardId)
+				.orElseThrow(() -> new IllegalArgumentException("not found:" + boardId));
+		board.setInvisible(true);
+		board.setDeleteBy(Authority.ROLE_USER);
+		boardRepository.save(board);
+	}
+
+	//관리자 게시글 복구
+	@Transactional
+	public void visibleUp(long boardId) {
+		Board board = boardRepository.findById(boardId)
+				.orElseThrow(() -> new IllegalArgumentException("not found:" + boardId));
+		board.setInvisible(false);
+		board.setDeleteBy(Authority.ROLE_ADMIN);
+		boardRepository.save(board);
+	}
+
+	//마이페이지 작성 글 찾기
+	public Page<Board> myBoard(Principal principal, Pageable pageable) {
+		Member member = memberRepository.findMemberByEmail(principal.getName())
+				.orElseThrow(() -> new IllegalArgumentException("not found member" ));
+
+		return boardRepository.findBoardByMemberId(member.getId(), pageable);
+	}
+
+	//이번 달 작성한 글 개수
+	public Long countBoard(Principal principal) {
+		Member member = memberRepository.findMemberByEmail(principal.getName())
+				.orElseThrow(() -> new IllegalArgumentException("not found member" ));
+
+		Long count = boardRepository.countBoardByMember(member.getId());
+
+		return count;
 	}
 
 }

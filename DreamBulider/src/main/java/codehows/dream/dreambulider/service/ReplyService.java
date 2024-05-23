@@ -10,6 +10,7 @@ import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyResponseDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyUpdateDTO;
+
 import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.Reply;
@@ -18,7 +19,7 @@ import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.ReplyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
+import java.security.Principal;
 @Service
 @RequiredArgsConstructor
 public class ReplyService {
@@ -89,5 +90,13 @@ public class ReplyService {
 	public Long getReplyCnt(long boardId){
 		return replyRepository.countReplyByBoardId(boardId);
 	}
+    //이번 달 작성한 댓글 개수
+    public Long countReply(Principal principal) {
+        Member member = memberRepository.findMemberByEmail(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("not found member" ));
 
+        Long count = replyRepository.countReplyByMember(member.getId());
+
+        return count;
+    }
 }

@@ -20,11 +20,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.hibernate.annotations.ColumnDefault;
+
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Board {
+public class Board extends BaseTimeEntity{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "board_id")
@@ -41,7 +44,8 @@ public class Board {
 	private Date endDate;
 
 	@Column(nullable = false)
-	private boolean invisible = false;
+	@ColumnDefault("false")
+	private boolean invisible;
 
 	@Enumerated(EnumType.STRING)
 	private Authority deleteBy;
@@ -73,5 +77,6 @@ public class Board {
 	//게시글 비활성화(삭제)
 	public void updateInvisible() {
 		this.invisible = true;
+		this.deleteBy = Authority.ROLE_USER;
 	}
 }

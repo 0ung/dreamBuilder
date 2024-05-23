@@ -3,6 +3,19 @@ package codehows.dream.dreambulider.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import codehows.dream.dreambulider.constats.Authority;
+
+import codehows.dream.dreambulider.entity.Member;
+import codehows.dream.dreambulider.entity.RefreshToken;
+import codehows.dream.dreambulider.jwt.TokenProvider;
+import codehows.dream.dreambulider.repository.LikedRepository;
+import codehows.dream.dreambulider.repository.MemberRepository;
+import codehows.dream.dreambulider.repository.RefreshTokenRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -16,34 +29,28 @@ import codehows.dream.dreambulider.constats.Authority;
 import codehows.dream.dreambulider.dto.Member.MemberFormDTO;
 import codehows.dream.dreambulider.dto.Member.MemberLoginDTO;
 import codehows.dream.dreambulider.dto.Member.TokenResponse;
-import codehows.dream.dreambulider.entity.Member;
-import codehows.dream.dreambulider.entity.RefreshToken;
-import codehows.dream.dreambulider.jwt.TokenProvider;
-import codehows.dream.dreambulider.repository.MemberRepository;
-import codehows.dream.dreambulider.repository.RefreshTokenRepository;
-import jakarta.servlet.http.Cookie;
+
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.servlet.View;
 
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Service
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
-	private final MemberRepository memberRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final TokenProvider tokenProvider;
-	private final RefreshTokenRepository refreshTokenRepository;
-	private final RefreshTokenService refreshTokenService;
-	private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final LikedRepository likedRepository;
+
 
 	public Member save(MemberFormDTO member) {
 		if (member == null) {
@@ -174,10 +181,8 @@ public class MemberService implements UserDetailsService {
         memberRepository.save(member);
     }
 
-
     public Page<Member> findAll(Pageable pageable){
         return memberRepository.findAll(pageable);
     }
-
 
 }

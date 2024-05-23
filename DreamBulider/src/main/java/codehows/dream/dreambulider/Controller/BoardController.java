@@ -32,13 +32,21 @@ import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
 import codehows.dream.dreambulider.dto.Board.BoardResponseDTO;
 import codehows.dream.dreambulider.dto.HashTag.MemberNoExistExcpetion;
 import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.entity.HashTag;
 import codehows.dream.dreambulider.repository.HashTagRepository;
 import codehows.dream.dreambulider.service.BoardFileService;
 import codehows.dream.dreambulider.service.BoardService;
 import codehows.dream.dreambulider.service.HashTagService;
 import codehows.dream.dreambulider.service.LikedService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @RestController
 @RequiredArgsConstructor
@@ -165,4 +173,56 @@ public class BoardController {
 			.body(resource);
 	}
 
+	//엑셀 다운로드
+	@GetMapping("/excel/download")
+	public void excelDownload(HttpServletResponse response) throws IOException {
+
+		List<Board> boardList = boardService.excelBoardList();
+
+		Workbook workbook = new XSSFWorkbook();
+		Sheet sheet = workbook.createSheet("first board sheet");
+
+		Row row = null;
+		Cell cell = null;
+		int rowNum = 0;
+
+		row = sheet.createRow(rowNum++);
+		cell = row.createCell(0);
+		cell.setCellValue("번호");
+		cell = row.createCell(1);
+		cell.setCellValue("제목");
+		cell = row.createCell(2);
+		cell.setCellValue("내용");
+		cell = row.createCell(3);
+		cell.setCellValue("조회수");
+		cell = row.createCell(4);
+		cell.setCellValue("마감일자");		
+		cell = row.createCell(5);
+		cell.setCellValue("해시태그");
+		
+		for(Board board : boardList) {
+			row = sheet.createRow(rowNum++);
+			cell = row.createCell(0);
+			cell.setCellValue(board.getId());
+			cell = row.createCell(1);
+			cell.setCellValue(board.getTitle());
+			cell = row.createCell(2);
+			cell.setCellValue(board.getContent());
+			cell = row.createCell(3);
+			cell.setCellValue(board.getCnt());
+			cell = row.createCell(4);
+			cell.setCellValue(board.getEndDate());
+			cell = row.createCell(5);
+			List<String> hashTagList = hashTagService.findAll(board.getId());
+			cell.setCellValue(hashTagList.toString());
+		}
+
+		// 컨텐츠 타입과 파일명 지정
+		response.setContentType("ms-vnd/excel");
+		response.setHeader("Content-Disposition", "attachment;filename=example.xlsx");
+
+		// Excel File Output
+		workbook.write(response.getOutputStream());
+		workbook.close();
+	}
 }
