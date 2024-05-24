@@ -17,6 +17,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -181,4 +182,17 @@ public class BoardController {
 		workbook.write(response.getOutputStream());
 		workbook.close();
 	}
+
+	//상위 5개 출력
+	@GetMapping("/api/main")
+	public ResponseEntity<List<BoardRequestDTO>> topBoard() {
+		List<BoardRequestDTO> board = boardService.topBoard()
+				.stream()
+				.map(BoardRequestDTO::new)
+				.toList();
+		log.info(board.toString());
+		return ResponseEntity.ok()
+				.body(board);
+	}
+
 }

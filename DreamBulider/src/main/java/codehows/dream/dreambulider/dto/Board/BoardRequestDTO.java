@@ -1,5 +1,6 @@
 package codehows.dream.dreambulider.dto.Board;
 
+import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.HashTag;
 import codehows.dream.dreambulider.service.BoardFileService;
 import lombok.AllArgsConstructor;
@@ -42,5 +43,11 @@ public class BoardRequestDTO {
             matcher.appendTail(updatedContent);
             this.setContent(updatedContent.toString());
         }
+    }
+
+    public BoardRequestDTO(Board board) {
+        this.title = board.getTitle();
+        this.content = board.getContent();
+        this.endDate = board.getEndDate();
     }
 }

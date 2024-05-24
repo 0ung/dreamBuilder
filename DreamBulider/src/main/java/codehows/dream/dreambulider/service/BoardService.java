@@ -7,8 +7,10 @@ import codehows.dream.dreambulider.entity.HashTag;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.repository.BoardRepository;
 import codehows.dream.dreambulider.repository.HashTagRepository;
+import codehows.dream.dreambulider.repository.LikedRepository;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BoardService {
 	private final BoardRepository boardRepository;
@@ -30,6 +33,7 @@ public class BoardService {
 	private final MemberRepository memberRepository;
 	private final HashTagRepository hashTagRepository;
 	private final BoardFileService boardFileService;
+	private final LikedRepository likedRepository;
 
 	public Board save(BoardRequestDTO boardDTO, String email) {
 		return boardRepository.save(Board.builder()
@@ -47,19 +51,19 @@ public class BoardService {
 		Page<Board> boards = null;
 		String escapedKeyword = keyword.replace("\\", "\\\\");
 		switch (criteria.toLowerCase()) {
-			case "title" -> boards = boardRepository.findByTitleContainingIgnoreCase(escapedKeyword, pageable);
-			case "content" -> boards = boardRepository.findByContentContainingIgnoreCase(escapedKeyword, pageable);
-			case "member" -> boards = boardRepository.findByMemberContainingIgnoreCase(escapedKeyword, pageable);
-			case "title,content" -> boards = boardRepository.findByTitleOrContent(escapedKeyword, pageable);
-			case "title,member" -> boards = boardRepository.findByTitleOrAuthor(escapedKeyword, pageable);
-			case "content,member" -> boards = boardRepository.findByContentOrAuthor(escapedKeyword, pageable);
+			case "title" -> boards = boardRepository.findByTitleContainingIgnoreCaseAndInvisibleFalse(escapedKeyword, pageable);
+			case "content" -> boards = boardRepository.findByContentContainingIgnoreCaseAndInvisibleFalse(escapedKeyword, pageable);
+			case "member" -> boards = boardRepository.findByMemberContainingIgnoreCaseAndInvisibleFalse(escapedKeyword, pageable);
+			case "title,content" -> boards = boardRepository.findByTitleOrContentAndInvisibleFalse(escapedKeyword, pageable);
+			case "title,member" -> boards = boardRepository.findByTitleOrMemberAndInvisibleFalse(escapedKeyword, pageable);
+			case "content,member" -> boards = boardRepository.findByContentOrMemberAndInvisibleFalse(escapedKeyword, pageable);
             case "hashtag" -> {
                 for(Long boardId : hashTagRepository.findHashTagByHashTag(escapedKeyword)) {
-                    boards = boardRepository.findByboardId(boardId, pageable);
+                    boards = boardRepository.findByboardIdAndInvisibleFalse(boardId, pageable);
                 }
             }
             case "title,content,member" ->
-					boards = boardRepository.findByTitleOrContentOrAuthor(escapedKeyword, pageable);
+					boards = boardRepository.findByTitleOrContentOrMemberInvisibleFalse(escapedKeyword, pageable);
 			default -> boards = boardRepository.findAll(pageable);
 		};
 		return boardToList(boards, principal);
@@ -193,7 +197,7 @@ public class BoardService {
 		Member member = memberRepository.findMemberByEmail(principal.getName())
 				.orElseThrow(() -> new IllegalArgumentException("not found member" ));
 
-		return boardRepository.findBoardByMemberId(member.getId(), pageable);
+		return boardRepository.findBoardByMemberIdAndInvisibleFalse(member.getId(), pageable);
 	}
 
 	//이번 달 작성한 글 개수
@@ -205,5 +209,28 @@ public class BoardService {
 
 		return count;
 	}
+
+	//메인페이지 상위 5개 출력
+	public List<Board> topBoard() {
+//		List<Long> boardId = likedRepository.groupByBoardId();	//좋아요 많은 순으로 출력
+//		List<Board> topBoard = new ArrayList<>();
+//		log.info(boardId.toString());
+//		for(Long id : boardId) {
+//			Board board = boardRepository.findById(id)
+//					.orElseThrow(() -> new IllegalArgumentException("not found boardId" ));
+//			topBoard.add(board);
+//		}
+		List<Long> boardId = likedRepository.findLikedVisibleBoards();
+		log.info(boardId.toString());
+		List<Board> topBoard = new ArrayList<>();
+		for(Long id : boardId) {
+			Board board = boardRepository.findById(id)
+					.orElseThrow(() -> new IllegalArgumentException("not found boardId" ));
+			topBoard.add(board);
+		}
+		log.info(topBoard.toString());
+		return topBoard;
+	}
+
 
 }
