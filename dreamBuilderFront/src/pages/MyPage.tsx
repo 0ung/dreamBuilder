@@ -394,7 +394,13 @@ function MyPage() {
             >
               비밀번호 확인
             </SignupInput>
-            
+            <Inputvalidation
+              data={() => {
+                return handleCheckPassword(checkPassword);
+              }}
+            >
+              비밀번호 확인
+            </Inputvalidation>
             </>)}
 
           </div>
