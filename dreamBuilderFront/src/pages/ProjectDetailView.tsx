@@ -36,8 +36,8 @@ interface Reply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   nestReply: NestedReply[];
   invisible: boolean;
 }
@@ -46,8 +46,8 @@ interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   invisible: boolean;
 }
 
@@ -176,6 +176,9 @@ const ProjectDetailView: React.FC = () => {
   const [reply, setReply] = useState<Reply[]>([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
+  const [author, setAuthor] = useState(false);
+
+  const handleAuthor = () => {};
 
   const handleModify = () => {
     navigator(PROJECT_REG, { state: { boardId: boardId, modify: true } });
@@ -249,6 +252,8 @@ const ProjectDetailView: React.FC = () => {
       );
       const data = response.data;
       setReply(data);
+      console.log(data);
+      ("");
     } catch (error) {
       console.log(error);
     }
@@ -344,6 +349,7 @@ const ProjectDetailView: React.FC = () => {
         replies={reply}
         boardId={boardId}
         setReplies={setReply}
+        isAdmins={false}
       />
       <Pagination
         key={"pagination"}

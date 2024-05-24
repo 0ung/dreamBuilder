@@ -74,7 +74,7 @@ public class MemberController {
         try {
             return new ResponseEntity<>(memberService.login(memberLoginDTO, response), HttpStatus.OK);
         } catch (IllegalStateException illegalStateException) {
-            return new ResponseEntity<>("탈퇴한 회원입니다.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("탈퇴한 회원입니다.", HttpStatus.UNAUTHORIZED);
         } catch (Exception exception) {
             return new ResponseEntity<>("입력정보를 확인해주세요", HttpStatus.BAD_REQUEST);
         }

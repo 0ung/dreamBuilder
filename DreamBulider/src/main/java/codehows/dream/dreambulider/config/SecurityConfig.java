@@ -50,7 +50,7 @@ public class SecurityConfig {
 					request.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 						.requestMatchers(antMatcher("/member/**")).permitAll()
 						.requestMatchers(antMatcher("/swagger")).permitAll()
-						.anyRequest().permitAll();
+						.anyRequest().authenticated();
 				}
 			)
 			.cors(

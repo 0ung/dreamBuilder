@@ -10,9 +10,9 @@ interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
+  regTime: string;
   invisible: boolean;
-  updateDate: string | null;
+  updateTime: string | null;
 }
 
 interface NestedCommentProps {
@@ -37,9 +37,9 @@ const NestedComment: React.FC<NestedCommentProps> = ({
         id: nestedReplyState.id,
         comment: nestedReplyState.comment,
         nickname: nestedReplyState.nickname,
-        regDate: nestedReplyState.regDate,
+        regTime: nestedReplyState.regTime,
         invisible: true,
-        updateDate: nestedReplyState.updateDate,
+        updateTime: nestedReplyState.updateTime,
       });
     }
   };
@@ -67,9 +67,9 @@ const NestedComment: React.FC<NestedCommentProps> = ({
         <div className="d-flex justify-content-between align-items-center mb-2">
           <h6 className="card-title mb-0">{nestedReplyState.nickname}</h6>
           <small className="text-muted">
-            {nestedReplyState.updateDate == null
-              ? nestedReplyState.regDate
-              : `${nestedReplyState.updateDate} (수정됨)`}
+            {nestedReplyState.updateTime == null
+              ? nestedReplyState.regTime
+              : `${nestedReplyState.updateTime} (수정됨)`}
           </small>
         </div>
         {nestedReplyState.invisible ? (

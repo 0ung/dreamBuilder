@@ -7,8 +7,8 @@ interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   invisible: boolean;
 }
 
@@ -16,8 +16,8 @@ interface Reply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   nestReply: NestedReply[];
   invisible: boolean;
 }

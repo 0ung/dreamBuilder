@@ -13,8 +13,8 @@ interface Reply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   nestReply: NestedReply[];
   invisible: boolean;
 }
@@ -23,8 +23,8 @@ interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   invisible: boolean;
 }
 
@@ -44,7 +44,6 @@ const Comment: React.FC<CommentProps> = ({
   toggleReplies,
 }) => {
   const [isAdmins, setAdmin] = useState<boolean>(false);
-  const [isUser, setUser] = useState<boolean>(false);
   const [modify, setModify] = useState<boolean>(false);
   const [comment, setComment] = useState<string>(reply.comment);
   const [rereply, setRereply] = useState<string>("");
@@ -76,8 +75,8 @@ const Comment: React.FC<CommentProps> = ({
           id: reply.id,
           comment: reply.comment,
           nickname: reply.nickname,
-          regDate: reply.regDate,
-          updateDate: reply.updateDate,
+          regTime: reply.regTime,
+          updateTime: reply.updateTime,
           nestReply: reply.nestReply,
           invisible: true,
         });
@@ -168,9 +167,9 @@ const Comment: React.FC<CommentProps> = ({
             <h5 className="card-title mb-0">{replyState.nickname}</h5>
           )}
           <small className="text-muted">
-            {replyState.updateDate == null
-              ? replyState.regDate
-              : `${replyState.updateDate} (수정됨)`}
+            {replyState.updateTime == null
+              ? replyState.regTime
+              : `${replyState.updateTime} (수정됨)`}
           </small>
         </div>
         <div className="row">

@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import kakao from "../image/kakao.png";
+import { LOGIN, SIGNUP } from "../constants/page_constants";
+import fetcher from "../fetcher";
+import { useNavigate } from "react-router-dom";
+import { SIGNUP_API } from "../constants/api_constants";
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
   placeholder: string;
@@ -50,13 +54,14 @@ function Inputvalidation({ children, data, onChange }: validation) {
 }
 
 export default function SignUpPage() {
-  const [userId, setUserId] = useState("");
+  const [email, setEmail] = useState("");
   const [nickName, setNickName] = useState("");
   const [password, setPassword] = useState("");
   const [checkPassword, setCheckPassword] = useState("");
+  const navigator = useNavigate();
 
-  const handleUserId = (e: string) => {
-    const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
+  const handleEmail = (e: string) => {
+    const regExp = new RegExp("^[A-Za-z0-9]+@[a-z]+\\.[a-z]{2,6}$");
     return regExp.test(e);
   };
   const handleNickName = (e: string) => {
@@ -68,6 +73,29 @@ export default function SignUpPage() {
       "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_])[A-Za-z\\d\\W_]{8,20}$"
     );
     return regExp.test(e);
+  };
+
+  const handleSignup = async () => {
+    try {
+      const formData = {
+        email: email,
+        name: nickName,
+        password: password,
+      };
+      const response = await fetcher.post(
+        SIGNUP_API,
+        JSON.stringify(formData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert("회원가입이 완료되었습니다.");
+      navigator(LOGIN);
+    } catch (error) {
+      alert("입력한 정보를 다시 확인해주세요");
+    }
   };
 
   const handleCheckPassword = (e: string) => {
@@ -88,14 +116,14 @@ export default function SignUpPage() {
             placeholder="아이디를 입력해주세요 (8~15자 영대소문자, 숫자만 가능)"
             type="text"
             onChange={(e) => {
-              setUserId(e.target.value);
+              setEmail(e.target.value);
             }}
           >
             이메일
           </SignupInput>
           <Inputvalidation
             data={() => {
-              return handleUserId(userId);
+              return handleEmail(email);
             }}
           >
             아이디
@@ -152,6 +180,7 @@ export default function SignUpPage() {
             <button
               className="btn btn-primary"
               style={{ width: "15%", backgroundColor: "#348f8f" }}
+              onClick={handleSignup}
             >
               가입
             </button>

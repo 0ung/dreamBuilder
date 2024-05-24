@@ -1,7 +1,6 @@
 import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { image } from "@uiw/react-md-editor";
 import fetcher from "../fetcher";
 import { MANAGE_FILE } from "../constants/api_constants";
 
@@ -10,28 +9,35 @@ interface DropZoneProps {
   setFilteredFiles: (files: File[]) => void;
 }
 
+interface FilePolicy {
+  uploadNum: number;
+  uploadSize: number;
+  docExtension: string;
+  imageExtension: string;
+  videoExtension: string;
+}
+
 const MyComponent: React.FC<DropZoneProps> = ({
   filteredFiles,
   setFilteredFiles,
 }) => {
-  const [filePolicy, setFilePolicy] = useState({
-    uploadNum: 2,
-    uploadSize: 150000000,
-    docExtension: "",
-    imageExtension: "",
-    videoExtension: "",
-  });
+  const [filePolicy, setFilePolicy] = useState<FilePolicy | null>(null);
+  const [fileNum, setFileNum] = useState<number>(0);
 
   const getFilePolicy = async () => {
-    const response = await fetcher.get(MANAGE_FILE);
-    const data = response.data;
-    setFilePolicy({
-      uploadNum: data.uploadNum,
-      uploadSize: data.uploadSize,
-      docExtension: data.docExtension,
-      imageExtension: data.imageExtension,
-      videoExtension: data.videoExtension,
-    });
+    try {
+      const response = await fetcher.get(MANAGE_FILE);
+      const data = response.data;
+      setFilePolicy({
+        uploadNum: data.uploadNum,
+        uploadSize: data.uploadSize,
+        docExtension: data.docExtension,
+        imageExtension: data.imageExtension,
+        videoExtension: data.videoExtension,
+      });
+    } catch (error) {
+      console.error("Error fetching file policy:", error);
+    }
   };
 
   useEffect(() => {
@@ -42,60 +48,76 @@ const MyComponent: React.FC<DropZoneProps> = ({
     console.log("Updated filePolicy: ", filePolicy);
   }, [filePolicy]);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (!handleFileCnt(acceptedFiles)) {
-      return;
-    }
-    const filteredFiles = acceptedFiles.filter((file) => {
-      const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
-      return handleFileExtension(fileExtension) && handleFileSize(file.size);
-    });
-    setFilteredFiles((prevFiles) => [...prevFiles, ...filteredFiles]);
-    console.log(filteredFiles);
-  }, []);
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const num = fileNum + acceptedFiles.length;
+      if (filePolicy && !handleFileCnt(acceptedFiles, num)) {
+        return;
+      }
+      const filteredFiles = acceptedFiles.filter((file) => {
+        const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+        return (
+          handleFileExtension(fileExtension) &&
+          filePolicy &&
+          handleFileSize(file.size)
+        );
+      });
+      setFilteredFiles((prevFiles) => [...prevFiles, ...filteredFiles]);
+      setFileNum(fileNum + filteredFiles.length);
+    },
+    [filePolicy, fileNum, filteredFiles]
+  );
 
   const handleFileExtension = (fileExtension: string) => {
-    console.log(filePolicy);
+    if (filePolicy) {
+      const { docExtension, imageExtension, videoExtension } = filePolicy;
 
-    const { docExtension, imageExtension, videoExtension } = filePolicy;
+      const docExtensionsArray = docExtension.split(",");
+      const imageExtensionsArray = imageExtension.split(",");
+      const videoExtensionsArray = videoExtension.split(",");
 
-    const docExtensionsArray = docExtension.split(",");
-    const imageExtensionsArray = imageExtension.split(",");
-    const videoExtensionsArray = videoExtension.split(",");
+      console.log(docExtensionsArray);
+      const isValidExtension =
+        docExtensionsArray.includes(fileExtension) ||
+        imageExtensionsArray.includes(fileExtension) ||
+        videoExtensionsArray.includes(fileExtension);
 
-    console.log(docExtensionsArray);
-    const isValidExtension =
-      docExtensionsArray.includes(fileExtension) ||
-      imageExtensionsArray.includes(fileExtension) ||
-      videoExtensionsArray.includes(fileExtension);
-
-    if (!isValidExtension) {
-      alert("업로드가 금지된 확장자입니다. 다시 업로드 해주세요");
+      if (!isValidExtension) {
+        alert("업로드가 금지된 확장자입니다. 다시 업로드 해주세요");
+      }
+      return isValidExtension;
     }
-    return isValidExtension;
+    return false;
   };
 
   const handleFileSize = (filesize: number) => {
-    if (filesize > filePolicy.uploadSize) {
-      alert(`파일 사이즈가 ${filePolicy.uploadSize}KB 를 넘을 수 없습니다.`);
+    if (filePolicy && filesize > filePolicy.uploadSize) {
+      alert(
+        `파일 사이즈가 ${filePolicy.uploadSize / 1024}KB 를 넘을 수 없습니다.`
+      );
       return false;
     }
     return true;
   };
 
-  const handleFileCnt = (file: File[]) => {
-    if (file.length > filePolicy.uploadNum) {
-      alert(`파일 업로드 개수가 ${filePolicy.uploadNum}개를 넘을 수 없습니다.`);
-      return false;
+  const handleFileCnt = (newFiles: File[], num: number) => {
+    if (filePolicy) {
+      if (num > filePolicy.uploadNum) {
+        alert(
+          `파일 업로드 개수가 ${filePolicy.uploadNum}개를 넘을 수 없습니다.`
+        );
+        return false;
+      }
     }
     return true;
   };
 
   const clearDropZone = () => {
     setFilteredFiles([]);
+    setFileNum(0);
   };
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } =
-    useDropzone({ onDrop });
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const files = filteredFiles.map((file) => (
     <li key={file.name} className="list-group-item">
