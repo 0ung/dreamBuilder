@@ -182,6 +182,18 @@ function MyPage() {
 
   // 개인정보 수정
   const handleUsermodify = async ()=>{
+    const regExp1 = new RegExp("^[A-Za-z0-9]{8,15}$");
+    if(!regExp1.test(nickName)){
+      alert("닉네임을 확인해주세요")
+      return;
+    }
+    const regExp2 = new RegExp(
+    "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_])[A-Za-z\\d\\W_]{8,20}$"
+    );
+    if(!regExp2.test(password)){
+      alert("비밀번호를 확인해주세요")
+      return;
+    }
     try{
       const sendAccessToken: string | null = localStorage.getItem("accessToken");
       if (sendAccessToken !== null) {
@@ -363,7 +375,7 @@ function MyPage() {
             { kakaouser ? (
                 <></>
             ):(<>
-                            <SignupInput
+              <SignupInput
               placeholder="비밀번호를 입력해주세요 (8~20자 영대소문자, 숫자, 특수문자 하나씩 기입 )"
               type="password"
               onChange={(e) => {
@@ -382,13 +394,7 @@ function MyPage() {
             >
               비밀번호 확인
             </SignupInput>
-            <Inputvalidation
-              data={() => {
-                return handleCheckPassword(checkPassword);
-              }}
-            >
-              비밀번호 확인
-            </Inputvalidation>
+            
             </>)}
 
           </div>

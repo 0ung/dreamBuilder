@@ -184,7 +184,9 @@ public class MemberService implements UserDetailsService {
 	public void modify (String email, String name, String password) {
 		Member member = memberRepository.findMemberByEmail(email).orElseThrow();
 		String encodePasswrod = passwordEncoder.encode(password);
-		if(password == null){
+		if(name == null && password == null){
+			throw new IllegalArgumentException("잘못된 정보");
+		} else if(password == null){
 			member.nameupdatemodify(name);
 		}else if(name == null){
 			member.pwupdatemodify(password);
