@@ -6,6 +6,7 @@ export const TOKEN_REFRESH_API = "/member/refresh";
 export const MANAGE_MEMBERS = "/memberList/";
 export const withdrawal_API = "/memberlist/withdrawl";
 export const restore_API = "/memberlist/restore";
+export const modify_API = "/member/modify";
 
 export const BOARD_REGISTRATION = "/api/addBoard";
 export const BOARD_UPDATE = "/api/board/";

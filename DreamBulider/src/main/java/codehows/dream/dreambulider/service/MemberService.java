@@ -181,6 +181,19 @@ public class MemberService implements UserDetailsService {
         memberRepository.save(member);
     }
 
+	public void modify (String email, String name, String password) {
+		Member member = memberRepository.findMemberByEmail(email).orElseThrow();
+		String encodePasswrod = passwordEncoder.encode(password);
+		if(password == null){
+			member.nameupdatemodify(name);
+		}else if(name == null){
+			member.pwupdatemodify(password);
+		}else{
+			member.updatemodify(name, encodePasswrod);
+		}
+		memberRepository.save(member);
+	}
+
     public Page<Member> findAll(Pageable pageable){
         return memberRepository.findAll(pageable);
     }

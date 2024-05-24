@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { Button, Modal } from "react-bootstrap";
 import base64 from "base-64";
 import fetcher from "../fetcher";
-import { withdrawal_API } from "../constants/api_constants";
+import { withdrawal_API, modify_API } from "../constants/api_constants";
 
 const dumpData = [
   {
@@ -165,6 +165,36 @@ function MyPage() {
   }
   const handleShowDeleteModal = () => setShowDeleteModal(true);
 
+  // 개인정보 수정
+  const handleUsermodify = async ()=>{
+    try{
+      handleNickName(nickName);
+      handlePassword(password);
+      handleCheckPassword(checkPassword);
+      const sendAccessToken: string | null = localStorage.getItem("accessToken");
+      if (sendAccessToken !== null) {
+        const formData = {
+          email: handleJWT(sendAccessToken),
+          name: nickName,
+          password: password,
+        };
+        const request = await fetcher.post(
+          modify_API,
+          JSON.stringify(formData),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+      alert("회원정보가 수정되었습니다.");
+      handleCloseUpdateModal();
+    }catch(error){
+      alert("입력정보를 확인해주세요")
+    }
+  }
+
   //입력 검증
   const handleNickName = (e: string) => {
     const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
@@ -316,14 +346,6 @@ function MyPage() {
             >
               닉네임
             </SignupInput>
-            
-            <Inputvalidation
-              data={() => {
-                return handleNickName(nickName);
-              }}
-            >
-              닉네임
-            </Inputvalidation>
           </div>
           <div>
             { kakaouser ? (
@@ -338,13 +360,7 @@ function MyPage() {
             >
               비밀번호
             </SignupInput>
-            <Inputvalidation
-              data={() => {
-                return handlePassword(password);
-              }}
-            >
-              비밀번호
-            </Inputvalidation>
+        
             <SignupInput
               type="password"
               placeholder=""
@@ -354,13 +370,6 @@ function MyPage() {
             >
               비밀번호 확인
             </SignupInput>
-            <Inputvalidation
-              data={() => {
-                return handleCheckPassword(checkPassword);
-              }}
-            >
-              비밀번호 확인
-            </Inputvalidation>
             </>)}
 
           </div>
@@ -369,7 +378,7 @@ function MyPage() {
           <Button variant="secondary" onClick={handleCloseUpdateModal}>
             닫기
           </Button>
-          <Button variant="primary" onClick={handleCloseUpdateModal}>
+          <Button variant="primary" onClick={handleUsermodify}>
             저장
           </Button>
         </Modal.Footer>
