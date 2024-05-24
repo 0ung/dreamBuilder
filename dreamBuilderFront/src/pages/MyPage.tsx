@@ -7,7 +7,9 @@ import styled from "styled-components";
 import { Button, Modal } from "react-bootstrap";
 import base64 from "base-64";
 import fetcher from "../fetcher";
-import { withdrawal_API, modify_API } from "../constants/api_constants";
+import { withdrawal_API, modify_API, LOGOUT_API } from "../constants/api_constants";
+import { useNavigate } from "react-router-dom";
+import { MAIN } from "../constants/page_constants";
 
 const dumpData = [
   {
@@ -100,6 +102,7 @@ function Inputvalidation({ children, data, onChange }: validation) {
 }
 
 function MyPage() {
+  const navigate = useNavigate();
   const [nickName, setNickName] = useState("");
   const [password, setPassword] = useState("");
   const [checkPassword, setCheckPassword] = useState("");
@@ -157,20 +160,29 @@ function MyPage() {
             },
           }
         );
+        handleLogout();
+        navigate(MAIN);
       }
   
     }catch(error){
 
     }
   }
+  const handleLogout = async () => {
+    try {
+      const response = await fetcher.post(LOGOUT_API);
+      localStorage.removeItem("accessToken");
+      setAccessToken("");
+      console.log(response.data);
+    } catch (error) {
+      console.error;
+    }
+  };
   const handleShowDeleteModal = () => setShowDeleteModal(true);
 
   // 개인정보 수정
   const handleUsermodify = async ()=>{
     try{
-      handleNickName(nickName);
-      handlePassword(password);
-      handleCheckPassword(checkPassword);
       const sendAccessToken: string | null = localStorage.getItem("accessToken");
       if (sendAccessToken !== null) {
         const formData = {
@@ -360,7 +372,7 @@ function MyPage() {
             >
               비밀번호
             </SignupInput>
-        
+            
             <SignupInput
               type="password"
               placeholder=""
@@ -370,6 +382,13 @@ function MyPage() {
             >
               비밀번호 확인
             </SignupInput>
+            <Inputvalidation
+              data={() => {
+                return handleCheckPassword(checkPassword);
+              }}
+            >
+              비밀번호 확인
+            </Inputvalidation>
             </>)}
 
           </div>
