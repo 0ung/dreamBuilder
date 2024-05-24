@@ -7,7 +7,9 @@ import styled from "styled-components";
 import { Button, Modal } from "react-bootstrap";
 import base64 from "base-64";
 import fetcher from "../fetcher";
-import { withdrawal_API } from "../constants/api_constants";
+import { withdrawal_API, modify_API, LOGOUT_API } from "../constants/api_constants";
+import { useNavigate } from "react-router-dom";
+import { MAIN } from "../constants/page_constants";
 
 const dumpData = [
   {
@@ -100,6 +102,7 @@ function Inputvalidation({ children, data, onChange }: validation) {
 }
 
 function MyPage() {
+  const navigate = useNavigate();
   const [nickName, setNickName] = useState("");
   const [password, setPassword] = useState("");
   const [checkPassword, setCheckPassword] = useState("");
@@ -157,13 +160,64 @@ function MyPage() {
             },
           }
         );
+        handleLogout();
+        navigate(MAIN);
       }
   
     }catch(error){
 
     }
   }
+  const handleLogout = async () => {
+    try {
+      const response = await fetcher.post(LOGOUT_API);
+      localStorage.removeItem("accessToken");
+      setAccessToken("");
+      console.log(response.data);
+    } catch (error) {
+      console.error;
+    }
+  };
   const handleShowDeleteModal = () => setShowDeleteModal(true);
+
+  // 개인정보 수정
+  const handleUsermodify = async ()=>{
+    const regExp1 = new RegExp("^[A-Za-z0-9]{8,15}$");
+    if(!regExp1.test(nickName)){
+      alert("닉네임을 확인해주세요")
+      return;
+    }
+    const regExp2 = new RegExp(
+    "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_])[A-Za-z\\d\\W_]{8,20}$"
+    );
+    if(!regExp2.test(password)){
+      alert("비밀번호를 확인해주세요")
+      return;
+    }
+    try{
+      const sendAccessToken: string | null = localStorage.getItem("accessToken");
+      if (sendAccessToken !== null) {
+        const formData = {
+          email: handleJWT(sendAccessToken),
+          name: nickName,
+          password: password,
+        };
+        const request = await fetcher.post(
+          modify_API,
+          JSON.stringify(formData),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+      alert("회원정보가 수정되었습니다.");
+      handleCloseUpdateModal();
+    }catch(error){
+      alert("입력정보를 확인해주세요")
+    }
+  }
 
   //입력 검증
   const handleNickName = (e: string) => {
@@ -316,20 +370,12 @@ function MyPage() {
             >
               닉네임
             </SignupInput>
-            
-            <Inputvalidation
-              data={() => {
-                return handleNickName(nickName);
-              }}
-            >
-              닉네임
-            </Inputvalidation>
           </div>
           <div>
             { kakaouser ? (
                 <></>
             ):(<>
-                            <SignupInput
+              <SignupInput
               placeholder="비밀번호를 입력해주세요 (8~20자 영대소문자, 숫자, 특수문자 하나씩 기입 )"
               type="password"
               onChange={(e) => {
@@ -338,13 +384,7 @@ function MyPage() {
             >
               비밀번호
             </SignupInput>
-            <Inputvalidation
-              data={() => {
-                return handlePassword(password);
-              }}
-            >
-              비밀번호
-            </Inputvalidation>
+            
             <SignupInput
               type="password"
               placeholder=""
@@ -369,7 +409,7 @@ function MyPage() {
           <Button variant="secondary" onClick={handleCloseUpdateModal}>
             닫기
           </Button>
-          <Button variant="primary" onClick={handleCloseUpdateModal}>
+          <Button variant="primary" onClick={handleUsermodify}>
             저장
           </Button>
         </Modal.Footer>

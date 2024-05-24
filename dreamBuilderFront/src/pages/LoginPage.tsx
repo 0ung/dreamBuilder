@@ -6,6 +6,7 @@ import { MAIN, SIGNUP } from "../constants/page_constants";
 import styled from "styled-components";
 import { LOGIN_API } from "../constants/api_constants";
 import fetcher from "../fetcher";
+import axios from "axios";
 
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
@@ -45,7 +46,7 @@ export default function LoginPage() {
         email: email,
         password: password,
       };
-      const response = await fetcher.post(LOGIN_API, JSON.stringify(formData), {
+      const response = await axios.post(`http://localhost:8080${LOGIN_API}`, JSON.stringify(formData), {
         headers: {
           "Content-Type": "application/json",
         },

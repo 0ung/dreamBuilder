@@ -44,6 +44,22 @@ public class Member extends BaseTimeEntity implements UserDetails {
 		return this;
 	}
 
+	public Member updatemodify(String name, String password){
+		this.name = name;
+		this.password = password;
+		return this;
+	}
+
+	public Member nameupdatemodify(String name){
+		this.name = name;
+		return this;
+	}
+
+	public Member pwupdatemodify(String password){
+		this.password = password;
+		return this;
+	}
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return null;

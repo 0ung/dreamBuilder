@@ -99,6 +99,20 @@ public class MemberController {
         }
     }
 
+    @PostMapping("/modify")
+    public ResponseEntity<?> modify(@RequestBody Map<String, String> requestBody) {
+        try{
+            String email = requestBody.get("email");
+            String name = requestBody.get("name");
+            String password = requestBody.get("password");
+            memberService.modify(email, name, password);
+            return ResponseEntity.ok("회원정보가 수정되었습니다.");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("잘못된 요청");
+        }
+    }
+
+
     @GetMapping("/withdrawal")
     public ResponseEntity<?> withdrawal(Principal principal) {
         try{
