@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import fetcher from "../fetcher";
 import {
@@ -18,16 +18,15 @@ interface NestedReply {
 interface NestedCommentProps {
   nestedReply: NestedReply;
   isAdmin: boolean;
-  isUser: boolean;
 }
 
 const NestedComment: React.FC<NestedCommentProps> = ({
   nestedReply,
   isAdmin,
-  isUser,
 }) => {
   const [modify, setModify] = useState<boolean>(false);
   const [comment, setComment] = useState<string>(nestedReply.comment);
+  const [admin, setAdmin] = useState<boolean>(false);
   const [nestedReplyState, setNestedReplyState] =
     useState<NestedReply>(nestedReply); // 대댓글 상태 변수
 
@@ -58,6 +57,10 @@ const NestedComment: React.FC<NestedCommentProps> = ({
   const handleCancel = () => {
     setModify(false);
   };
+
+  useEffect(() => {
+    setAdmin(isAdmin);
+  }, []);
   return (
     <div className="card mb-2 ms-3">
       <div className="card-body">
@@ -88,7 +91,7 @@ const NestedComment: React.FC<NestedCommentProps> = ({
         )}
 
         <div className="d-flex justify-content-end mt-2">
-          {isAdmin || isUser ? (
+          {admin ? (
             <>
               <button className="btn btn-danger btn-sm" onClick={handleDelete}>
                 삭제

@@ -31,7 +31,8 @@ interface NestedReply {
 interface CommentProps {
   reply: Reply;
   openReplies: { [key: number]: boolean };
-  boardId: number;
+  boardId?: number;
+  isAdmin: boolean;
   toggleReplies: (id: number) => void;
 }
 
@@ -39,20 +40,34 @@ const Comment: React.FC<CommentProps> = ({
   reply,
   openReplies,
   boardId,
+  isAdmin,
   toggleReplies,
 }) => {
-  const [isAdmin, setAdmin] = useState<boolean>(false);
+  const [isAdmins, setAdmin] = useState<boolean>(false);
   const [isUser, setUser] = useState<boolean>(false);
   const [modify, setModify] = useState<boolean>(false);
   const [comment, setComment] = useState<string>(reply.comment);
   const [rereply, setRereply] = useState<string>("");
+  const [author, setAuthor] = useState<boolean>(false);
+
+  const handleAuthor = () => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken !== null && accessToken !== undefined) {
+      const data = handleJWT(accessToken);
+      if (data.sub === reply.nickname) {
+        setAuthor(true);
+      }
+    }
+  };
   const [nestedReplies, setNestedReplies] = useState<NestedReply[]>(
     reply.nestReply
   ); // 대댓글 상태 변수
   const [replyState, setReplyState] = useState<Reply>(reply);
+
   const handleModify = () => {
     setModify(true);
   };
+
   const handleDelete = async () => {
     if (confirm("삭제하시겠습니까?")) {
       try {
@@ -126,6 +141,11 @@ const Comment: React.FC<CommentProps> = ({
     }
   };
 
+  useEffect(() => {
+    setAdmin(isAdmin);
+    handleAuthor();
+  }, []);
+
   const toggleAndFetchReplies = (id: number) => {
     if (!openReplies[id]) {
       fetchNestedReplies(id);
@@ -133,26 +153,11 @@ const Comment: React.FC<CommentProps> = ({
     toggleReplies(id);
   };
 
-  useEffect(() => {
-    const jwt = localStorage.getItem("accessToken");
-    if (jwt !== null) {
-      const loginData = handleJWT(jwt);
-      if (loginData.name === reply.nickname) {
-        setUser(true);
-        if (loginData.auth === "ROLE_ADMIN") {
-          setAdmin(true);
-        }
-      }
-    }
-    setAdmin(false);
-    setUser(false);
-  }, []);
-
   return (
     <div className="card mb-3">
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-2">
-          {isAdmin ? (
+          {isAdmins ? (
             <h5 className="card-title mb-0">
               {replyState.nickname}
               <small className="text-muted" style={{ fontSize: "15px" }}>
@@ -194,15 +199,10 @@ const Comment: React.FC<CommentProps> = ({
             {openReplies[replyState.id] ? "댓글 숨기기" : "댓글 더보기"}
           </button>
           <div className="d-flex justify-content-start">
-            {isAdmin || isUser ? (
-              <>
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={handleDelete}
-                >
-                  삭제
-                </button>
-              </>
+            {isAdmins ? (
+              <button className="btn btn-danger btn-sm" onClick={handleDelete}>
+                삭제
+              </button>
             ) : modify ? (
               <>
                 <button
@@ -218,9 +218,7 @@ const Comment: React.FC<CommentProps> = ({
                   취소
                 </button>
               </>
-            ) : replyState.invisible ? (
-              <></>
-            ) : (
+            ) : replyState.invisible ? null : author ? (
               <>
                 <button
                   className="btn btn-primary btn-sm me-2"
@@ -235,7 +233,7 @@ const Comment: React.FC<CommentProps> = ({
                   삭제
                 </button>
               </>
-            )}
+            ) : null}
           </div>
         </div>
         {openReplies[replyState.id] && (
@@ -245,11 +243,12 @@ const Comment: React.FC<CommentProps> = ({
                 <NestedComment
                   key={nestedReply.id}
                   nestedReply={nestedReply}
-                  isAdmin={isAdmin}
-                  isUser={isUser}
+                  isAdmin={isAdmins}
                 />
               ))}
-            {!isAdmin && (
+            {isAdmins ? (
+              <></>
+            ) : (
               <div className="row mt-3">
                 <div className="col-12 ps-4">
                   <div className="input-group">

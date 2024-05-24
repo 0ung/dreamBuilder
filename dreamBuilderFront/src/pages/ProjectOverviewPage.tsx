@@ -7,7 +7,8 @@ import styled from "styled-components";
 import InfiniteScroll from "react-infinite-scroll-component";
 import fetcher from "../fetcher";
 import { BOARD_VIEW } from "../constants/api_constants";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { PROJECT_REG } from "../constants/page_constants";
 
 interface Data {
   id: number;
@@ -52,6 +53,8 @@ export default function ProjectOverviewPage() {
   const [data, setData] = useState<Data[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState(0);
+  const navigator = useNavigate();
+
   const location = useLocation();
 
   const handleData = async () => {
@@ -111,6 +114,9 @@ export default function ProjectOverviewPage() {
               <button
                 className="btn btn-primary"
                 style={{ backgroundColor: "#5FBFBF", color: "white" }}
+                onClick={() => {
+                  navigator(PROJECT_REG);
+                }}
               >
                 프로젝트 등록
               </button>

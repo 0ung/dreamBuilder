@@ -20,5 +20,5 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     @Query(value = "SELECT COUNT(*) FROM reply WHERE member_id = :memberId AND MONTH(regTime) = MONTH(CURRENT_DATE)", nativeQuery = true)
     Long countReplyByMember(@Param("memberId") Long memberId);
 
-
+	Page<Reply> findAllBy(Pageable pageable);
 }

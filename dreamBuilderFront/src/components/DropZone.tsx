@@ -1,25 +1,46 @@
-import React, { ReactNode, useCallback, useState } from "react";
+import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { image } from "@uiw/react-md-editor";
+import fetcher from "../fetcher";
+import { MANAGE_FILE } from "../constants/api_constants";
 
 interface DropZoneProps {
   filteredFiles: File[];
   setFilteredFiles: (files: File[]) => void;
 }
+
 const MyComponent: React.FC<DropZoneProps> = ({
   filteredFiles,
   setFilteredFiles,
 }) => {
   const [filePolicy, setFilePolicy] = useState({
-    fileCount: 2,
-    fileSize: 150000000,
-    fileExtensions: [
-      { type: "file", extensions: ["html", "pdf", "asdasd"] },
-      { type: "image", extensions: ["png", "svg", "jpg"] },
-      { type: "video", extensions: ["mp4", "mp5"] },
-    ],
+    uploadNum: 2,
+    uploadSize: 150000000,
+    docExtension: "",
+    imageExtension: "",
+    videoExtension: "",
   });
+
+  const getFilePolicy = async () => {
+    const response = await fetcher.get(MANAGE_FILE);
+    const data = response.data;
+    setFilePolicy({
+      uploadNum: data.uploadNum,
+      uploadSize: data.uploadSize,
+      docExtension: data.docExtension,
+      imageExtension: data.imageExtension,
+      videoExtension: data.videoExtension,
+    });
+  };
+
+  useEffect(() => {
+    getFilePolicy();
+  }, []);
+
+  useEffect(() => {
+    console.log("Updated filePolicy: ", filePolicy);
+  }, [filePolicy]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (!handleFileCnt(acceptedFiles)) {
@@ -34,9 +55,20 @@ const MyComponent: React.FC<DropZoneProps> = ({
   }, []);
 
   const handleFileExtension = (fileExtension: string) => {
-    const isValidExtension = filePolicy.fileExtensions.some((policy) =>
-      policy.extensions.includes(fileExtension)
-    );
+    console.log(filePolicy);
+
+    const { docExtension, imageExtension, videoExtension } = filePolicy;
+
+    const docExtensionsArray = docExtension.split(",");
+    const imageExtensionsArray = imageExtension.split(",");
+    const videoExtensionsArray = videoExtension.split(",");
+
+    console.log(docExtensionsArray);
+    const isValidExtension =
+      docExtensionsArray.includes(fileExtension) ||
+      imageExtensionsArray.includes(fileExtension) ||
+      videoExtensionsArray.includes(fileExtension);
+
     if (!isValidExtension) {
       alert("업로드가 금지된 확장자입니다. 다시 업로드 해주세요");
     }
@@ -44,16 +76,16 @@ const MyComponent: React.FC<DropZoneProps> = ({
   };
 
   const handleFileSize = (filesize: number) => {
-    if (filesize > filePolicy.fileSize) {
-      alert(`파일 사이즈가 ${filePolicy.fileSize}KB 를 넘을 수 없습니다.`);
+    if (filesize > filePolicy.uploadSize) {
+      alert(`파일 사이즈가 ${filePolicy.uploadSize}KB 를 넘을 수 없습니다.`);
       return false;
     }
     return true;
   };
 
   const handleFileCnt = (file: File[]) => {
-    if (file.length > filePolicy.fileCount) {
-      alert(`파일 업로드 개수가 ${filePolicy.fileCount}개를 넘을 수 없습니다.`);
+    if (file.length > filePolicy.uploadNum) {
+      alert(`파일 업로드 개수가 ${filePolicy.uploadNum}개를 넘을 수 없습니다.`);
       return false;
     }
     return true;

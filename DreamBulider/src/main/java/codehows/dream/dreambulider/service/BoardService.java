@@ -212,4 +212,8 @@ public class BoardService {
 		return count;
 	}
 
+	//사용자 전체 프로젝트 조회
+	public Long getTotalCnt(){
+		return boardRepository.count();
+	}
 }

@@ -6,8 +6,8 @@ spring:
     name: DreamBuilder
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/xhadlfkd?serverTime=UTC, jdbc:h2:mem:testdb
-    username: root
+    url: jdbc:mysql://222.119.100.89:3382/xhadlfkd?serverTime=UTC, jdbc:h2:mem:testdb
+    username: xhadlfkd
     password: 1234
   h2:
     console:
@@ -20,7 +20,7 @@ spring:
         default_batch_fetch_size: 1000
 
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
   servlet:

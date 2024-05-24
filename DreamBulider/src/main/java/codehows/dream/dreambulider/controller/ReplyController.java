@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,9 +61,9 @@ public class ReplyController {
 	}
 
 	@GetMapping("/read/total/{boardId}")
-	public ResponseEntity<?> getTotal(@PathVariable Long boardId){
+	public ResponseEntity<?> getTotal(@PathVariable Long boardId) {
 		int total = replyService.getTotal(boardId);
-		return new ResponseEntity<>(total,HttpStatus.OK);
+		return new ResponseEntity<>(total, HttpStatus.OK);
 	}
 
 	@GetMapping("/reply/{id}")
@@ -89,5 +88,11 @@ public class ReplyController {
 		Reply updatedReply = replyService.update(id, replyUpdateDTO);
 
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping("/admin/reply/{page}")
+	public ResponseEntity<?> getAllReply(@PathVariable(name = "page") Optional<Integer> page) {
+		Pageable pageable = PageRequest.of(page.isPresent() ? page.get() : 0, 10);
+		return new ResponseEntity<>(replyService.getAdminData(pageable), HttpStatus.OK);
 	}
 }

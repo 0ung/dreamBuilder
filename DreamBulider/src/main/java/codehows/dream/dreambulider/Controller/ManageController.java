@@ -1,4 +1,4 @@
-package codehows.dream.dreambulider.Controller;
+package codehows.dream.dreambulider.controller;
 
 import codehows.dream.dreambulider.dto.Member.MemberListResponseDTO;
 import codehows.dream.dreambulider.entity.Board;

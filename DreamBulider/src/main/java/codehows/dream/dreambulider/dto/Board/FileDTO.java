@@ -15,7 +15,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class FileDTO {
     //관리자 파일 설정 dto
-    private Long id;
     private String uploadSize;
     private Integer uploadNum;
     private String docExtension;

@@ -32,6 +32,13 @@ export const BOARD_LIKED = "/api/liked";
 export const VISITED_DAILY = "/visits/daily";
 export const VISITED_WEEKLY = "/visits/weekly";
 export const VISITED_MONTHLY = "/visits/monthly";
-export const MANAGE_MEMBER_API = "/api/admin/";
-export const MANAGE_MEBEER_RESOTRE = "/api/admin/;"
-export const MANAGE_MEBEER_DELETE = "/api/admin/del/;"
+
+export const MANAGE_PROJECT_API = "/api/admin/";
+export const MANAGE_PROJECT_RESOTRE = "/api/admin/";
+export const MANAGE_PROJECT_DELETE = "/api/admin/del/";
+export const MANAGE_PROJECT_TOTAL = "/api/admin/total";
+
+export const MANAGE_FILE_POST = "/api/admin/file";
+export const MANAGE_FILE = "/api/admin/file";
+
+export const MANAGE_REPLY_API = "/api/admin/reply/";
