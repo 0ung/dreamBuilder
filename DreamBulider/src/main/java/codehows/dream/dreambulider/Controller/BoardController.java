@@ -225,4 +225,17 @@ public class BoardController {
 		workbook.write(response.getOutputStream());
 		workbook.close();
 	}
+
+	//상위 5개 출력
+	@GetMapping("/api/main")
+	public ResponseEntity<List<BoardRequestDTO>> topBoard() {
+		List<BoardRequestDTO> board = boardService.topBoard()
+				.stream()
+				.map(BoardRequestDTO::new)
+				.toList();
+		log.info(board.toString());
+		return ResponseEntity.ok()
+				.body(board);
+	}
+
 }
