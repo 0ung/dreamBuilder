@@ -53,19 +53,23 @@ export default function ProjectOverviewPage() {
   const [data, setData] = useState<Data[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState(0);
+  const [sortCriteria, setSortCriteria] = useState<string>("");
   const navigator = useNavigate();
 
   const location = useLocation();
 
-  const handleData = async () => {
+  const handleData = async (sort: string, pageNum: number) => {
     try {
       const response = await fetcher.get(
-        `${BOARD_VIEW + page}?search=&criteria=`
+        `${BOARD_VIEW + pageNum}?search=&criteria=&sort=${sort}`
       );
       const newData = response.data;
-      setData((prevData) => [...prevData, ...newData]);
+      console.log(newData);
+      setData((prevData) => (pageNum === 0 ? newData : [...prevData, ...newData]));
       if (newData.length === 0) {
         setHasMore(false);
+      } else {
+        setHasMore(true);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -80,12 +84,13 @@ export default function ProjectOverviewPage() {
   }, [location.state]);
 
   useEffect(() => {
-    handleData();
-  }, [page]);
+    handleData(sortCriteria, page);
+  }, [page, sortCriteria]);
 
   useEffect(() => {
-    setData([]); // 초기 상태로 빈 배열 설정
-  }, []);
+    setData([]);
+    setPage(0);
+  }, [sortCriteria]);
 
   const fetchMoreData = () => {
     setPage((prevPage) => prevPage + 1);
@@ -102,11 +107,14 @@ export default function ProjectOverviewPage() {
             <select
               className="form-select form-select-lg mb-3"
               aria-label=".form-select-lg example"
-            >
-              <option value="1">제목</option>
-              <option value="2">마감일</option>
-              <option value="3">이름</option>
-              <option value="4">생성일시</option>
+              onChange={(e) => {
+                setSortCriteria(e.target.value);
+              }}
+            > 
+              <option value="">정렬 기준</option>
+              <option value="title">제목</option>
+              <option value="end_date">마감일</option>
+              <option value="reg_time">생성일시</option>
             </select>
           </div>
           <div className="col-md-6 d-flex justify-content-end align-items-center">

@@ -44,3 +44,5 @@ export const MANAGE_FILE_POST = "/api/admin/file";
 export const MANAGE_FILE = "/api/admin/file";
 
 export const MANAGE_REPLY_API = "/api/admin/reply/";
+
+export const MANAGE_MEMBERS_TOTAL ="/member/total"

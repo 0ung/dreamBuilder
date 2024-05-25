@@ -239,6 +239,9 @@ public class MemberController {
         }
 
     }
-
+    @GetMapping("/total")
+    public ResponseEntity<?> getTotal(){
+        return new ResponseEntity<>(memberService.getTotal(),HttpStatus.OK);
+    }
 
 }

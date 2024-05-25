@@ -22,6 +22,7 @@ public class BoardResponseDTO {
     private Long id;
     private String title;
     private String content;
+    private String email;
     private Date endDate;
     private Long cnt;
     private List<String> hashTags;
@@ -32,6 +33,7 @@ public class BoardResponseDTO {
         this.title = board.getTitle();
         this.content = board.getContent();
         this.endDate = board.getEndDate();
+        this.email = board.getMember().getEmail();
         this.cnt = board.getCnt();
         this.hashTags = hashTags;
         this.file = file;

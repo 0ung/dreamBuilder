@@ -55,8 +55,6 @@ public class BoardController {
 
 	private final BoardService boardService;
 	private final HashTagService hashTagService;
-	private final HashTagRepository hashTagRepository;
-	private final LikedService likedService;
 	private final BoardFileService boardFileService;
 	@Value("${savePath}")
 	private String savePath;
@@ -101,7 +99,7 @@ public class BoardController {
 	public ResponseEntity<?> searchBoardList(@PathVariable Optional<Integer> page,
 		@RequestParam(required = false, name = "search") String search,
 		@RequestParam(required = false, name = "criteria") String criteria,
-		@RequestParam(required = false) String sort, Principal principal
+		@RequestParam(required = false, name = "sort") String sort, Principal principal
 	) {
 		try {
 			int currentPage = page.orElse(0);

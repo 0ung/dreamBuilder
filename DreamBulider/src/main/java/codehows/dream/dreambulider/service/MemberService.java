@@ -200,4 +200,7 @@ public class MemberService implements UserDetailsService {
         return memberRepository.findAll(pageable);
     }
 
+	public Long getTotal(){
+		return memberRepository.count();
+	}
 }

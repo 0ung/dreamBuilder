@@ -73,7 +73,7 @@ public class BoardService {
             }
             case "title,content,member" ->
                     boards = boardRepository.findByTitleOrContentOrMemberInvisibleFalse(escapedKeyword, pageable);
-            default -> boards = boardRepository.findAll(pageable);
+            default -> boards = boardRepository.findAllByInvisibleFalse(pageable);
         }
         ;
         return boardToList(boards, principal);
@@ -86,11 +86,12 @@ public class BoardService {
             sort = "";
         }
         pageable = switch (sort) {
-            case "title" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, sort));
-            case "content" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, sort));
-            case "endDate" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, sort));
-            default -> PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id"));
+            case "title" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, "title"));
+            case "reg_time" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, "regTime"));
+            case "end_date" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, "endDate")); // Adjusted field name
+            default -> PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "board_id")); // Assuming 'id' refers to 'board_id'
         };
+
         return pageable;
     }
 

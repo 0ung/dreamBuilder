@@ -2,7 +2,6 @@ package codehows.dream.dreambulider.repository;
 
 import codehows.dream.dreambulider.entity.Board;
 
-import codehows.dream.dreambulider.entity.Liked;
 import codehows.dream.dreambulider.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +15,7 @@ import java.util.List;
 public interface BoardRepository extends JpaRepository<Board,Long> {
 
     //페이징
-    @Query(value = "select * from Board where invisible=false", nativeQuery = true)
-    Page<Board> findAll(Pageable pageable);
+    Page<Board> findAllByInvisibleFalse(Pageable pageable);
 
     //엑셀 파일 만들기
     @Query(value = "select * from Board where invisible=1 AND delete_by = 1", nativeQuery = true)

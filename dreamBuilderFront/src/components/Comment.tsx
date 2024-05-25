@@ -126,6 +126,7 @@ const Comment: React.FC<CommentProps> = ({
         response.data,
         ...prevNestedReplies,
       ]); // 새로운 댓글을 추가
+      setRereply("");
     } catch (error) {}
   };
 
