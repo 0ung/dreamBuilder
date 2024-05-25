@@ -101,6 +101,7 @@ function Inputvalidation({ children, data, onChange }: validation) {
   );
 }
 
+
 function MyPage() {
   const navigate = useNavigate();
   const [nickName, setNickName] = useState("");
@@ -182,7 +183,7 @@ function MyPage() {
 
   // 개인정보 수정
   const handleUsermodify = async ()=>{
-    const regExp1 = new RegExp("^[A-Za-z0-9]{8,15}$");
+    const regExp1 = new RegExp("^[A-Za-z0-9]{2,15}$");
     if(!regExp1.test(nickName)){
       alert("닉네임을 확인해주세요")
       return;
@@ -190,7 +191,7 @@ function MyPage() {
     const regExp2 = new RegExp(
     "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_])[A-Za-z\\d\\W_]{8,20}$"
     );
-    if(!regExp2.test(password)){
+    if(!regExp2.test(password) && nickName === null){
       alert("비밀번호를 확인해주세요")
       return;
     }
@@ -221,7 +222,7 @@ function MyPage() {
 
   //입력 검증
   const handleNickName = (e: string) => {
-    const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
+    const regExp = new RegExp("^[A-Za-z0-9]{2,15}$");
     return regExp.test(e);
   };
   const handlePassword = (e: string) => {
@@ -282,7 +283,7 @@ function MyPage() {
 
         <div className="row justify-content-center mt-5">
           <div className="col-3">
-            <Views cnt={1}>
+            <Views cnt={0}>
               이번 달에 받은
               <br /> 좋아요 개수
               <br />

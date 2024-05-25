@@ -29,6 +29,7 @@ export const RE_REPLY_UPDATE = "/api/rereply/";
 export const RE_REPLY_DELETE = "/api/rereply/";
 export const RE_REPLY_READ_ALL = "/api/rereply/";
 
+
 export const BOARD_LIKED = "/api/liked";
 export const VISITED_DAILY = "/visits/daily";
 export const VISITED_WEEKLY = "/visits/weekly";
