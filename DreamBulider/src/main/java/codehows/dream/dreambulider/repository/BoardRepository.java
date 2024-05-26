@@ -11,91 +11,63 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface BoardRepository extends JpaRepository<Board,Long> {
+public interface BoardRepository extends JpaRepository<Board, Long> {
 
-    //페이징
-    Page<Board> findAllByInvisibleFalse(Pageable pageable);
+    // Pagination
+    Page<Board> findByInvisibleFalse(Pageable pageable);
 
     Long countByMemberIdAndInvisibleFalse(Long memberId);
-    //엑셀 파일 만들기
+
+    // Excel file creation
     @Query(value = "select * from Board where invisible=1 AND delete_by = 1", nativeQuery = true)
     List<Board> findAll();
 
-    //보드 아이디로 멤버 조회
+    // Find member by board ID
     @Query("SELECT b.member FROM Board b WHERE b.id = :id")
-    Member findMemberByBoardId(Long id);
+    Member findMemberByBoardId(@Param("id") Long id);
 
-    //마이페이지 작성 글 목록
+    // My page post list
     Page<Board> findByMemberIdAndInvisibleFalse(Long id, Pageable pageable);
 
-   // @Query(SELECT b.invisible  FROM Board b WHERE b.id = :id" )
-    //BoardAdminUpdateDTO findByBoardId(Long id);
-
-    //제목 조회
+    // Search by title
     Page<Board> findByTitleContainingIgnoreCaseAndInvisibleFalse(String title, Pageable pageable);
 
-    //내용 조회
+    // Search by content
     Page<Board> findByContentContainingIgnoreCaseAndInvisibleFalse(String content, Pageable pageable);
 
-    //맴버 조회
-    Page<Board> findByMemberContainingIgnoreCaseAndInvisibleFalse(String keyword, Pageable pageable);
+    // Search by member (assuming member is a field in Board)
+    Page<Board> findByMember_NameContainingIgnoreCaseAndInvisibleFalse(String memberName, Pageable pageable);
 
-    //해시태그 검색
-    @Query("select b from Board b where b.id = :boardId and b.invisible=false")
-    Page<Board> findByboardIdAndInvisibleFalse(@Param("boardId") Long boardId, Pageable pageable);
+    // Hashtag search
+    @Query("select b from Board b where b.id = :boardId and b.invisible = false")
+    Page<Board> hashTagSearch(@Param("boardId") Long boardId, Pageable pageable);
 
-    //제목+내용 조회
-    @Query("select b from Board b where b.title like %:keyword% or b.content like %:keyword% and b.invisible=false")
-    Page<Board> findByTitleOrContentAndInvisibleFalse(@Param("keyword") String keyword, Pageable pageable);
+    // Search by title or content
+    @Query("select b from Board b where (b.title like %:keyword% or b.content like %:keyword%) and b.invisible = false")
+    Page<Board> titleAndContentSearch(@Param("keyword") String keyword, Pageable pageable);
 
-    //제목+작성자 조회
-    @Query("select b from Board b where b.title like %:keyword% or b.member.name like %:keyword% and b.invisible=false")
-    Page<Board> findByTitleOrMemberAndInvisibleFalse(@Param("keyword") String keyword, Pageable pageable);
+    // Search by title or member name
+    @Query("select b from Board b where (b.title like %:keyword% or b.member.name like %:keyword%) and b.invisible = false")
+    Page<Board> titleAndNameSearch(@Param("keyword") String keyword, Pageable pageable);
 
-    //내용+작성자 조회
-    @Query("select b from Board b where b.content like %:keyword% or b.member.name like %:keyword% and b.invisible=false")
-    Page<Board> findByContentOrMemberAndInvisibleFalse(@Param("keyword") String keyword, Pageable pageable);
+    // Search by content or member name
+    @Query("select b from Board b where (b.content like %:keyword% or b.member.name like %:keyword%) and b.invisible = false")
+    Page<Board> contentAndMemberSearch(@Param("keyword") String keyword, Pageable pageable);
 
-    //제목+내용+작성자 조회
-    @Query("select b from Board b where b.title like %:keyword% or b.content like %:keyword% or b.member.name like %:keyword% and b.invisible=false")
-    Page<Board> findByTitleOrContentOrMemberInvisibleFalse(@Param("keyword") String keyword, Pageable pageable);
+    // Search by title, content, or member name
+    @Query("select b from Board b where (b.title like %:keyword% or b.content like %:keyword% or b.member.name like %:keyword%) and b.invisible = false")
+    Page<Board> allSearch(@Param("keyword") String keyword, Pageable pageable);
 
-    //조회수 추가
+    // Increment view count
     @Modifying
     @Query("update Board b set b.cnt = b.cnt + 1 where b.id = :id")
     void incrementCnt(@Param("id") Long id);
 
-    //추가된 조회수 값 반환
+    // Get view count by ID
     @Query("select b.cnt from Board b where b.id = :id")
     Long getCntById(@Param("id") Long id);
 
-    //이번 달 작성한 게시글 개수
+    // Count posts made this month by member
     @Query(value = "SELECT COUNT(*) FROM board WHERE member_id = :memberId AND MONTH(reg_time) = MONTH(CURRENT_DATE)", nativeQuery = true)
     Long countBoardByMember(@Param("memberId") Long memberId);
-
-    //좋아요 5개 출력
-//    @Query(value = "SELECT b.* FROM Board b JOIN (SELECT board_id FROM liked WHERE is_like = true GROUP BY board_id ORDER BY COUNT(*) DESC LIMIT 5) l ON b.id = l.board_id WHERE b.invisible = false", nativeQuery = true)
- //   List<Board> findTop5LikedVisibleBoards();
-
-    /*
-
-    @Query("SELECT l.board_id, COUNT(*) AS like_count" +
-    "FROM liked l" +
-    "JOIN board b ON l.board_id = b.board_id" +
-    "WHERE l.is_like = TRUE AND b.invisible = FALSE" +
-    "GROUP BY l.board_id" +
-    "ORDER BY like_count DESC" +
-    "LIMIT 5")
-    List<Board> findTop5LikedVisibleBoards();
-
-
-    // 좋아요가 많은 상위 5개 게시글 조회
-    @Query(value = "SELECT b.* FROM board b " +
-            "JOIN (SELECT board_id FROM liked WHERE is_like = true GROUP BY board_id ORDER BY COUNT(*) DESC LIMIT 5) l " +
-            "ON b.board_id = l.board_id " +
-            "WHERE b.invisible = false", nativeQuery = true)
-    List<Board> findTop5LikedVisibleBoards();
-*/
-
-
 }

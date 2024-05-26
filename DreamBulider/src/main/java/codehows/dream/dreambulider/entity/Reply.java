@@ -22,6 +22,7 @@ public class Reply extends BaseTimeEntity {
 	private String comment;
 
 	@Column(nullable = false)
+	@Builder.Default
 	private boolean invisible = false;
 
 	@ManyToOne(fetch = FetchType.LAZY)

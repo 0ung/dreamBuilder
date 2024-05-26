@@ -45,10 +45,6 @@ public class Board extends BaseTimeEntity{
 	private Member member;
 
 	private Long cnt = 0L;
-
-	//	@OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	//	private List<HashTag> hashTags;
-
 	@Builder
 	public Board(String title, String content, Date endDate, Member member) {
 		this.title = title;

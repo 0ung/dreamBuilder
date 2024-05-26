@@ -94,8 +94,10 @@ public class BoardController {
 			Pageable pageable = boardService.sorted(sort, currentPage);
 			List<BoardListResponseDTO> boardPage = boardService.searchBoard(pageable, criteria, search, principal);
 			return new ResponseEntity<>(boardPage, HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		} catch (NullPointerException e) {
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		} catch (Exception e){
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

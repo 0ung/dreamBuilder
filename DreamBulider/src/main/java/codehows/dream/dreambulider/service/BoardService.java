@@ -56,21 +56,21 @@ public class BoardService {
             case "content" ->
                     boards = boardRepository.findByContentContainingIgnoreCaseAndInvisibleFalse(escapedKeyword, pageable);
             case "member" ->
-                    boards = boardRepository.findByMemberContainingIgnoreCaseAndInvisibleFalse(escapedKeyword, pageable);
+                    boards = boardRepository.findByMember_NameContainingIgnoreCaseAndInvisibleFalse(escapedKeyword, pageable);
             case "title,content" ->
-                    boards = boardRepository.findByTitleOrContentAndInvisibleFalse(escapedKeyword, pageable);
+                    boards = boardRepository.titleAndContentSearch(escapedKeyword, pageable);
             case "title,member" ->
-                    boards = boardRepository.findByTitleOrMemberAndInvisibleFalse(escapedKeyword, pageable);
+                    boards = boardRepository.titleAndNameSearch(escapedKeyword, pageable);
             case "content,member" ->
-                    boards = boardRepository.findByContentOrMemberAndInvisibleFalse(escapedKeyword, pageable);
+                    boards = boardRepository.contentAndMemberSearch(escapedKeyword, pageable);
             case "hashtag" -> {
                 for (Long boardId : hashTagRepository.findHashTagByHashTag(escapedKeyword)) {
-                    boards = boardRepository.findByboardIdAndInvisibleFalse(boardId, pageable);
+                    boards = boardRepository.hashTagSearch(boardId, pageable);
                 }
             }
             case "title,content,member" ->
-                    boards = boardRepository.findByTitleOrContentOrMemberInvisibleFalse(escapedKeyword, pageable);
-            default -> boards = boardRepository.findAllByInvisibleFalse(pageable);
+                    boards = boardRepository.allSearch(escapedKeyword, pageable);
+            default -> boards = boardRepository.findByInvisibleFalse(pageable);
         }
         ;
         return boardToList(boards, principal);
@@ -86,7 +86,7 @@ public class BoardService {
             case "title" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, "title"));
             case "reg_time" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, "regTime"));
             case "end_date" -> PageRequest.of(currentPage, 10, Sort.by(sortDirection, "endDate")); // Adjusted field name
-            default -> PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "board_id")); // Assuming 'id' refers to 'board_id'
+            default -> PageRequest.of(currentPage, 10, Sort.by(Sort.Direction.DESC, "id")); // Assuming 'id' refers to 'board_id'
         };
 
         return pageable;

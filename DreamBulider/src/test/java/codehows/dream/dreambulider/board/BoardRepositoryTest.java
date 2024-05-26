@@ -49,13 +49,4 @@ public class BoardRepositoryTest {
         assertEquals(member.getId(), foundMember.getId());
         assertEquals(member.getUsername(), foundMember.getUsername());
     }
-
-    @Test
-    public void testFindByTitleOrAuthor() {
-        Pageable pageable = PageRequest.of(0, 10);
-        String keyword = "더미";
-        String escapedKeyword = keyword.replace("\\", "\\\\");
-        Page<Board> results = boardRepository.findByTitleOrAuthor(escapedKeyword, pageable);
-        System.out.println(results);
-    }
 }
