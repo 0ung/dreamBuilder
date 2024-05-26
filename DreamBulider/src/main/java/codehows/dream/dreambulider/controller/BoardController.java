@@ -1,5 +1,32 @@
 package codehows.dream.dreambulider.controller;
 
+import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
+import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
+import codehows.dream.dreambulider.dto.Board.BoardResponseDTO;
+import codehows.dream.dreambulider.dto.HashTag.MemberNoExistExcpetion;
+import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.service.BoardFileService;
+import codehows.dream.dreambulider.service.BoardService;
+import codehows.dream.dreambulider.service.HashTagService;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,45 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
-import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
-import codehows.dream.dreambulider.dto.Board.BoardResponseDTO;
-import codehows.dream.dreambulider.dto.HashTag.MemberNoExistExcpetion;
-import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.HashTag;
-import codehows.dream.dreambulider.repository.HashTagRepository;
-import codehows.dream.dreambulider.service.BoardFileService;
-import codehows.dream.dreambulider.service.BoardService;
-import codehows.dream.dreambulider.service.HashTagService;
-import codehows.dream.dreambulider.service.LikedService;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -55,8 +43,6 @@ public class BoardController {
 
 	private final BoardService boardService;
 	private final HashTagService hashTagService;
-	private final HashTagRepository hashTagRepository;
-	private final LikedService likedService;
 	private final BoardFileService boardFileService;
 	@Value("${savePath}")
 	private String savePath;
@@ -101,7 +87,7 @@ public class BoardController {
 	public ResponseEntity<?> searchBoardList(@PathVariable Optional<Integer> page,
 		@RequestParam(required = false, name = "search") String search,
 		@RequestParam(required = false, name = "criteria") String criteria,
-		@RequestParam(required = false) String sort, Principal principal
+		@RequestParam(required = false, name = "sort") String sort, Principal principal
 	) {
 		try {
 			int currentPage = page.orElse(0);
@@ -185,21 +171,14 @@ public class BoardController {
 		Row row = null;
 		Cell cell = null;
 		int rowNum = 0;
+		String[] rowData =new String[]{"번호","제목","내용","조회수","마감일자","해시태그"};
 
 		row = sheet.createRow(rowNum++);
-		cell = row.createCell(0);
-		cell.setCellValue("번호");
-		cell = row.createCell(1);
-		cell.setCellValue("제목");
-		cell = row.createCell(2);
-		cell.setCellValue("내용");
-		cell = row.createCell(3);
-		cell.setCellValue("조회수");
-		cell = row.createCell(4);
-		cell.setCellValue("마감일자");		
-		cell = row.createCell(5);
-		cell.setCellValue("해시태그");
-		
+		for (int i = 0; i < rowData.length; i++) {
+			cell = row.createCell(i);
+			cell.setCellValue(rowData[i]);
+		}
+
 		for(Board board : boardList) {
 			row = sheet.createRow(rowNum++);
 			cell = row.createCell(0);
@@ -225,4 +204,17 @@ public class BoardController {
 		workbook.write(response.getOutputStream());
 		workbook.close();
 	}
+
+	//상위 5개 출력
+	@GetMapping("/api/main")
+	public ResponseEntity<List<BoardResponseDTO>> topBoard() {
+		List<BoardResponseDTO> board = boardService.topBoard()
+				.stream()
+				.map(BoardResponseDTO::new)
+				.toList();
+		log.info(board.toString());
+		return ResponseEntity.ok()
+				.body(board);
+	}
+
 }

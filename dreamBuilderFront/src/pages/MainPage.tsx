@@ -4,11 +4,23 @@ import Footer from "../layout/Footer";
 import main from "../image/mainImage.png";
 import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
-import { MAIN, PROJECT_REG } from "../constants/page_constants";
+import { MAIN, PROJECT_DETAIL_VIEW, PROJECT_REG } from "../constants/page_constants";
+import fetcher from "../fetcher";
+import { MAIN_PAGE_DATA } from "../constants/api_constants";
+
+interface mainData {
+  title: string;
+  content: string;
+  id: number;
+}
 
 function MainPage() {
   const navigator = useNavigate();
-  const [markdown, setMarkdown] = useState();
+  const [data, setData] = useState<mainData[]>([]);
+  const handleMainPage = async () => {
+    const response = await fetcher.get(MAIN_PAGE_DATA)
+    setData(response.data);
+  }
 
   useEffect(() => {
     const kakaoAccessToken = document.cookie.split("=")[1];
@@ -16,6 +28,7 @@ function MainPage() {
     if (kakaoAccessTokenKey === "accessToken") {
       localStorage.setItem("accessToken", kakaoAccessToken);
     }
+    handleMainPage();
   }, []);
   return (
     <>
@@ -53,9 +66,19 @@ function MainPage() {
         </div>
         <hr />
         <div className="row">
-          <div className="container p-5">
-            <Markdown className="ps-5 pe-5">{markdown}</Markdown>
-          </div>
+          <h3 className="mb-4 mt-5">좋아요 상위 5개</h3>
+          {data.map((e) => (
+            <div className="col-12 mb-4" key={e.id}>
+              <div className="p-4 border rounded bg-light">
+                <h3 className="mb-3" onClick={
+                  () => {
+                    navigator(PROJECT_DETAIL_VIEW, { state: e.id })
+                  }
+                }>제목: {e.title}</h3>
+                <Markdown>{e.content}</Markdown>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       <Footer />

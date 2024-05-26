@@ -1,15 +1,14 @@
 package codehows.dream.dreambulider.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.HashTag;
 import codehows.dream.dreambulider.repository.BoardRepository;
 import codehows.dream.dreambulider.repository.HashTagRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor

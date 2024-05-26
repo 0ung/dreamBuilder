@@ -1,8 +1,6 @@
 package codehows.dream.dreambulider.dto.Board;
 
-import codehows.dream.dreambulider.constats.Authority;
 import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.HashTag;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +20,7 @@ public class BoardResponseDTO {
     private Long id;
     private String title;
     private String content;
+    private String email;
     private Date endDate;
     private Long cnt;
     private List<String> hashTags;
@@ -32,9 +31,15 @@ public class BoardResponseDTO {
         this.title = board.getTitle();
         this.content = board.getContent();
         this.endDate = board.getEndDate();
+        this.email = board.getMember().getEmail();
         this.cnt = board.getCnt();
         this.hashTags = hashTags;
         this.file = file;
     }
 
+    public BoardResponseDTO(Board board) {
+        this.id = board.getId();
+        this.title = board.getTitle();
+        this.content = board.getContent();
+    }
 }

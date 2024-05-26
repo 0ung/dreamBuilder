@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
+import fetcher from "../fetcher";
+import { MANAGE_FILE, MANAGE_FILE_POST } from "../constants/api_constants";
 
 interface Extension {
   video: { [key: string]: boolean };
@@ -54,7 +56,7 @@ const ExtensionCheckboxGroup: React.FC<ExtensionCheckboxGroupProps> = ({
 };
 
 function ManageFileUpload() {
-  const [extension, setExtension] = useState<Extension>({
+  const initialExtensions: Extension = {
     video: {
       mp4: false,
       avi: false,
@@ -92,7 +94,54 @@ function ManageFileUpload() {
       csv: false,
       hwp: false,
     },
-  });
+  };
+
+  const [maxSize, setMaxSize] = useState<string>();
+  const [maxFileCnt, setMaxFileCnt] = useState<string>();
+  const [videoExtension, setVideoExtension] = useState<string>();
+  const [imageExtension, setImageExtension] = useState<string>();
+  const [docsExtension, setDocsExtension] = useState<string>();
+
+  const parseExtensions = (extensions: string) => {
+    if (extensions == null || extensions == undefined) {
+      return;
+    }
+    const extArray = extensions.split(",");
+    const extObject: { [key: string]: boolean } = {};
+    extArray.forEach((ext) => {
+      extObject[ext] = true;
+    });
+    return extObject;
+  };
+
+  const [extension, setExtension] = useState<Extension>(initialExtensions);
+
+  useEffect(() => {
+    const getFileUploadData = async () => {
+      const response = await fetcher.get(MANAGE_FILE);
+      setMaxFileCnt(response.data.uploadNum);
+      setMaxSize(response.data.uploadSize);
+      setVideoExtension(response.data.videoExtension);
+      setImageExtension(response.data.imageExtension);
+      setDocsExtension(response.data.docExtension);
+      setExtension({
+        video: {
+          ...initialExtensions.video,
+          ...parseExtensions(response.data.videoExtension),
+        },
+        image: {
+          ...initialExtensions.image,
+          ...parseExtensions(response.data.imageExtension),
+        },
+        docs: {
+          ...initialExtensions.docs,
+          ...parseExtensions(response.data.docExtension),
+        },
+      });
+    };
+
+    getFileUploadData();
+  }, []);
 
   const handleCheckboxChange = (category: keyof Extension, ext: string) => {
     setExtension((prevExtension) => ({
@@ -104,6 +153,38 @@ function ManageFileUpload() {
     }));
   };
 
+  const convertExtensionsToString = (extensions: {
+    [key: string]: boolean;
+  }) => {
+    return Object.keys(extensions)
+      .filter((key) => extensions[key])
+      .join(",");
+  };
+
+  const handleFileUpload = async () => {
+    const data = {
+      uploadSize: maxSize,
+      uploadNum: maxFileCnt,
+      docExtension: convertExtensionsToString(extension.docs),
+      imageExtension: convertExtensionsToString(extension.image),
+      videoExtension: convertExtensionsToString(extension.video),
+    };
+    try {
+      const response = await fetcher.post(
+        MANAGE_FILE_POST,
+        JSON.stringify(data),
+        {
+          headers: {
+            "Content-Type": "application/JSON",
+          },
+        }
+      );
+      alert("등록이 완료되었습니다.");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -112,10 +193,15 @@ function ManageFileUpload() {
         <hr />
         <div className="form-floating mb-3">
           <input
+            required
             type="text"
             className="form-control"
             id="floatingFileSize"
             placeholder="파일업로드"
+            value={maxSize}
+            onChange={(e) => {
+              setMaxSize(e.target.value);
+            }}
           />
           <label htmlFor="floatingFileSize">
             파일 최대 업로드 용량 ex) 20kb, 20mb / 200MB 초과 금지
@@ -123,12 +209,17 @@ function ManageFileUpload() {
         </div>
         <div className="form-floating">
           <input
+            required
             type="number"
             className="form-control"
             id="floatingFileCount"
             placeholder="파일개수"
             min={0}
             max={100}
+            value={maxFileCnt}
+            onChange={(e) => {
+              setMaxFileCnt(e.target.value);
+            }}
           />
           <label htmlFor="floatingFileCount">파일 최대 개수</label>
         </div>
@@ -151,7 +242,9 @@ function ManageFileUpload() {
           />
         </div>
         <div className="d-flex justify-content-end">
-          <button className="btn btn-primary">제출</button>
+          <button className="btn btn-primary" onClick={handleFileUpload}>
+            제출
+          </button>
         </div>
       </div>
       <Footer />

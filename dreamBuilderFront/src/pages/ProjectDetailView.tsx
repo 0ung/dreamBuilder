@@ -14,13 +14,15 @@ import {
 } from "../constants/api_constants";
 import VIDEO from "../image/video.png";
 import DOCS from "../image/docs.png";
-import { PROJECT_DETAIL_VIEW, PROJECT_REG } from "../constants/page_constants";
+import { PROJECT_DETAIL_VIEW, PROJECT_OVERVIEW, PROJECT_REG } from "../constants/page_constants";
 import Pagination from "../components/Pagination";
+import handleJWT from "../paserJWT";
 
 interface Board {
   id: number;
   title: string;
   content: string;
+  email: string
   endDate: string;
   cnt: number;
   hashTags: string[];
@@ -36,8 +38,8 @@ interface Reply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   nestReply: NestedReply[];
   invisible: boolean;
 }
@@ -46,8 +48,8 @@ interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   invisible: boolean;
 }
 
@@ -170,12 +172,25 @@ const ProjectDetailView: React.FC = () => {
 
   const location = useLocation();
   const boardId = location.state;
-  console.log("boardId: ", boardId); // boardId 확인
 
   const [board, setBoard] = useState<Board | null>(null);
   const [reply, setReply] = useState<Reply[]>([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
+  const [author, setAuthor] = useState(false);
+
+  const handleAuthor = (compareEmail: string) => {
+    const token = localStorage.getItem("accessToken");
+    if (token !== null && token !== undefined) {
+      const json = handleJWT(token);
+      const email = json.sub;
+      if (email === compareEmail) {
+        setAuthor(true);
+        return;
+      }
+    }
+    setAuthor(false);
+  };
 
   const handleModify = () => {
     navigator(PROJECT_REG, { state: { boardId: boardId, modify: true } });
@@ -186,7 +201,7 @@ const ProjectDetailView: React.FC = () => {
       try {
         await fetcher.delete(BOARD_DELETE + boardId);
         alert("삭제 성공");
-        navigator(PROJECT_DETAIL_VIEW); // 삭제 후 프로젝트 목록으로 이동
+        navigator(PROJECT_OVERVIEW); // 삭제 후 프로젝트 목록으로 이동
       } catch (error) {
         alert("삭제 실패");
       }
@@ -212,6 +227,7 @@ const ProjectDetailView: React.FC = () => {
         title: data.title,
         content: data.content,
         endDate: data.endDate,
+        email: data.email,
         cnt: data.cnt,
         hashTags: data.hashTags,
         file: data.file.flatMap((fileMap: Map<string, string>) =>
@@ -221,6 +237,7 @@ const ProjectDetailView: React.FC = () => {
           }))
         ),
       };
+      handleAuthor(transformedBoard.email);
       setBoard(transformedBoard);
     } catch (error) {
       console.log(error);
@@ -229,7 +246,6 @@ const ProjectDetailView: React.FC = () => {
 
   const handlePageChange = (pageNumber: number) => {
     setPage(pageNumber);
-    console.log("페이지 설정");
   };
 
   const handldePage = async () => {
@@ -252,8 +268,6 @@ const ProjectDetailView: React.FC = () => {
     } catch (error) {
       console.log(error);
     }
-
-    console.log("댓글 호출 확인" + page);
   };
 
   return (
@@ -263,8 +277,22 @@ const ProjectDetailView: React.FC = () => {
         {board && (
           <>
             <h1 className="mt-5">{board.title}</h1>
-            <hr />
-            <div className="mt-5 p-5 border rounded shadow">
+            <div className="row">
+              <div className="col">
+                <hr className="my-4" />
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <p className="lead">마감일: <span className="board-end-date">{board.endDate}</span></p>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <p className="lead">작성자: <span className="board-email">{board.email}</span></p>
+              </div>
+            </div>
+            <div className="mt-3 p-5 border rounded shadow">
               <ReactMarkdown
                 components={{
                   img: ({ node, ...props }) => (
@@ -282,31 +310,41 @@ const ProjectDetailView: React.FC = () => {
               </ReactMarkdown>
             </div>
             <div className="d-flex justify-content-end mt-2">
-              <div>
-                <button
-                  className="btn btn-primary me-2"
-                  style={{
-                    backgroundColor: " #348f8f",
-                    border: "none",
-                    color: "white",
-                  }}
-                  onClick={handleModify}
-                >
-                  수정
-                </button>
-                <button
-                  className="btn btn-primary"
-                  style={{
-                    backgroundColor: " #348f8f",
-                    border: "none",
-                    color: "white",
-                  }}
-                  onClick={handleDelete}
-                >
-                  삭제
-                </button>
+                {
+                  author ? <div>
+                    <button
+                      className="btn btn-primary me-2"
+                      style={{
+                        backgroundColor: " #348f8f",
+                        border: "none",
+                        color: "white",
+                      }}
+                      onClick={handleModify}
+                    >
+                      수정
+                    </button>
+                    <button
+                      className="btn btn-primary"
+                      style={{
+                        backgroundColor: " #348f8f",
+                        border: "none",
+                        color: "white",
+                      }}
+                      onClick={handleDelete}
+                    >
+                      삭제
+                    </button>
+                  </div> : <></>
+                }
               </div>
-            </div>
+              <div className="container mt-3">
+                  <h4>해시태그</h4>
+                  <div className="d-flex flex-wrap">
+                    {board.hashTags.map((e, index) => {
+                      return <span key={index} className="badge bg-primary me-2 mb-2">{e}</span>
+                    })}
+                  </div>
+                </div>
             <div className="mt-3">
               {board.file.length === 0 ? (
                 <p>첨부 파일 없음</p>
@@ -344,6 +382,7 @@ const ProjectDetailView: React.FC = () => {
         replies={reply}
         boardId={boardId}
         setReplies={setReply}
+        isAdmins={false}
       />
       <Pagination
         key={"pagination"}

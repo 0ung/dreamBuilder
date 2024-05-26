@@ -28,11 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.HashMap;
-
 import java.util.Map;
 
 @RestController
@@ -74,7 +70,7 @@ public class MemberController {
         try {
             return new ResponseEntity<>(memberService.login(memberLoginDTO, response), HttpStatus.OK);
         } catch (IllegalStateException illegalStateException) {
-            return new ResponseEntity<>("탈퇴한 회원입니다.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("탈퇴한 회원입니다.", HttpStatus.UNAUTHORIZED);
         } catch (Exception exception) {
             return new ResponseEntity<>("입력정보를 확인해주세요", HttpStatus.BAD_REQUEST);
         }
@@ -98,6 +94,20 @@ public class MemberController {
             return ResponseEntity.badRequest().body("잘못된 요청");
         }
     }
+
+    @PostMapping("/modify")
+    public ResponseEntity<?> modify(@RequestBody Map<String, String> requestBody) {
+        try{
+            String email = requestBody.get("email");
+            String name = requestBody.get("name");
+            String password = requestBody.get("password");
+            memberService.modify(email, name, password);
+            return ResponseEntity.ok("회원정보가 수정되었습니다.");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("잘못된 요청");
+        }
+    }
+
 
     @GetMapping("/withdrawal")
     public ResponseEntity<?> withdrawal(Principal principal) {
@@ -225,6 +235,9 @@ public class MemberController {
         }
 
     }
-
+    @GetMapping("/total")
+    public ResponseEntity<?> getTotal(){
+        return new ResponseEntity<>(memberService.getTotal(),HttpStatus.OK);
+    }
 
 }

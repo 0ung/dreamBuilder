@@ -1,17 +1,11 @@
 package codehows.dream.dreambulider.entity;
 
 import codehows.dream.dreambulider.constats.Authority;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import java.util.Collection;
 
 @Entity
@@ -41,6 +35,22 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
 	public Member updatewithdrawal(boolean withdrawal) {
 		this.isWithdrawal = withdrawal;
+		return this;
+	}
+
+	public Member updatemodify(String name, String password){
+		this.name = name;
+		this.password = password;
+		return this;
+	}
+
+	public Member nameupdatemodify(String name){
+		this.name = name;
+		return this;
+	}
+
+	public Member pwupdatemodify(String password){
+		this.password = password;
 		return this;
 	}
 

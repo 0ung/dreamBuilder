@@ -1,7 +1,6 @@
 package codehows.dream.dreambulider.dto.Board;
 
 import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.Liked;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

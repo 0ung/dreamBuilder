@@ -29,7 +29,6 @@ interface MarkdownWithDropzoneProps {
   board: Board;
   handleMarkdownChange: (content: string) => void;
 }
-
 const MarkdownWithDropzone: React.FC<MarkdownWithDropzoneProps> = ({
   board,
   handleMarkdownChange,

@@ -6,6 +6,7 @@ import { MAIN, SIGNUP } from "../constants/page_constants";
 import styled from "styled-components";
 import { LOGIN_API } from "../constants/api_constants";
 import fetcher from "../fetcher";
+import axios from "axios";
 
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
@@ -51,7 +52,6 @@ export default function LoginPage() {
         },
       });
       const accessToken = response.data.accessToken;
-      console.log(accessToken);
       if (accessToken !== null || undefined) {
         window.localStorage.setItem("accessToken", accessToken);
         navigator(MAIN);

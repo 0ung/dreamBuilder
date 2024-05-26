@@ -1,9 +1,9 @@
 package codehows.dream.dreambulider.board;
 
+import codehows.dream.dreambulider.repository.BoardFileRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import codehows.dream.dreambulider.repository.BoardFileRepository;
 
 @SpringBootTest
 public class BoardFileRepositoryTest {

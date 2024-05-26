@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import fetcher from "../fetcher";
 import {
@@ -10,24 +10,23 @@ interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
+  regTime: string;
   invisible: boolean;
-  updateDate: string | null;
+  updateTime: string | null;
 }
 
 interface NestedCommentProps {
   nestedReply: NestedReply;
   isAdmin: boolean;
-  isUser: boolean;
 }
 
 const NestedComment: React.FC<NestedCommentProps> = ({
   nestedReply,
   isAdmin,
-  isUser,
 }) => {
   const [modify, setModify] = useState<boolean>(false);
   const [comment, setComment] = useState<string>(nestedReply.comment);
+  const [admin, setAdmin] = useState<boolean>(false);
   const [nestedReplyState, setNestedReplyState] =
     useState<NestedReply>(nestedReply); // 대댓글 상태 변수
 
@@ -38,9 +37,9 @@ const NestedComment: React.FC<NestedCommentProps> = ({
         id: nestedReplyState.id,
         comment: nestedReplyState.comment,
         nickname: nestedReplyState.nickname,
-        regDate: nestedReplyState.regDate,
+        regTime: nestedReplyState.regTime,
         invisible: true,
-        updateDate: nestedReplyState.updateDate,
+        updateTime: nestedReplyState.updateTime,
       });
     }
   };
@@ -58,15 +57,19 @@ const NestedComment: React.FC<NestedCommentProps> = ({
   const handleCancel = () => {
     setModify(false);
   };
+
+  useEffect(() => {
+    setAdmin(isAdmin);
+  }, []);
   return (
     <div className="card mb-2 ms-3">
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-2">
           <h6 className="card-title mb-0">{nestedReplyState.nickname}</h6>
           <small className="text-muted">
-            {nestedReplyState.updateDate == null
-              ? nestedReplyState.regDate
-              : `${nestedReplyState.updateDate} (수정됨)`}
+            {nestedReplyState.updateTime == null
+              ? nestedReplyState.regTime
+              : `${nestedReplyState.updateTime} (수정됨)`}
           </small>
         </div>
         {nestedReplyState.invisible ? (
@@ -88,7 +91,7 @@ const NestedComment: React.FC<NestedCommentProps> = ({
         )}
 
         <div className="d-flex justify-content-end mt-2">
-          {isAdmin || isUser ? (
+          {admin ? (
             <>
               <button className="btn btn-danger btn-sm" onClick={handleDelete}>
                 삭제

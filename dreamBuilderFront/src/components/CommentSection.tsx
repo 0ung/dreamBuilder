@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import fetcher from "../fetcher";
-import { REPLY_POST } from "../constants/api_constants";
+import { MANAGE_REPLY_BOARD_TITLE, REPLY_POST } from "../constants/api_constants";
 import Comment from "./Comment";
 
 interface NestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   invisible: boolean;
 }
 
@@ -16,43 +16,52 @@ interface Reply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   nestReply: NestedReply[];
   invisible: boolean;
 }
 
 interface CommentSectionProps {
   replies: Reply[] | null;
-  boardId: number;
-  setReplies: React.Dispatch<React.SetStateAction<Reply[]>>;
+  boardId?: number;
+  setReplies?: React.Dispatch<React.SetStateAction<Reply[]>>;
+  isAdmins: boolean;
 }
 
 const CommentSection: React.FC<CommentSectionProps> = ({
   replies,
   boardId,
+  isAdmins,
   setReplies,
 }) => {
   const [comment, setComment] = useState<string>("");
-  const [isAdmin, setAdmin] = useState(false);
+  const [isAdmin, setAdmin] = useState(false); 
+
+  useEffect(() => {
+    setAdmin(isAdmins);
+    console.log(isAdmins);
+  }, []);
 
   const handleReply = async () => {
-    const data = {
-      comment: comment,
-      boardId: boardId,
-    };
-    try {
-      const response = await fetcher.post(REPLY_POST, JSON.stringify(data), {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const newReply = response.data;
-      console.log(newReply);
-      setReplies((prevReplies) => [newReply, ...prevReplies]); // 새로운 댓글을 추가
-      setComment(""); // 댓글 작성 후 입력 필드 초기화
-    } catch (error) {
-      alert("에러임");
+    if (setReplies != null && setReplies != undefined) {
+      const data = {
+        comment: comment,
+        boardId: boardId,
+      };
+      try {
+        const response = await fetcher.post(REPLY_POST, JSON.stringify(data), {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const newReply = response.data;
+        console.log(newReply);
+        setReplies((prevReplies) => [newReply, ...prevReplies]); // 새로운 댓글을 추가
+        setComment(""); // 댓글 작성 후 입력 필드 초기화
+      } catch (error) {
+        alert("에러임");
+      }
     }
   };
 
@@ -109,6 +118,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           boardId={boardId}
           openReplies={openReplies}
           toggleReplies={toggleReplies}
+          isAdmin={isAdmins}
         />
       ))}
     </div>

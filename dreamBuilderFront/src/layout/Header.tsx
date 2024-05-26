@@ -140,6 +140,7 @@ function Header() {
       localStorage.removeItem("accessToken");
       setAccessToken("");
       console.log(response.data);
+      window.location.href = MAIN;
     } catch (error) {
       console.error;
     }

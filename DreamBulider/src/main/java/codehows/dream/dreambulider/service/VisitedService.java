@@ -3,7 +3,6 @@ package codehows.dream.dreambulider.service;
 import codehows.dream.dreambulider.entity.Visited;
 import codehows.dream.dreambulider.repository.VisitedRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -31,7 +30,7 @@ public class VisitedService {
     public List<Map<String, Object>> getDailyVisits(LocalDate startDate) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
-            LocalDate date = startDate.plusDays(i);
+            LocalDate date = startDate.minusDays(i);
             long count = visitedRepository.findAllByVisitDate(date).size();
             Map<String, Object> data = new HashMap<>();
             data.put("period", date.toString());
@@ -44,7 +43,7 @@ public class VisitedService {
     public List<Map<String, Object>> getWeeklyVisits(LocalDate startDate) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
-            LocalDate startOfWeek = startDate.plusWeeks(i).with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+            LocalDate startOfWeek = startDate.minusWeeks(i).with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
             LocalDate endOfWeek = startOfWeek.with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY));
             long count = visitedRepository.findAllByVisitDateBetween(startOfWeek, endOfWeek).size();
             Map<String, Object> data = new HashMap<>();
@@ -59,7 +58,7 @@ public class VisitedService {
     public List<Map<String, Object>> getMonthlyVisits(LocalDate startDate) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
-            LocalDate startOfMonth = startDate.plusMonths(i).with(TemporalAdjusters.firstDayOfMonth());
+            LocalDate startOfMonth = startDate.minusMonths(i).with(TemporalAdjusters.firstDayOfMonth());
             LocalDate endOfMonth = startOfMonth.with(TemporalAdjusters.lastDayOfMonth());
             long count = visitedRepository.findAllByVisitDateBetween(startOfMonth, endOfMonth).size();
             Map<String, Object> data = new HashMap<>();

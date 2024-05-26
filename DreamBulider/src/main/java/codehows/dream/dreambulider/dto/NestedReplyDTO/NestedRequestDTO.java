@@ -1,12 +1,8 @@
 package codehows.dream.dreambulider.dto.NestedReplyDTO;
 
-import java.time.LocalDateTime;
+import lombok.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter

@@ -1,10 +1,5 @@
 package codehows.dream.dreambulider.service;
 
-import java.security.Principal;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import codehows.dream.dreambulider.dto.Liked.LikedRequest;
 import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.Liked;
@@ -13,6 +8,10 @@ import codehows.dream.dreambulider.repository.BoardRepository;
 import codehows.dream.dreambulider.repository.LikedRepository;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Principal;
 
 @Service
 @Transactional

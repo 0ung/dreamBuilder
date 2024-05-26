@@ -1,25 +1,32 @@
 package codehows.dream.dreambulider.service;
 
+import codehows.dream.dreambulider.dto.NestedReplyDTO.NestedResponseDTO;
+import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
+import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
+import codehows.dream.dreambulider.dto.ReplyDTO.ReplyResponseDTO;
+import codehows.dream.dreambulider.dto.ReplyDTO.ReplyUpdateDTO;
+import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.entity.Member;
+import codehows.dream.dreambulider.entity.NestedReply;
+import codehows.dream.dreambulider.entity.Reply;
+import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.MemberRepository;
+import codehows.dream.dreambulider.repository.NestedRepository;
+import codehows.dream.dreambulider.repository.ReplyRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.map.HashedMap;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
-import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
-import codehows.dream.dreambulider.dto.ReplyDTO.ReplyResponseDTO;
-import codehows.dream.dreambulider.dto.ReplyDTO.ReplyUpdateDTO;
-
-import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.Member;
-import codehows.dream.dreambulider.entity.Reply;
-import codehows.dream.dreambulider.repository.BoardRepository;
-import codehows.dream.dreambulider.repository.MemberRepository;
-import codehows.dream.dreambulider.repository.ReplyRepository;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class ReplyService {
@@ -27,6 +34,7 @@ public class ReplyService {
 	private final ReplyRepository replyRepository;
 	private final BoardRepository boardRepository;
 	private final MemberRepository memberRepository;
+	private final NestedRepository nestedRepository;
 
 	public Reply saveReply(ReplyRequestDTO replyRequestDTO, String email) {
 
@@ -39,14 +47,13 @@ public class ReplyService {
 			throw new IllegalArgumentException("데이터 없음");
 		}
 
-
-        Reply result = Reply.builder()
-                .comment(replyRequestDTO.getComment())
-                .invisible(replyRequestDTO.isInvisible())
-                .board(board)
-                .member(member)
-                .build();
-       replyRepository.save(result);
+		Reply result = Reply.builder()
+			.comment(replyRequestDTO.getComment())
+			.invisible(replyRequestDTO.isInvisible())
+			.board(board)
+			.member(member)
+			.build();
+		replyRepository.save(result);
 
 		return result;
 	}
@@ -57,8 +64,8 @@ public class ReplyService {
 	}
 
 	public int getTotal(Long boardId) {
-		Pageable pageable = PageRequest.of(0,5);
-		return replyRepository.findByBoardId(boardId,pageable).getTotalPages();
+		Pageable pageable = PageRequest.of(0, 5);
+		return replyRepository.findByBoardId(boardId, pageable).getTotalPages();
 	}
 
 	public ReplyResponseDTO findById(long id) {
@@ -76,7 +83,6 @@ public class ReplyService {
 		return new ReplyDeleteDTO(reply);
 	}
 
-
 	@Transactional
 	public Reply update(long id, ReplyUpdateDTO replyUpdateDTO) {
 		Reply reply = replyRepository.findById(id)
@@ -87,16 +93,42 @@ public class ReplyService {
 		return reply;
 	}
 
-	public Long getReplyCnt(long boardId){
+	public Long getReplyCnt(long boardId) {
 		return replyRepository.countReplyByBoardId(boardId);
 	}
-    //이번 달 작성한 댓글 개수
-    public Long countReply(Principal principal) {
-        Member member = memberRepository.findMemberByEmail(principal.getName())
-                .orElseThrow(() -> new IllegalArgumentException("not found member" ));
 
-        Long count = replyRepository.countReplyByMember(member.getId());
+	//이번 달 작성한 댓글 개수
+	public Long countReply(Principal principal) {
+		Member member = memberRepository.findMemberByEmail(principal.getName())
+			.orElseThrow(() -> new IllegalArgumentException("not found member"));
 
-        return count;
-    }
+		Long count = replyRepository.countReplyByMember(member.getId());
+
+		return count;
+	}
+
+	//전체 댓글 개수
+	public List<ReplyResponseDTO> getAdminData(Pageable pageable) {
+		List<ReplyResponseDTO> result = new ArrayList<>();
+		Page<Reply> replies = replyRepository.findAllBy(pageable);
+		replies.forEach((e) -> {
+			List<NestedReply> nestedReplies = nestedRepository.findByReplyIdOrderByIdDesc(e.getId());
+			List<NestedResponseDTO> list = nestedReplies.stream().map(NestedResponseDTO::new).toList();
+			result.add(ReplyResponseDTO.entityToDTO(e, list));
+		});
+		return result;
+	}
+
+	public Long getTotal() {
+		return replyRepository.count();
+	}
+
+	public Map<String,String> getBoardTitle(Long replyId){
+		Reply reply = replyRepository.findById(replyId).orElse(null);
+		Board board = boardRepository.findById(reply.getBoard().getId()).orElse(null);
+		Map<String,String> map = new HashedMap<>();
+
+		map.put("title", board.getTitle());
+		return map;
+	}
 }

@@ -1,10 +1,9 @@
 package codehows.dream.dreambulider.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import codehows.dream.dreambulider.constats.Authority;
-
+import codehows.dream.dreambulider.dto.Member.MemberFormDTO;
+import codehows.dream.dreambulider.dto.Member.MemberLoginDTO;
+import codehows.dream.dreambulider.dto.Member.TokenResponse;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.entity.RefreshToken;
 import codehows.dream.dreambulider.jwt.TokenProvider;
@@ -12,10 +11,12 @@ import codehows.dream.dreambulider.repository.LikedRepository;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.repository.RefreshTokenRepository;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -25,17 +26,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import codehows.dream.dreambulider.constats.Authority;
-import codehows.dream.dreambulider.dto.Member.MemberFormDTO;
-import codehows.dream.dreambulider.dto.Member.MemberLoginDTO;
-import codehows.dream.dreambulider.dto.Member.TokenResponse;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
-
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.HashMap;
+import java.util.Map;
 
 
 
@@ -181,8 +173,26 @@ public class MemberService implements UserDetailsService {
         memberRepository.save(member);
     }
 
+	public void modify (String email, String name, String password) {
+		Member member = memberRepository.findMemberByEmail(email).orElseThrow();
+		String encodePasswrod = passwordEncoder.encode(password);
+		if(name == null && password == null){
+			throw new IllegalArgumentException("잘못된 정보");
+		} else if(password == null){
+			member.nameupdatemodify(name);
+		}else if(name == null){
+			member.pwupdatemodify(password);
+		}else{
+			member.updatemodify(name, encodePasswrod);
+		}
+		memberRepository.save(member);
+	}
+
     public Page<Member> findAll(Pageable pageable){
         return memberRepository.findAll(pageable);
     }
 
+	public Long getTotal(){
+		return memberRepository.count();
+	}
 }

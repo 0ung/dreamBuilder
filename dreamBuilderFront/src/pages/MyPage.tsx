@@ -7,25 +7,10 @@ import styled from "styled-components";
 import { Button, Modal } from "react-bootstrap";
 import base64 from "base-64";
 import fetcher from "../fetcher";
-import { withdrawal_API } from "../constants/api_constants";
+import { withdrawal_API, modify_API, LOGOUT_API, MEMBER_LIKED, MEMBER_REPLY, MEMBER_BOARD, MEMBER_WRITE_BOARD, MEMBER_WRITE_BOARD_TOTAL } from "../constants/api_constants";
+import { useNavigate } from "react-router-dom";
+import { MAIN } from "../constants/page_constants";
 
-const dumpData = [
-  {
-    id: 1,
-    title: "제목1",
-    views: 123,
-  },
-  {
-    id: 2,
-    title: "제목asdasdadasdaasdadasdasdsdasdassd",
-    views: 123,
-  },
-  {
-    id: 3,
-    title: "제목1asdasdass",
-    views: 123,
-  },
-];
 
 const CustomButton = styled.button`
   background-color: #348f8f;
@@ -99,13 +84,24 @@ function Inputvalidation({ children, data, onChange }: validation) {
   );
 }
 
+
+interface BOARDLIST {
+  id: number;
+  title: string;
+  cnt: number;
+}
+
 function MyPage() {
+  const navigate = useNavigate();
   const [nickName, setNickName] = useState("");
   const [password, setPassword] = useState("");
   const [checkPassword, setCheckPassword] = useState("");
-  const [totalPages, setTotalPages] = useState(
-    Math.floor(dumpData.length / 10) + 1
-  );
+  const [liekdCnt, setLikedCnt] = useState<number>(0);
+  const [replyCnt, setReplyCnt] = useState<number>(0);
+  const [boardCnt, setBoardCnt] = useState<number>(0);
+  const [boardList, setBoardList] = useState<BOARDLIST[]>([])
+
+  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
 
   //kakaouser 구분
@@ -113,13 +109,15 @@ function MyPage() {
   const regex = /\w*_kakao/;
   const [kakaouser, setKakaouser] = useState(false);
   useEffect(() => {
+    handleLiked();
+    handleReply();
+    handleBoard();
     const sendAccessToken: string | null = localStorage.getItem("accessToken");
     if (sendAccessToken !== null && sendAccessToken !== undefined) {
       setAccessToken(sendAccessToken);
-      console.log(setAccessToken(sendAccessToken));
-      if(regex.test(handleJWT(sendAccessToken))){
+      if (regex.test(handleJWT(sendAccessToken))) {
         setKakaouser(true)
-      }else{
+      } else {
         setKakaouser(false)
       }
     }
@@ -141,8 +139,8 @@ function MyPage() {
   const handleShowUpdateModal = () => setShowUpdateModal(true);
 
   const handleCloseDeleteModal = () => setShowDeleteModal(false);
-  const handleCloseDeleteModal1 = async ()=>{
-    try{
+  const handleCloseDeleteModal1 = async () => {
+    try {
       const sendAccessToken: string | null = localStorage.getItem("accessToken");
       if (sendAccessToken !== null) {
         const formData = {
@@ -157,32 +155,97 @@ function MyPage() {
             },
           }
         );
+        handleLogout();
+        navigate(MAIN);
       }
-  
-    }catch(error){
+
+    } catch (error) {
 
     }
   }
+  const handleLogout = async () => {
+    try {
+      const response = await fetcher.post(LOGOUT_API);
+      localStorage.removeItem("accessToken");
+      setAccessToken("");
+    } catch (error) {
+      console.error;
+    }
+  };
   const handleShowDeleteModal = () => setShowDeleteModal(true);
 
-  //입력 검증
-  const handleNickName = (e: string) => {
-    const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
-    return regExp.test(e);
-  };
-  const handlePassword = (e: string) => {
-    const regExp = new RegExp(
+  // 개인정보 수정
+  const handleUsermodify = async () => {
+    const regExp1 = new RegExp("^[A-Za-z0-9]{2,15}$");
+    if (!regExp1.test(nickName)) {
+      alert("닉네임을 확인해주세요")
+      return;
+    }
+    const regExp2 = new RegExp(
       "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_])[A-Za-z\\d\\W_]{8,20}$"
     );
-    return regExp.test(e);
-  };
+    if (!regExp2.test(password) && nickName === null) {
+      alert("비밀번호를 확인해주세요")
+      return;
+    }
+    try {
+      const sendAccessToken: string | null = localStorage.getItem("accessToken");
+      if (sendAccessToken !== null) {
+        const formData = {
+          email: handleJWT(sendAccessToken),
+          name: nickName,
+          password: password,
+        };
+        const request = await fetcher.post(
+          modify_API,
+          JSON.stringify(formData),
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+      alert("회원정보가 수정되었습니다.");
+      handleCloseUpdateModal();
+    } catch (error) {
+      alert("입력정보를 확인해주세요")
+    }
+  }
+  const handleLiked = async () => {
+    const response = await fetcher.get(MEMBER_LIKED);
+    setLikedCnt(response.data)
+  }
+  const handleReply = async () => {
+    const response = await fetcher.get(MEMBER_REPLY);
+    setReplyCnt(response.data)
+  }
+  const handleBoard = async () => {
+    const response = await fetcher.get(MEMBER_BOARD);
+    setBoardCnt(response.data)
+  }
+  const handleBoardWrite = async () => {
+    const response = await fetcher.get(`${MEMBER_WRITE_BOARD}${currentPage - 1}`);
+    console.log(`${MEMBER_WRITE_BOARD}${currentPage - 1}`);
+    setBoardList(response.data);
+  }
+  const totalPageData = async () => {
+    const response = await fetcher.get(MEMBER_WRITE_BOARD_TOTAL);
 
+    setTotalPages(Math.floor(response.data / 10 + 1))
+  }
   const handleCheckPassword = (e: string) => {
     if (e === password) {
       return true;
     }
     return false;
   };
+
+  useEffect(() => {
+    handleBoardWrite()
+    totalPageData()
+    
+  }, [currentPage])
 
   return (
     <>
@@ -228,7 +291,7 @@ function MyPage() {
 
         <div className="row justify-content-center mt-5">
           <div className="col-3">
-            <Views cnt={1}>
+            <Views cnt={liekdCnt}>
               이번 달에 받은
               <br /> 좋아요 개수
               <br />
@@ -236,7 +299,7 @@ function MyPage() {
             </Views>
           </div>
           <div className="col-3">
-            <Views cnt={1}>
+            <Views cnt={boardCnt}>
               이번 달에 작성한
               <br /> 게시물 개수
               <br />
@@ -244,7 +307,7 @@ function MyPage() {
             </Views>
           </div>
           <div className="col-3">
-            <Views cnt={1}>
+            <Views cnt={replyCnt}>
               이번 달에 작성한
               <br /> 댓글 개수
               <br />
@@ -255,7 +318,7 @@ function MyPage() {
 
         <hr className="mt-5 mb-5" style={{ width: "100%", margin: "0 auto" }} />
         <div className="text-center">
-          <h3>{nickName}님이 작성한 글</h3>
+          <h3>내가 작성한 글</h3>
         </div>
         <div className="container mt-5 ">
           <table
@@ -270,7 +333,7 @@ function MyPage() {
               </tr>
             </thead>
             <tbody>
-              {dumpData.map((e) => {
+              {boardList.map((e) => {
                 return (
                   <tr key={e.id}>
                     <td>{e.id}</td>
@@ -283,7 +346,7 @@ function MyPage() {
                     >
                       {e.title}
                     </td>
-                    <td>{e.views}</td>
+                    <td>{e.cnt}</td>
                   </tr>
                 );
               })}
@@ -316,51 +379,37 @@ function MyPage() {
             >
               닉네임
             </SignupInput>
-            
-            <Inputvalidation
-              data={() => {
-                return handleNickName(nickName);
-              }}
-            >
-              닉네임
-            </Inputvalidation>
           </div>
           <div>
-            { kakaouser ? (
-                <></>
-            ):(<>
-                            <SignupInput
-              placeholder="비밀번호를 입력해주세요 (8~20자 영대소문자, 숫자, 특수문자 하나씩 기입 )"
-              type="password"
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-            >
-              비밀번호
-            </SignupInput>
-            <Inputvalidation
-              data={() => {
-                return handlePassword(password);
-              }}
-            >
-              비밀번호
-            </Inputvalidation>
-            <SignupInput
-              type="password"
-              placeholder=""
-              onChange={(e) => {
-                setCheckPassword(e.target.value);
-              }}
-            >
-              비밀번호 확인
-            </SignupInput>
-            <Inputvalidation
-              data={() => {
-                return handleCheckPassword(checkPassword);
-              }}
-            >
-              비밀번호 확인
-            </Inputvalidation>
+            {kakaouser ? (
+              <></>
+            ) : (<>
+              <SignupInput
+                placeholder="비밀번호를 입력해주세요 (8~20자 영대소문자, 숫자, 특수문자 하나씩 기입 )"
+                type="password"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+              >
+                비밀번호
+              </SignupInput>
+
+              <SignupInput
+                type="password"
+                placeholder=""
+                onChange={(e) => {
+                  setCheckPassword(e.target.value);
+                }}
+              >
+                비밀번호 확인
+              </SignupInput>
+              <Inputvalidation
+                data={() => {
+                  return handleCheckPassword(checkPassword);
+                }}
+              >
+                비밀번호 확인
+              </Inputvalidation>
             </>)}
 
           </div>
@@ -369,7 +418,7 @@ function MyPage() {
           <Button variant="secondary" onClick={handleCloseUpdateModal}>
             닫기
           </Button>
-          <Button variant="primary" onClick={handleCloseUpdateModal}>
+          <Button variant="primary" onClick={handleUsermodify}>
             저장
           </Button>
         </Modal.Footer>
@@ -382,23 +431,23 @@ function MyPage() {
         </Modal.Header>
         <Modal.Body>
           <div className="mb-3">
-            { kakaouser ? (
-                <>
+            {kakaouser ? (
+              <>
                 <label>
                   정말 탈퇴하시겠습니까?
                 </label>
-                </>
-            ):(<>
-            <label htmlFor="passwordInput" className="form-label">
-              탈퇴하시려면 비밀번호를 입력해주세요
-            </label>
-            <input
-              type="password"
-              className="form-control"
-              id="passwordInput"
-              placeholder="비밀번호 입력"
-              onChange={(e) => setPassword(e.target.value)}
-            />
+              </>
+            ) : (<>
+              <label htmlFor="passwordInput" className="form-label">
+                탈퇴하시려면 비밀번호를 입력해주세요
+              </label>
+              <input
+                type="password"
+                className="form-control"
+                id="passwordInput"
+                placeholder="비밀번호 입력"
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </>)}
           </div>
         </Modal.Body>
@@ -406,8 +455,8 @@ function MyPage() {
           <Button variant="secondary" onClick={handleCloseDeleteModal}>
             닫기
           </Button>
-          <Button variant="danger" 
-          onClick={handleCloseDeleteModal1}>
+          <Button variant="danger"
+            onClick={handleCloseDeleteModal1}>
             탈퇴
           </Button>
         </Modal.Footer>
