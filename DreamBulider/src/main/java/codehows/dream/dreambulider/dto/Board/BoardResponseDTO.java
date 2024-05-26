@@ -1,8 +1,6 @@
 package codehows.dream.dreambulider.dto.Board;
 
-import codehows.dream.dreambulider.constats.Authority;
 import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.HashTag;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,4 +37,9 @@ public class BoardResponseDTO {
         this.file = file;
     }
 
+    public BoardResponseDTO(Board board) {
+        this.id = board.getId();
+        this.title = board.getTitle();
+        this.content = board.getContent();
+    }
 }

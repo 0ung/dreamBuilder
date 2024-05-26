@@ -1,15 +1,5 @@
 package codehows.dream.dreambulider.service;
 
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-
 import codehows.dream.dreambulider.dto.NestedReplyDTO.NestedResponseDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyDeleteDTO;
 import codehows.dream.dreambulider.dto.ReplyDTO.ReplyRequestDTO;
@@ -25,6 +15,17 @@ import codehows.dream.dreambulider.repository.NestedRepository;
 import codehows.dream.dreambulider.repository.ReplyRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.map.HashedMap;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -116,5 +117,18 @@ public class ReplyService {
 			result.add(ReplyResponseDTO.entityToDTO(e, list));
 		});
 		return result;
+	}
+
+	public Long getTotal() {
+		return replyRepository.count();
+	}
+
+	public Map<String,String> getBoardTitle(Long replyId){
+		Reply reply = replyRepository.findById(replyId).orElse(null);
+		Board board = boardRepository.findById(reply.getBoard().getId()).orElse(null);
+		Map<String,String> map = new HashedMap<>();
+
+		map.put("title", board.getTitle());
+		return map;
 	}
 }

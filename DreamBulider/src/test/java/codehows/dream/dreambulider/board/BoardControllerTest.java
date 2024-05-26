@@ -1,19 +1,16 @@
 package codehows.dream.dreambulider.board;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.security.Principal;
-import java.sql.Date;
-import java.util.Collections;
-import java.util.Optional;
-
+import codehows.dream.dreambulider.controller.BoardController;
 import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
+import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.entity.Member;
+import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.LikedRepository;
+import codehows.dream.dreambulider.service.BoardService;
+import codehows.dream.dreambulider.service.HashTagService;
+import codehows.dream.dreambulider.service.LikedService;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,14 +21,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import codehows.dream.dreambulider.controller.BoardController;
-import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.Member;
-import codehows.dream.dreambulider.repository.BoardRepository;
-import codehows.dream.dreambulider.repository.LikedRepository;
-import codehows.dream.dreambulider.service.BoardService;
-import codehows.dream.dreambulider.service.HashTagService;
-import codehows.dream.dreambulider.service.LikedService;
+import java.security.Principal;
+import java.sql.Date;
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc

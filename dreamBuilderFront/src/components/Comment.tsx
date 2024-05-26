@@ -3,11 +3,13 @@ import NestedComment from "./NestedComment";
 import handleJWT from "../paserJWT";
 import fetcher from "../fetcher";
 import {
+  MANAGE_REPLY_BOARD_TITLE,
   REPLY_DELETE,
   REPLY_UPDATE,
   RE_REPLY_POST,
   RE_REPLY_READ_ALL,
 } from "../constants/api_constants";
+import formatDateTime from "../dataPaser";
 
 interface Reply {
   id: number;
@@ -48,6 +50,12 @@ const Comment: React.FC<CommentProps> = ({
   const [comment, setComment] = useState<string>(reply.comment);
   const [rereply, setRereply] = useState<string>("");
   const [author, setAuthor] = useState<boolean>(false);
+  const [boardTitle, setBoardTitle] = useState<string>();
+
+  const getBoardTitle = async (replyId: number) => {
+    const response = await fetcher.get(`${MANAGE_REPLY_BOARD_TITLE}${replyId}`);
+    setBoardTitle(response.data.title);
+  }
 
   const handleAuthor = () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -127,7 +135,7 @@ const Comment: React.FC<CommentProps> = ({
         ...prevNestedReplies,
       ]); // 새로운 댓글을 추가
       setRereply("");
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const fetchNestedReplies = async (replyId: number) => {
@@ -144,6 +152,7 @@ const Comment: React.FC<CommentProps> = ({
   useEffect(() => {
     setAdmin(isAdmin);
     handleAuthor();
+    getBoardTitle(reply.id);
   }, []);
 
   const toggleAndFetchReplies = (id: number) => {
@@ -158,19 +167,26 @@ const Comment: React.FC<CommentProps> = ({
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-2">
           {isAdmins ? (
-            <h5 className="card-title mb-0">
-              {replyState.nickname}
-              <small className="text-muted" style={{ fontSize: "15px" }}>
-                {replyState.invisible ? `(삭제됨)` : <></>}
-              </small>
-            </h5>
+            <div>
+              <h5 className="card-title mb-0">
+                {replyState.nickname}
+              </h5>
+              <h6 className="card-subtitle mb-2 text-muted mt-1" style={{ fontSize: "14px" }}>
+                프로젝트 제목: {boardTitle}
+                {replyState.invisible && (
+                  <small className="text-muted" style={{ fontSize: "12px" }}>
+                    (삭제됨)
+                  </small>
+                )}
+              </h6>
+            </div>
           ) : (
             <h5 className="card-title mb-0">{replyState.nickname}</h5>
           )}
           <small className="text-muted">
             {replyState.updateTime == null
-              ? replyState.regTime
-              : `${replyState.updateTime} (수정됨)`}
+              ? formatDateTime(replyState.regTime) 
+              : `${formatDateTime(replyState.updateTime)} (수정됨)`}
           </small>
         </div>
         <div className="row">
@@ -189,7 +205,7 @@ const Comment: React.FC<CommentProps> = ({
           ) : (
             <div className="col-9">{replyState.comment}</div>
           )}
-          {}
+          { }
         </div>
         <div className="d-flex justify-content-between mt-2">
           <button

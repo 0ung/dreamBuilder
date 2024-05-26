@@ -3,7 +3,6 @@ package codehows.dream.dreambulider.service;
 import codehows.dream.dreambulider.entity.Visited;
 import codehows.dream.dreambulider.repository.VisitedRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

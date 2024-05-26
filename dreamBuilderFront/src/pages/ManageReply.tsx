@@ -5,14 +5,14 @@ import Pagination from "../components/Pagination";
 import { useEffect, useState } from "react";
 import fetcher from "../fetcher";
 import { MANAGE_REPLY } from "../constants/page_constants";
-import { MANAGE_REPLY_API } from "../constants/api_constants";
+import { MANAGE_REPLY_API, MANAGE_REPLY_BOARD_TITLE, MANAGE_REPLY_TOTAL } from "../constants/api_constants";
 
 interface Reply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   nestReply: nestedReply[];
   invisible: boolean;
 }
@@ -21,8 +21,8 @@ interface nestedReply {
   id: number;
   comment: string;
   nickname: string;
-  regDate: string;
-  updateDate: string | null;
+  regTime: string;
+  updateTime: string | null;
   invisible: boolean;
 }
 
@@ -33,7 +33,6 @@ function ManageReply() {
 
   const handlePageChange = (pageNumber: number) => {
     setPage(pageNumber);
-    console.log("페이지 설정");
   };
 
   const handleReplyData = async () => {
@@ -42,9 +41,18 @@ function ManageReply() {
     setReply(response.data);
   };
 
+  const totalpages = async () => {
+    const response = await fetcher.get(MANAGE_REPLY_TOTAL);
+    const totalData: number = response.data;
+    setTotalPages(Math.floor(totalData / 10 + 1))
+  }
+
+
+
   useEffect(() => {
     handleReplyData();
-  }, []);
+    totalpages();
+  }, [page]);
   return (
     <>
       <Header />

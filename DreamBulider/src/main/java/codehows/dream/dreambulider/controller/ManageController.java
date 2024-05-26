@@ -1,11 +1,9 @@
 package codehows.dream.dreambulider.controller;
 
 import codehows.dream.dreambulider.dto.Member.MemberListResponseDTO;
-import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.repository.MemberRepository;
 import codehows.dream.dreambulider.service.MemberService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

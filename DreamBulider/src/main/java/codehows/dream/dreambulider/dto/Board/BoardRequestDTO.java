@@ -1,7 +1,6 @@
 package codehows.dream.dreambulider.dto.Board;
 
 import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.HashTag;
 import codehows.dream.dreambulider.service.BoardFileService;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +19,7 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 public class BoardRequestDTO {
     //게시글 추가 dto
+
     private String title;
     private String content;
     private Date endDate;

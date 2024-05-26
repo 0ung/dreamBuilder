@@ -1,13 +1,9 @@
 package codehows.dream.dreambulider.service;
 
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-
 import codehows.dream.dreambulider.constats.Authority;
-import codehows.dream.dreambulider.dto.Board.*;
+import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
+import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
 import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.entity.HashTag;
 import codehows.dream.dreambulider.entity.Member;
 import codehows.dream.dreambulider.repository.BoardRepository;
 import codehows.dream.dreambulider.repository.HashTagRepository;
@@ -22,8 +18,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
-import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j

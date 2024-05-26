@@ -5,6 +5,7 @@ import Footer from "../layout/Footer";
 import Pagination from "../components/Pagination";
 import fetcher from "../fetcher";
 import { MANAGE_MEMBERS, withdrawal_API, restore_API, MANAGE_MEMBERS_TOTAL } from "../constants/api_constants";
+import formatDateTime from "../dataPaser";
 
 type TableData = {
   id: number;
@@ -99,8 +100,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ data, onWithdrawalChang
             <td>{row.id}</td>
             <td>{row.name}</td>
             <td>{row.email}</td>
-            <td>{row.regTime}</td>
-            <td>{row.updateTime}</td>
+            <td> {formatDateTime(row.regTime)}</td>
+            <td>{formatDateTime(row.updateTime)}</td>
             <td>{row.authority}</td>
             <td>{row.withdrawal ? "Yes" : "No"}</td>
             <td>
@@ -109,14 +110,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ data, onWithdrawalChang
                   className={`btn ${"btn-success"}`}
                   onClick={() => handleRestore(row.email)}
                 >
-                  "복구"
+                  복구
                 </button>
                 :
                 <button
                   className={`btn ${"btn-danger"}`}
                   onClick={() => handleWithdrawal(row.email)}
                 >
-                  "삭제"
+                  삭제
                 </button>}
 
             </td>
@@ -130,12 +131,12 @@ const TableComponent: React.FC<TableComponentProps> = ({ data, onWithdrawalChang
 const ManageMember: React.FC = () => {
   const [userData, setUserData] = useState<TableData[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPage,setTotalPage] = useState(10);
+  const [totalPage, setTotalPage] = useState(10);
 
-  const handleTotalPage = async( )=>{
+  const handleTotalPage = async () => {
     const response = await fetcher.get(MANAGE_MEMBERS_TOTAL)
-    const totalPages = Math.floor(response.data / 10 +1);
-    setTotalPage(totalPages); 
+    const totalPages = Math.floor(response.data / 10 + 1);
+    setTotalPage(totalPages);
 
   }
 
@@ -144,7 +145,7 @@ const ManageMember: React.FC = () => {
   };
   const handleMemberData = async () => {
     try {
-      const response = await fetcher.get(`${MANAGE_MEMBERS}${currentPage-1}`)
+      const response = await fetcher.get(`${MANAGE_MEMBERS}${currentPage - 1}`)
       setUserData(response.data);
       console.log(response);
     } catch (error) {

@@ -28,11 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.HashMap;
-
 import java.util.Map;
 
 @RestController

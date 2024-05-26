@@ -1,8 +1,6 @@
 package codehows.dream.dreambulider.controller;
 
-import codehows.dream.dreambulider.dto.Board.BoardAdminListDTO;
 import codehows.dream.dreambulider.dto.Board.MyBoardListDTO;
-import codehows.dream.dreambulider.entity.Board;
 import codehows.dream.dreambulider.service.BoardService;
 import codehows.dream.dreambulider.service.LikedService;
 import codehows.dream.dreambulider.service.MemberService;
@@ -13,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;

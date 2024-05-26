@@ -1,35 +1,26 @@
 package codehows.dream.dreambulider.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import codehows.dream.dreambulider.dto.Board.FileDTO;
+import codehows.dream.dreambulider.entity.BoardFile;
+import codehows.dream.dreambulider.entity.FileManage;
+import codehows.dream.dreambulider.repository.BoardFileRepository;
+import codehows.dream.dreambulider.repository.BoardRepository;
+import codehows.dream.dreambulider.repository.FileManageRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import codehows.dream.dreambulider.dto.Board.FileDTO;
-import codehows.dream.dreambulider.entity.FileManage;
-import codehows.dream.dreambulider.repository.FileManageRepository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-import org.webjars.NotFoundException;
-
-import codehows.dream.dreambulider.entity.BoardFile;
-import codehows.dream.dreambulider.repository.BoardFileRepository;
-import codehows.dream.dreambulider.repository.BoardRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
