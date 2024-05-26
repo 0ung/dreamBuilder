@@ -52,7 +52,6 @@ export default function LoginPage() {
         },
       });
       const accessToken = response.data.accessToken;
-      console.log(accessToken);
       if (accessToken !== null || undefined) {
         window.localStorage.setItem("accessToken", accessToken);
         navigator(MAIN);

@@ -116,12 +116,10 @@ function ManageProject() {
 
   const handlePage = (pageNumber: number) => {
     setPage(pageNumber);
-    console.log("페이지 설정");
   };
   const handleManangeProject = async () => {
     const response = await fetcher.get(`${MANAGE_PROJECT_API}${page - 1}`);
     setProjectData(response.data);
-    console.log(response.data);
   };
 
   const handleTotalPage = async () => {

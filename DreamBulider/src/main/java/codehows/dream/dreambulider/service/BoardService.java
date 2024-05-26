@@ -207,7 +207,7 @@ public class BoardService {
         Member member = memberRepository.findMemberByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("not found member"));
 
-        return boardRepository.findBoardByMemberIdAndInvisibleFalse(member.getId(), pageable);
+        return boardRepository.findByMemberIdAndInvisibleFalse(member.getId(), pageable);
     }
 
     //이번 달 작성한 글 개수
@@ -237,5 +237,11 @@ public class BoardService {
         }
         log.info(topBoard.toString());
         return topBoard;
+    }
+
+    //내가 작성한 글 개수
+    public long getUserTotalBoardCnt(Principal principal){
+        Member member = memberRepository.findMemberByEmail(principal.getName()).orElse(null);
+        return boardRepository.countByMemberIdAndInvisibleFalse(member.getId());
     }
 }

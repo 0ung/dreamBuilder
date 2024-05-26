@@ -21,7 +21,7 @@ public interface LikedRepository extends JpaRepository<Liked, Long> {
     Long countByBoardId(@Param("boardId") Long boardId);
 
     //이번 달 받은 좋아요 개수
-    @Query(value = "SELECT COUNT(*) FROM liked WHERE member_id = :memberId And is_like = true AND MONTH(regTime) = MONTH(CURRENT_DATE)", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM liked WHERE member_id = :memberId And is_like = true AND MONTH(reg_time) = MONTH(CURRENT_DATE)", nativeQuery = true)
     Long countByMemberId(@Param("memberId") Long memberId);
 
     //좋아요 추가/삭제

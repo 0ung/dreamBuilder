@@ -8,6 +8,7 @@ import codehows.dream.dreambulider.service.ReplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +31,7 @@ public class MypageController {
     //내가 작성한 글 찾기
     @GetMapping("/api/myPage/{page}")
     public ResponseEntity<List<MyBoardListDTO>> findMyBoard(@PathVariable Optional<Integer> page, Principal principal) {
-        Pageable pageable = PageRequest.of(page.isPresent()? page.get() : 0, 10);
+        Pageable pageable = PageRequest.of(page.isPresent() ? page.get() : 0, 10);
         List<MyBoardListDTO> board = boardService.myBoard(principal, pageable)
                 .stream()
                 .map(MyBoardListDTO::new)
@@ -40,12 +41,10 @@ public class MypageController {
 
     }
 
-
-
     //이번 달 받은 좋아요 개수
     @GetMapping("/api/myPage/like")
     public ResponseEntity<Long> countLike(Principal principal) {
-       Long count = likedService.likedCount(principal);
+        Long count = likedService.likedCount(principal);
 
         return ResponseEntity.ok()
                 .body(count);
@@ -69,5 +68,10 @@ public class MypageController {
                 .body(count);
     }
 
+    @GetMapping("/api/mypage/boards")
+    public ResponseEntity<?> totalBoards(Principal principal) {
+        return new ResponseEntity<>(boardService.getUserTotalBoardCnt(principal)
+                , HttpStatus.OK);
+    }
 
- }
+}

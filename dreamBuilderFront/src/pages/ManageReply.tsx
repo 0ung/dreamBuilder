@@ -37,7 +37,6 @@ function ManageReply() {
 
   const handleReplyData = async () => {
     const response = await fetcher.get(`${MANAGE_REPLY_API}${page - 1}`);
-    console.log(response.data);
     setReply(response.data);
   };
 

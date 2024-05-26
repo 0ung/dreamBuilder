@@ -172,7 +172,6 @@ const ProjectDetailView: React.FC = () => {
 
   const location = useLocation();
   const boardId = location.state;
-  console.log("boardId: ", boardId); // boardId 확인
 
   const [board, setBoard] = useState<Board | null>(null);
   const [reply, setReply] = useState<Reply[]>([]);
@@ -185,7 +184,6 @@ const ProjectDetailView: React.FC = () => {
     if (token !== null && token !== undefined) {
       const json = handleJWT(token);
       const email = json.sub;
-      console.log("JWT: " + email);
       if (email === compareEmail) {
         setAuthor(true);
         return;
@@ -224,8 +222,6 @@ const ProjectDetailView: React.FC = () => {
       const response = await fetcher.get(BOARD_DEATIL_VIEW + boardId);
       const data = response.data;
 
-      console.log(response.data);
-
       const transformedBoard: Board = {
         id: data.id,
         title: data.title,
@@ -250,7 +246,6 @@ const ProjectDetailView: React.FC = () => {
 
   const handlePageChange = (pageNumber: number) => {
     setPage(pageNumber);
-    console.log("페이지 설정");
   };
 
   const handldePage = async () => {
@@ -270,13 +265,9 @@ const ProjectDetailView: React.FC = () => {
       );
       const data = response.data;
       setReply(data);
-      console.log(data);
-      ("");
     } catch (error) {
       console.log(error);
     }
-
-    console.log("댓글 호출 확인" + page);
   };
 
   return (

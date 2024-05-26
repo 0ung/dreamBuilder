@@ -41,7 +41,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ data, onWithdrawalChang
       if (request.status === 200) {
         const updatedUser = request.data; // 여기서 response.data로 데이터에 접근합니다.
         onWithdrawalChange(updatedUser);
-        console.log(updatedUser); // 서버로부터 받은 데이터를 출력합니다.
       } else {
         console.error("서버 응답 오류:", request.data);
       }
@@ -68,7 +67,6 @@ const TableComponent: React.FC<TableComponentProps> = ({ data, onWithdrawalChang
       if (request.status === 200) {
         const updatedUser = request.data; // 여기서 response.data로 데이터에 접근합니다.
         onWithdrawalChange(updatedUser);
-        console.log(updatedUser); // 서버로부터 받은 데이터를 출력합니다.
       } else {
         console.error("서버 응답 오류:", request.data);
       }
@@ -147,7 +145,6 @@ const ManageMember: React.FC = () => {
     try {
       const response = await fetcher.get(`${MANAGE_MEMBERS}${currentPage - 1}`)
       setUserData(response.data);
-      console.log(response);
     } catch (error) {
       console.log(error);
     }

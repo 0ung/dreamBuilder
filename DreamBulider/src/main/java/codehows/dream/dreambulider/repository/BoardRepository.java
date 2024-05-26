@@ -16,6 +16,7 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     //페이징
     Page<Board> findAllByInvisibleFalse(Pageable pageable);
 
+    Long countByMemberIdAndInvisibleFalse(Long memberId);
     //엑셀 파일 만들기
     @Query(value = "select * from Board where invisible=1 AND delete_by = 1", nativeQuery = true)
     List<Board> findAll();
@@ -25,8 +26,7 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     Member findMemberByBoardId(Long id);
 
     //마이페이지 작성 글 목록
-    @Query("SELECT b FROM Board b WHERE b.id = :id and b.invisible=false")
-    Page<Board> findBoardByMemberIdAndInvisibleFalse(Long id, Pageable pageable);
+    Page<Board> findByMemberIdAndInvisibleFalse(Long id, Pageable pageable);
 
    // @Query(SELECT b.invisible  FROM Board b WHERE b.id = :id" )
     //BoardAdminUpdateDTO findByBoardId(Long id);
@@ -70,7 +70,7 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     Long getCntById(@Param("id") Long id);
 
     //이번 달 작성한 게시글 개수
-    @Query(value = "SELECT COUNT(*) FROM board WHERE member_id = :memberId AND MONTH(regTime) = MONTH(CURRENT_DATE)", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM board WHERE member_id = :memberId AND MONTH(reg_time) = MONTH(CURRENT_DATE)", nativeQuery = true)
     Long countBoardByMember(@Param("memberId") Long memberId);
 
     //좋아요 5개 출력

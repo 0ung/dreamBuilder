@@ -45,8 +45,14 @@ export const MANAGE_FILE = "/api/admin/file";
 
 export const MANAGE_REPLY_API = "/api/admin/reply/";
 
-export const MANAGE_MEMBERS_TOTAL ="/member/total"
+export const MANAGE_MEMBERS_TOTAL = "/member/total"
 export const MANAGE_REPLY_TOTAL = "/api/admin/reply/total"
 export const MANAGE_REPLY_BOARD_TITLE = "/api/admin/reply/title/";
-export const MANAGE_BOARD_EXCEL ="/excel/download"
+export const MANAGE_BOARD_EXCEL = "/excel/download"
 export const MAIN_PAGE_DATA = "/api/main"
+
+export const MEMBER_LIKED = "/api/myPage/like";
+export const MEMBER_REPLY = "/api/myPage/reply";
+export const MEMBER_BOARD = "/api/myPage/board";
+export const MEMBER_WRITE_BOARD = "/api/myPage/"
+export const MEMBER_WRITE_BOARD_TOTAL = "/api/mypage/boards";
