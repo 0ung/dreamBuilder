@@ -107,12 +107,22 @@ public class BoardFileService {
 	}
 
 	public void moveFileToPermanentLocation(String tempFileUrl) throws IOException {
-		Path tempPath = Paths.get(this.tempSavePath, tempFileUrl.replace("/temp/", ""));
-		Path permanentPath = Paths.get(this.savePath, tempFileUrl.replace("/upload/", ""));
+		// tempFileUrl에서 "/temp/"를 제거하여 파일명을 추출
+		String fileName = tempFileUrl.replace("/temp/", "");
 
+		// 임시 파일 경로 설정
+		Path tempPath = Paths.get(this.tempSavePath, fileName);
+
+		// 영구 저장 파일 경로 설정
+		Path permanentPath = Paths.get(this.savePath, fileName);
+
+		// 영구 저장 경로의 디렉토리 생성
 		Files.createDirectories(permanentPath.getParent());
+
+		// 파일 이동
 		Files.move(tempPath, permanentPath);
 	}
+
 
 	public List<Map<String, String>> findBoardUrl(Long boardId) {
 		List<BoardFile> boardFiles = boardFileRepository.findByBoardId(boardId);

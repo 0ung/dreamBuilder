@@ -24,11 +24,6 @@ public class Liked extends BaseTimeEntity {
 	@Column(nullable = true)
 	private boolean isLike;
 
-//	public Liked(Board board, Member member) {
-//		this.board = board;
-//		this.member = member;
-//	}
-
 	@Builder
 	public Liked(Board board, Member member, Boolean isLike) {
 		this.board = board;

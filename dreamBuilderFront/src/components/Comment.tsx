@@ -181,14 +181,20 @@ const Comment: React.FC<CommentProps> = ({
             <h5 className="card-title mb-0">{replyState.nickname}</h5>
           )}
           <small className="text-muted">
-            {replyState.updateTime == null
-              ? formatDateTime(replyState.regTime)
-              : `${formatDateTime(replyState.updateTime)} (수정됨)`}
+            {replyState.updateTime === replyState.regTime
+              ? formatDateTime(replyState.regTime ?? "")
+              : `${formatDateTime(replyState.updateTime ?? "")} (수정됨)`}
           </small>
         </div>
         <div className="row">
           {replyState.invisible ? (
-            <p className="text-muted">삭제된 댓글입니다.</p>
+            isAdmins ? (
+              <div>
+                <p className="text-muted">(삭제됨) {replyState.comment}</p>
+              </div>
+            ) : (
+              <p className="text-muted">삭제된 댓글입니다.</p>
+            )
           ) : modify ? (
             <input
               type="text"
@@ -202,7 +208,6 @@ const Comment: React.FC<CommentProps> = ({
           ) : (
             <div className="col-9">{replyState.comment}</div>
           )}
-          {}
         </div>
         <div className="d-flex justify-content-between mt-2">
           <button

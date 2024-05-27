@@ -215,6 +215,7 @@ export default function ProjectRegPage() {
       alert(
         "An error occurred while processing your request. Please try again."
       );
+      navigate(PROJECT_OVERVIEW);
     }
   };
 
