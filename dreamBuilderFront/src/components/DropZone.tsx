@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import "bootstrap/dist/css/bootstrap.min.css";
 import fetcher from "../fetcher";
@@ -6,7 +6,7 @@ import { MANAGE_FILE } from "../constants/api_constants";
 
 interface DropZoneProps {
   filteredFiles: File[];
-  setFilteredFiles: (files: File[]) => void;
+  setFilteredFiles: (files: File[] | ((prevFiles: File[]) => File[])) => void;
 }
 
 interface FilePolicy {
@@ -51,7 +51,7 @@ const MyComponent: React.FC<DropZoneProps> = ({
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const num = fileNum + acceptedFiles.length;
-      if (filePolicy && !handleFileCnt(acceptedFiles, num)) {
+      if (filePolicy && !handleFileCnt(num)) {
         return;
       }
       const filteredFiles = acceptedFiles.filter((file) => {
@@ -100,7 +100,7 @@ const MyComponent: React.FC<DropZoneProps> = ({
     return true;
   };
 
-  const handleFileCnt = (newFiles: File[], num: number) => {
+  const handleFileCnt = (num: number) => {
     if (filePolicy) {
       if (num > filePolicy.uploadNum) {
         alert(

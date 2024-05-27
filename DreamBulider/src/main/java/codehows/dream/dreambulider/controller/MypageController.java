@@ -4,6 +4,7 @@ import codehows.dream.dreambulider.dto.Board.MyBoardListDTO;
 import codehows.dream.dreambulider.service.BoardService;
 import codehows.dream.dreambulider.service.LikedService;
 import codehows.dream.dreambulider.service.MemberService;
+import codehows.dream.dreambulider.service.NestedService;
 import codehows.dream.dreambulider.service.ReplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +27,7 @@ public class MypageController {
     private final MemberService memberService;
     private final LikedService likedService;
     private final ReplyService replyService;
-
+    private final NestedService nestedService;
 
     //내가 작성한 글 찾기
     @GetMapping("/api/myPage/{page}")
@@ -63,7 +64,6 @@ public class MypageController {
     @GetMapping("/api/myPage/reply")
     public ResponseEntity<?> countReply(Principal principal) {
         Long count = replyService.countReply(principal);
-
         return ResponseEntity.ok()
                 .body(count);
     }

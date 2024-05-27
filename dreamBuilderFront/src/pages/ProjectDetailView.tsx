@@ -14,7 +14,7 @@ import {
 } from "../constants/api_constants";
 import VIDEO from "../image/video.png";
 import DOCS from "../image/docs.png";
-import { PROJECT_DETAIL_VIEW, PROJECT_OVERVIEW, PROJECT_REG } from "../constants/page_constants";
+import { PROJECT_OVERVIEW, PROJECT_REG } from "../constants/page_constants";
 import Pagination from "../components/Pagination";
 import handleJWT from "../paserJWT";
 
@@ -22,7 +22,7 @@ interface Board {
   id: number;
   title: string;
   content: string;
-  email: string
+  email: string;
   endDate: string;
   cnt: number;
   hashTags: string[];
@@ -127,7 +127,7 @@ const ProjectDetailView: React.FC = () => {
         return (
           <>
             <img
-              src={`http://localhost:8080${fileUrl}`}
+              src={`http://222.119.100.90:8111${fileUrl}`}
               alt={fileName}
               style={{ width: "50px", marginRight: "10px" }}
             />
@@ -160,7 +160,7 @@ const ProjectDetailView: React.FC = () => {
         return (
           <>
             <img
-              src={`http://localhost:8080${fileUrl}`}
+              src={`http://222.119.100.90:8111${fileUrl}`}
               alt="default"
               style={{ width: "50px", marginRight: "10px" }}
             />
@@ -284,12 +284,17 @@ const ProjectDetailView: React.FC = () => {
             </div>
             <div className="row">
               <div className="col">
-                <p className="lead">마감일: <span className="board-end-date">{board.endDate}</span></p>
+                <p className="lead">
+                  마감일:{" "}
+                  <span className="board-end-date">{board.endDate}</span>
+                </p>
               </div>
             </div>
             <div className="row">
               <div className="col">
-                <p className="lead">작성자: <span className="board-email">{board.email}</span></p>
+                <p className="lead">
+                  작성자: <span className="board-email">{board.email}</span>
+                </p>
               </div>
             </div>
             <div className="mt-3 p-5 border rounded shadow">
@@ -310,41 +315,47 @@ const ProjectDetailView: React.FC = () => {
               </ReactMarkdown>
             </div>
             <div className="d-flex justify-content-end mt-2">
-                {
-                  author ? <div>
-                    <button
-                      className="btn btn-primary me-2"
-                      style={{
-                        backgroundColor: " #348f8f",
-                        border: "none",
-                        color: "white",
-                      }}
-                      onClick={handleModify}
-                    >
-                      수정
-                    </button>
-                    <button
-                      className="btn btn-primary"
-                      style={{
-                        backgroundColor: " #348f8f",
-                        border: "none",
-                        color: "white",
-                      }}
-                      onClick={handleDelete}
-                    >
-                      삭제
-                    </button>
-                  </div> : <></>
-                }
-              </div>
-              <div className="container mt-3">
-                  <h4>해시태그</h4>
-                  <div className="d-flex flex-wrap">
-                    {board.hashTags.map((e, index) => {
-                      return <span key={index} className="badge bg-primary me-2 mb-2">{e}</span>
-                    })}
-                  </div>
+              {author ? (
+                <div>
+                  <button
+                    className="btn btn-primary me-2"
+                    style={{
+                      backgroundColor: " #348f8f",
+                      border: "none",
+                      color: "white",
+                    }}
+                    onClick={handleModify}
+                  >
+                    수정
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    style={{
+                      backgroundColor: " #348f8f",
+                      border: "none",
+                      color: "white",
+                    }}
+                    onClick={handleDelete}
+                  >
+                    삭제
+                  </button>
                 </div>
+              ) : (
+                <></>
+              )}
+            </div>
+            <div className="container mt-3">
+              <h4>해시태그</h4>
+              <div className="d-flex flex-wrap">
+                {board.hashTags.map((e, index) => {
+                  return (
+                    <span key={index} className="badge bg-primary me-2 mb-2">
+                      {e}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
             <div className="mt-3">
               {board.file.length === 0 ? (
                 <p>첨부 파일 없음</p>
@@ -356,7 +367,7 @@ const ProjectDetailView: React.FC = () => {
                 {board.file.map((file, index) => (
                   <li key={`${file.name}-${index}`} className="list-group-item">
                     <a
-                      href={`http://localhost:8080/download${file.url}/${file.name}`}
+                      href={`http://222.119.100.90:8111/download${file.url}/${file.name}`}
                       download={file.name}
                     >
                       <div>

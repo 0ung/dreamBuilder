@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.util.List;
 
 @Service
 @Transactional
@@ -76,8 +77,11 @@ public class LikedService {
 
         Member member = memberRepository.findMemberByEmail(principal.getName()) //principal 이메일로 member를 먼저 찾고
                 .orElseThrow(() -> new IllegalArgumentException("not found member"));
-
-        Long count = likedRepository.countByMemberId(member.getId()); //memberId로 count 찾기
+		List<Board> boards = boardRepository.findByMemberIdAndInvisibleFalse(member.getId());
+		Long count = 0L;
+		for (Board board : boards) {
+			count += likedRepository.countByBoardId(board.getId());
+		}
 
         return count;
     }

@@ -9,12 +9,15 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Date;
 import java.util.List;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
+    List<Board> findByMemberIdAndInvisibleFalse(Long memberId);
+
     // Pagination
-    Page<Board> findByInvisibleFalse(Pageable pageable);
+    Page<Board> findByInvisibleFalseAndEndDateAfter(Pageable pageable, Date currentDate);
 
     Long countByMemberIdAndInvisibleFalse(Long memberId);
 
@@ -30,32 +33,32 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Page<Board> findByMemberIdAndInvisibleFalse(Long id, Pageable pageable);
 
     // Search by title
-    Page<Board> findByTitleContainingIgnoreCaseAndInvisibleFalse(String title, Pageable pageable);
+    Page<Board> findByTitleContainingIgnoreCaseAndInvisibleFalseAndEndDateAfter(String title, Pageable pageable,Date date);
 
     // Search by content
-    Page<Board> findByContentContainingIgnoreCaseAndInvisibleFalse(String content, Pageable pageable);
+    Page<Board> findByContentContainingIgnoreCaseAndInvisibleFalseAndEndDateAfter(String content, Pageable pageable,Date date);
 
     // Search by member (assuming member is a field in Board)
-    Page<Board> findByMember_NameContainingIgnoreCaseAndInvisibleFalse(String memberName, Pageable pageable);
+    Page<Board> findByMember_NameContainingIgnoreCaseAndInvisibleFalseAndEndDateAfter(String memberName, Pageable pageable,Date date);
 
     // Hashtag search
-    @Query("select b from Board b where b.id = :boardId and b.invisible = false")
+    @Query("select b from Board b where b.id = :boardId and b.invisible = false and b.endDate > CURRENT DATE ")
     Page<Board> hashTagSearch(@Param("boardId") Long boardId, Pageable pageable);
 
     // Search by title or content
-    @Query("select b from Board b where (b.title like %:keyword% or b.content like %:keyword%) and b.invisible = false")
+    @Query("select b from Board b where (b.title like %:keyword% or b.content like %:keyword%) and b.invisible = false  and b.endDate > CURRENT DATE ")
     Page<Board> titleAndContentSearch(@Param("keyword") String keyword, Pageable pageable);
 
     // Search by title or member name
-    @Query("select b from Board b where (b.title like %:keyword% or b.member.name like %:keyword%) and b.invisible = false")
+    @Query("select b from Board b where (b.title like %:keyword% or b.member.name like %:keyword%) and b.invisible = false  and b.endDate > CURRENT DATE ")
     Page<Board> titleAndNameSearch(@Param("keyword") String keyword, Pageable pageable);
 
     // Search by content or member name
-    @Query("select b from Board b where (b.content like %:keyword% or b.member.name like %:keyword%) and b.invisible = false")
+    @Query("select b from Board b where (b.content like %:keyword% or b.member.name like %:keyword%) and b.invisible = false  and b.endDate > CURRENT DATE ")
     Page<Board> contentAndMemberSearch(@Param("keyword") String keyword, Pageable pageable);
 
     // Search by title, content, or member name
-    @Query("select b from Board b where (b.title like %:keyword% or b.content like %:keyword% or b.member.name like %:keyword%) and b.invisible = false")
+    @Query("select b from Board b where (b.title like %:keyword% or b.content like %:keyword% or b.member.name like %:keyword%) and b.invisible = false  and b.endDate > CURRENT DATE ")
     Page<Board> allSearch(@Param("keyword") String keyword, Pageable pageable);
 
     // Increment view count

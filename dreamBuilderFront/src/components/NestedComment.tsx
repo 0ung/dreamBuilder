@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import fetcher from "../fetcher";
-import {
-  RE_REPLY_DELETE,
-  RE_REPLY_POST,
-  RE_REPLY_UPDATE,
-} from "../constants/api_constants";
+import { RE_REPLY_DELETE, RE_REPLY_UPDATE } from "../constants/api_constants";
 interface NestedReply {
   id: number;
   comment: string;

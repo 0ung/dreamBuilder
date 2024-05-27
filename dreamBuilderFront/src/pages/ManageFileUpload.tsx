@@ -98,11 +98,12 @@ function ManageFileUpload() {
 
   const [maxSize, setMaxSize] = useState<string>();
   const [maxFileCnt, setMaxFileCnt] = useState<string>();
-  const [videoExtension, setVideoExtension] = useState<string>();
-  const [imageExtension, setImageExtension] = useState<string>();
+  const [videoExtension, setVideoExtension] = useState<string>("");
+  const [imageExtension, setImageExtension] = useState<string>("");
   const [docsExtension, setDocsExtension] = useState<string>();
 
   const parseExtensions = (extensions: string) => {
+    console.log(videoExtension + imageExtension + docsExtension);
     if (extensions == null || extensions == undefined) {
       return;
     }
@@ -170,15 +171,11 @@ function ManageFileUpload() {
       videoExtension: convertExtensionsToString(extension.video),
     };
     try {
-      const response = await fetcher.post(
-        MANAGE_FILE_POST,
-        JSON.stringify(data),
-        {
-          headers: {
-            "Content-Type": "application/JSON",
-          },
-        }
-      );
+      await fetcher.post(MANAGE_FILE_POST, JSON.stringify(data), {
+        headers: {
+          "Content-Type": "application/JSON",
+        },
+      });
       alert("등록이 완료되었습니다.");
     } catch (error) {
       console.log(error);
