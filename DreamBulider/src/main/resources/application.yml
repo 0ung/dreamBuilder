@@ -1,21 +1,54 @@
 server:
-  port: 8080
+  port: 8111
 
 spring:
   application:
     name: DreamBuilder
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: "jdbc:mysql://localhost:3306/xhadlfkd?serverTime=UTC"
-    username: root
+    url: jdbc:mysql://222.119.100.89:3382/xhadlfkd?serverTime=UTC, jdbc:h2:mem:testdb
+    username: xhadlfkd
     password: 1234
+  h2:
+    console:
+      enabled: true
   jpa:
     properties:
       hibernate:
         show_sql: true
         format_sql: true
         default_batch_fetch_size: 1000
+
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
+  servlet:
+    multipart:
+      max-file-size: 1500MB
+      max-request-size: 1500MB
+
+uploadPath: file:///C:/dreamBuilder/
+savePath: C:/dreamBuilder/
+temp:
+  uploadPath: file:///C:/dreamBuilder/temp/
+  savePath: C:/dreamBuilder/temp/
+
+
+
+cos:
+  key: cos12
+
+jwt:
+  issuer: 김영웅
+  secret-key: iJgx1bclHYf9DGhRt6704NZnulCsksc9wEGCtjuLahUG8yQEXchr3QC2nJflUAPQ
+
+springdoc:
+  packages-to-scan: codehows/dream/dreambulider/controller
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /swagger  
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha
