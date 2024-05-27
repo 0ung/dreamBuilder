@@ -1,16 +1,14 @@
 package codehows.dream.dreambulider.controller;
 
-import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
-import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
-import codehows.dream.dreambulider.dto.Board.BoardResponseDTO;
-import codehows.dream.dreambulider.dto.HashTag.MemberNoExistExcpetion;
-import codehows.dream.dreambulider.entity.Board;
-import codehows.dream.dreambulider.service.BoardFileService;
-import codehows.dream.dreambulider.service.BoardService;
-import codehows.dream.dreambulider.service.HashTagService;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -24,17 +22,27 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import codehows.dream.dreambulider.dto.Board.BoardListResponseDTO;
+import codehows.dream.dreambulider.dto.Board.BoardRequestDTO;
+import codehows.dream.dreambulider.dto.Board.BoardResponseDTO;
+import codehows.dream.dreambulider.dto.HashTag.MemberNoExistExcpetion;
+import codehows.dream.dreambulider.entity.Board;
+import codehows.dream.dreambulider.service.BoardFileService;
+import codehows.dream.dreambulider.service.BoardService;
+import codehows.dream.dreambulider.service.HashTagService;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,6 +54,7 @@ public class BoardController {
 	private final BoardFileService boardFileService;
 	@Value("${savePath}")
 	private String savePath;
+
 	//게시글 작성
 	@PostMapping("/api/addBoard")
 	public ResponseEntity<Board> addBoard(
@@ -96,7 +105,7 @@ public class BoardController {
 			return new ResponseEntity<>(boardPage, HttpStatus.OK);
 		} catch (NullPointerException e) {
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-		} catch (Exception e){
+		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -141,8 +150,9 @@ public class BoardController {
 	}
 
 	@GetMapping("/download/files/{fileName}/{name}")
-	public ResponseEntity<Resource> downloadFile(@PathVariable String fileName,@PathVariable String name) throws IOException {
-		File file = new File(savePath + fileName);
+	public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, @PathVariable String name) throws
+		IOException {
+		File file = new File(savePath + File.separator + fileName);
 
 		if (!file.exists()) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -173,7 +183,7 @@ public class BoardController {
 		Row row = null;
 		Cell cell = null;
 		int rowNum = 0;
-		String[] rowData =new String[]{"번호","제목","내용","조회수","마감일자","해시태그"};
+		String[] rowData = new String[] {"번호", "제목", "내용", "조회수", "마감일자", "해시태그"};
 
 		row = sheet.createRow(rowNum++);
 		for (int i = 0; i < rowData.length; i++) {
@@ -181,7 +191,7 @@ public class BoardController {
 			cell.setCellValue(rowData[i]);
 		}
 
-		for(Board board : boardList) {
+		for (Board board : boardList) {
 			row = sheet.createRow(rowNum++);
 			cell = row.createCell(0);
 			cell.setCellValue(board.getId());
@@ -211,12 +221,12 @@ public class BoardController {
 	@GetMapping("/api/main")
 	public ResponseEntity<List<BoardResponseDTO>> topBoard() {
 		List<BoardResponseDTO> board = boardService.topBoard()
-				.stream()
-				.map(BoardResponseDTO::new)
-				.toList();
+			.stream()
+			.map(BoardResponseDTO::new)
+			.toList();
 		log.info(board.toString());
 		return ResponseEntity.ok()
-				.body(board);
+			.body(board);
 	}
 
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -65,7 +65,9 @@ export default function ProjectOverviewPage() {
       );
       const newData = response.data;
       console.log(newData);
-      setData((prevData) => (pageNum === 0 ? newData : [...prevData, ...newData]));
+      setData((prevData) =>
+        pageNum === 0 ? newData : [...prevData, ...newData]
+      );
       if (newData.length === 0) {
         setHasMore(false);
       } else {
@@ -110,7 +112,7 @@ export default function ProjectOverviewPage() {
               onChange={(e) => {
                 setSortCriteria(e.target.value);
               }}
-            > 
+            >
               <option value="">정렬 기준</option>
               <option value="title">제목</option>
               <option value="end_date">마감일</option>

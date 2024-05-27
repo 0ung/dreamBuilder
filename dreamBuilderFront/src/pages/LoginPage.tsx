@@ -6,7 +6,6 @@ import { MAIN, SIGNUP } from "../constants/page_constants";
 import styled from "styled-components";
 import { LOGIN_API } from "../constants/api_constants";
 import fetcher from "../fetcher";
-import axios from "axios";
 
 interface SignUPProps {
   children: React.ReactNode; // 자식 요소의 타입
@@ -118,7 +117,7 @@ export default function LoginPage() {
             <div className="row mb-2">
               <div className="col d-flex justify-content-center">
                 <a
-                  href="https://kauth.kakao.com/oauth/authorize?client_id=95a542009e6abdf2635c87b2de0b4c5f&redirect_uri=http://localhost:8080/member/auth/callback&response_type=code"
+                  href="https://kauth.kakao.com/oauth/authorize?client_id=95a542009e6abdf2635c87b2de0b4c5f&redirect_uri=http://222.119.100.90:8111/member/auth/callback&response_type=code"
                   className="w-100"
                 >
                   <img

@@ -7,6 +7,8 @@ import codehows.dream.dreambulider.repository.BoardFileRepository;
 import codehows.dream.dreambulider.repository.BoardRepository;
 import codehows.dream.dreambulider.repository.FileManageRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,17 +27,15 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Log4j2
 public class BoardFileService {
 
 	private final BoardFileRepository boardFileRepository;
 	private final BoardRepository boardRepository;
 	private final FileManageRepository fileManageRepository;
 
-	@Value("${uploadPath}")
-	private String uploadPath;
-
-	@Value("${temp.uploadPath}")
-	private String tempPath;
+	@Value("${temp.savePath}")
+	private String tempSavePath;
 
 	@Value("${savePath}")
 	private String savePath;
@@ -45,12 +45,11 @@ public class BoardFileService {
 			return;
 		}
 		for (MultipartFile file : files) {
-			// 파일 개수 검사
 			saveFile(file, boardId);
 		}
 	}
 
-	public String saveFile(MultipartFile file, Long boardId) throws IOException {
+	public void saveFile(MultipartFile file, Long boardId) throws IOException {
 		String oriName = file.getOriginalFilename();
 		String fileExtension = oriName.substring(oriName.lastIndexOf(".") + 1);
 		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
@@ -58,7 +57,7 @@ public class BoardFileService {
 		String fileUrl = "/" + "files" + "/" + fileName;
 
 		// Save file to disk
-		saveFileToDisk(fileName, file, uploadPath);
+		saveFileToDisk(fileName, file, savePath);
 
 		// Save file information to the database
 		BoardFile boardFile = BoardFile.builder()
@@ -67,8 +66,8 @@ public class BoardFileService {
 			.uuidName(fileName)
 			.board(boardRepository.findById(boardId).orElse(null))
 			.build();
+		log.info(boardFile);
 		boardFileRepository.save(boardFile);
-		return fileUrl;
 	}
 
 	public String saveTempFile(MultipartFile file) throws IOException {
@@ -79,7 +78,7 @@ public class BoardFileService {
 		String fileUrl = "/" + "temp" + "/" + fileName;
 
 		// Save file to disk
-		saveFileToDisk(fileName, file, tempPath);
+		saveFileToDisk(fileName, file, tempSavePath);
 
 		// Save file information to the database
 		BoardFile boardFile = BoardFile.builder()
@@ -92,26 +91,38 @@ public class BoardFileService {
 	}
 
 	private void saveFileToDisk(String fileName, MultipartFile file, String path) throws IOException {
-		String savePath = path.replace("file:///", "");
-		File directory = new File(savePath);
-
+		// 절대 경로로 변환
+		Path savePath = Paths.get(path);
+		log.info(savePath);
+		File directory = savePath.toFile();
+		log.info(directory);
 		// Create directory if it does not exist
 		if (!directory.exists()) {
 			directory.mkdirs();
 		}
 
-		String filePath = savePath + File.separator + fileName;
-		File newFile = new File(filePath);
+		Path filePath = savePath.resolve(fileName);
+		File newFile = filePath.toFile();
 		FileCopyUtils.copy(file.getBytes(), newFile);
 	}
 
 	public void moveFileToPermanentLocation(String tempFileUrl) throws IOException {
-		Path tempPath = Paths.get(this.tempPath.replace("file:///", ""), tempFileUrl.replace("/temp/", ""));
-		Path permanentPath = Paths.get(this.uploadPath.replace("file:///", ""), tempFileUrl.replace("/temp/", ""));
+		// tempFileUrl에서 "/temp/"를 제거하여 파일명을 추출
+		String fileName = tempFileUrl.replace("/temp/", "");
 
+		// 임시 파일 경로 설정
+		Path tempPath = Paths.get(this.tempSavePath, fileName);
+
+		// 영구 저장 파일 경로 설정
+		Path permanentPath = Paths.get(this.savePath, fileName);
+
+		// 영구 저장 경로의 디렉토리 생성
 		Files.createDirectories(permanentPath.getParent());
+
+		// 파일 이동
 		Files.move(tempPath, permanentPath);
 	}
+
 
 	public List<Map<String, String>> findBoardUrl(Long boardId) {
 		List<BoardFile> boardFiles = boardFileRepository.findByBoardId(boardId);
@@ -125,12 +136,12 @@ public class BoardFileService {
 		return result;
 	}
 
-	private void deleteFile(String FileName) throws IOException {
-		File file = new File(savePath + FileName);
+	private void deleteFile(String fileName) throws IOException {
+		File file = new File(savePath + File.separator + fileName);
 		if (file.exists()) {
 			file.delete();
 		} else {
-			throw new IOException();
+			throw new IOException("File not found: " + fileName);
 		}
 	}
 
@@ -145,7 +156,7 @@ public class BoardFileService {
 				deleteFile(e.getUuidName());
 				boardFileRepository.delete(e);
 			} catch (IOException ex) {
-				throw new RuntimeException(ex);
+				throw new RuntimeException("Error deleting file: " + e.getUuidName(), ex);
 			}
 		});
 		saveFiles(multipartFile, boardId);
@@ -159,15 +170,15 @@ public class BoardFileService {
 		//파일 설정을 처음 한다면 새로 추가
 		if (file.isEmpty()) {
 			fileManageRepository.save(FileManage.builder()
-					.uploadSize(uploadSize)
-					.uploadNum(dto.getUploadNum())
-					.docExtension(dto.getDocExtension())
-					.imageExtension(dto.getImageExtension())
-					.videoExtension(dto.getVideoExtension())
-					.build());
+				.uploadSize(uploadSize)
+				.uploadNum(dto.getUploadNum())
+				.docExtension(dto.getDocExtension())
+				.imageExtension(dto.getImageExtension())
+				.videoExtension(dto.getVideoExtension())
+				.build());
 		} else { //이미 설정을 한번 했다면 수정
 			FileManage fileUpdate = fileManageRepository.findById(1L)
-					.orElseThrow(() -> new RuntimeException("File Not Found"));
+				.orElseThrow(() -> new RuntimeException("File Not Found"));
 			fileUpdate.update(uploadSize, dto.getUploadNum(), dto.getDocExtension(), dto.getImageExtension(), dto.getVideoExtension());
 			fileManageRepository.save(fileUpdate);
 		}
@@ -206,9 +217,7 @@ public class BoardFileService {
 
 	//관리자 파일 불러오기
 	public FileManage fileResponse() {
-		FileManage fileManage = fileManageRepository.findById(1L)	//파일 설정이 없다면 기존 파일 설정
-				.orElse(new FileManage());
-
-		return fileManage;
+		return fileManageRepository.findById(1L)	//파일 설정이 없다면 기존 파일 설정
+			.orElse(new FileManage());
 	}
 }

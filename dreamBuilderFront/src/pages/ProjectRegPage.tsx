@@ -13,11 +13,6 @@ import {
 } from "../constants/api_constants"; // BOARD_DETAILS 추가
 import { PROJECT_OVERVIEW } from "../constants/page_constants";
 
-interface FileData {
-  oriName: string;
-  url: string;
-}
-
 interface Board {
   title: string;
   content: string;
@@ -60,7 +55,7 @@ const MarkdownWithDropzone: React.FC<MarkdownWithDropzoneProps> = ({
       const response = await fetcher.post("/api/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      return `http://localhost:8080${response.data.fileUrl}`; // 업로드된 이미지 URL 반환
+      return `http://222.119.100.90:8111${response.data.fileUrl}`; // 업로드된 이미지 URL 반환
     } catch (error) {
       console.error("이미지 업로드 오류:", error);
       return "";
@@ -86,6 +81,7 @@ export default function ProjectRegPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [filteredFiles, setFilteredFiles] = useState<File[]>([]);
   const [modify, setModify] = useState<boolean>(!!id); // ID가 있으면 수정 모드
+  const today = new Date().toISOString().slice(0, 10);
   const [board, setBoard] = useState<Board>({
     title: "",
     content: "",
@@ -98,14 +94,22 @@ export default function ProjectRegPage() {
     setModify(location.state?.modify);
 
     const loadFile = async (fileUrl: string, oriName: string) => {
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      return new File([blob], oriName, { type: blob.type });
+      try {
+        const response = await fetch(fileUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file: ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        return new File([blob], oriName, { type: blob.type });
+      } catch (error) {
+        console.error("Error loading file:", error);
+        throw error;
+      }
     };
 
     const fetchFiles = async (files: { oriName: string; url: string }[]) => {
       const filePromises = files.map((file) =>
-        loadFile(`http://localhost:8080${file.url}`, file.oriName)
+        loadFile(`${file.url}`, file.oriName)
       );
       const fileObjects = await Promise.all(filePromises);
       setFilteredFiles(fileObjects);
@@ -142,10 +146,23 @@ export default function ProjectRegPage() {
   }, [modify, id]);
 
   const handleMarkdownChange = (value?: string) => {
-    setBoard((prevBoard) => ({
-      ...prevBoard,
-      content: value || "",
-    }));
+    if (value) {
+      // 정규식 패턴을 정의하여 `000000-0000000` 형태를 찾음
+      const pattern = /\b\d{6}-\d{7}\b/g;
+
+      // 패턴을 찾아 `**`로 대체
+      const sanitizedValue = value.replace(pattern, "******-*******");
+
+      setBoard((prevBoard) => ({
+        ...prevBoard,
+        content: sanitizedValue,
+      }));
+    } else {
+      setBoard((prevBoard) => ({
+        ...prevBoard,
+        content: "",
+      }));
+    }
   };
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -198,6 +215,7 @@ export default function ProjectRegPage() {
       alert(
         "An error occurred while processing your request. Please try again."
       );
+      navigate(PROJECT_OVERVIEW);
     }
   };
 
@@ -209,92 +227,95 @@ export default function ProjectRegPage() {
           <h1 className="">프로젝트 {modify ? "수정" : "등록"}</h1>
           <hr />
         </div>
-        <div className="input-group mt-5 mb-3">
-          <span className="input-group-text" id="basic-addon1">
-            제목
-          </span>
-          <input
-            required
-            type="text"
-            className="form-control"
-            placeholder="제목 입력"
-            aria-describedby="basic-addon1"
-            value={board.title}
-            onChange={(e) => {
-              setBoard((prevBoard) => ({
-                ...prevBoard,
-                title: e.target.value || "",
-              }));
-            }}
-          />
-        </div>
-        <MarkdownWithDropzone
-          board={board}
-          handleMarkdownChange={handleMarkdownChange}
-        />
-        <div className="input-group mb-3">
-          <span className="input-group-text" id="basic-addon1">
-            마김일
-          </span>
-          <input
-            required
-            type="date"
-            className="form-control"
-            placeholder="마김일 등록"
-            aria-describedby="basic-addon1"
-            value={board.endDate}
-            onChange={(e) => {
-              setBoard((prevBoard) => ({
-                ...prevBoard,
-                endDate: e.target.value || "",
-              }));
-            }}
-          />
-        </div>
-        <div className="input-group mb-3">
-          <span className="input-group-text" id="basic-addon1">
-            해시태그
-          </span>
-          <input
-            required
-            ref={inputRef}
-            type="text"
-            className="form-control"
-            placeholder="해시태그 입력 (#을 달지 않고 작성하세요)"
-            aria-describedby="basic-addon1"
-            onKeyDown={handleKeyPress}
-          />
-        </div>
-        <div>
-          {board.hashTags.map((tag, index) => (
-            <span key={index} className="badge bg-primary me-2">
-              {tag}
-              <button
-                type="button"
-                className="btn-close btn-close-white ms-2"
-                aria-label="Close"
-                onClick={() => handleRemoveHashTag(index)}
-              ></button>
+        <form onSubmit={handleBoard}>
+          <div className="input-group mt-5 mb-3">
+            <span className="input-group-text" id="basic-addon1">
+              제목
             </span>
-          ))}
-        </div>
-        <DropZone
-          filteredFiles={filteredFiles}
-          setFilteredFiles={setFilteredFiles}
-        />
-        <div className="d-flex justify-content-end">
-          <button
-            className="btn btn-primary"
-            style={{
-              backgroundColor: " #348f8f",
-              border: "none",
-              color: "white",
-            }}
-            onClick={handleBoard}
-          >
-            제출
-          </button>
-        </div>
+
+            <input
+              required
+              type="text"
+              className="form-control"
+              placeholder="제목 입력"
+              aria-describedby="basic-addon1"
+              value={board.title}
+              onChange={(e) => {
+                setBoard((prevBoard) => ({
+                  ...prevBoard,
+                  title: e.target.value || "",
+                }));
+              }}
+            />
+          </div>
+          <MarkdownWithDropzone
+            board={board}
+            handleMarkdownChange={handleMarkdownChange}
+          />
+          <div className="input-group mb-3">
+            <span className="input-group-text" id="basic-addon1">
+              마감일
+            </span>
+            <input
+              required
+              type="date"
+              className="form-control"
+              placeholder="마감일 등록"
+              aria-describedby="basic-addon1"
+              value={board.endDate}
+              min={today} // 오늘 날짜 이후만 선택 가능
+              onChange={(e) => {
+                setBoard((prevBoard) => ({
+                  ...prevBoard,
+                  endDate: e.target.value || "",
+                }));
+              }}
+            />
+          </div>
+          <div className="input-group mb-3">
+            <span className="input-group-text" id="basic-addon1">
+              해시태그
+            </span>
+            <input
+              ref={inputRef}
+              type="text"
+              className="form-control"
+              placeholder="해시태그 입력 (#을 달지 않고 작성하세요)"
+              aria-describedby="basic-addon1"
+              onKeyDown={handleKeyPress}
+            />
+          </div>
+          <div>
+            {board.hashTags.map((tag, index) => (
+              <span key={index} className="badge bg-primary me-2">
+                {tag}
+                <button
+                  type="button"
+                  className="btn-close btn-close-white ms-2"
+                  aria-label="Close"
+                  onClick={() => handleRemoveHashTag(index)}
+                ></button>
+              </span>
+            ))}
+          </div>
+          <DropZone
+            filteredFiles={filteredFiles}
+            setFilteredFiles={setFilteredFiles}
+          />
+          <div className="d-flex justify-content-end">
+            <button
+              className="btn btn-primary"
+              style={{
+                backgroundColor: " #348f8f",
+                border: "none",
+                color: "white",
+              }}
+              type="submit"
+            >
+              제출
+            </button>
+          </div>
+        </form>
       </div>
       <Footer />
     </>

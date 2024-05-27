@@ -15,9 +15,9 @@ spring:
   jpa:
     properties:
       hibernate:
-        show_sql: true
         format_sql: true
         default_batch_fetch_size: 1000
+        show_sql: true
 
     hibernate:
       ddl-auto: validate
@@ -28,11 +28,11 @@ spring:
       max-file-size: 1500MB
       max-request-size: 1500MB
 
-uploadPath: file:///C:/dreamBuilder/
-savePath: C:/dreamBuilder/
+uploadPath: file:///home/xhadlfkd/dreambulider/upload/
+savePath: /home/xhadlfkd/dreambulider/upload/
 temp:
-  uploadPath: file:///C:/dreamBuilder/temp/
-  savePath: C:/dreamBuilder/temp/
+  uploadPath: file:///home/xhadlfkd/dreambulider/temp/
+  savePath: /home/xhadlfkd/dreambulider/temp/
 
 
 

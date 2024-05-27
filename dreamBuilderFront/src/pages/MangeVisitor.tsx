@@ -38,19 +38,6 @@ interface PeriodVisitsTableProps {
   data: periodData[];
 }
 
-const options = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top" as const,
-    },
-    title: {
-      display: true,
-      text: "방문자 수 현황",
-    },
-  },
-};
-
 const PeriodVisitsTable: React.FC<PeriodVisitsTableProps> = ({ data }) => {
   return (
     <div
