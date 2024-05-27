@@ -17,7 +17,6 @@ import {
 import { LOGOUT_API } from "../constants/api_constants";
 import fetcher from "../fetcher";
 import { BOARD_SEARCH } from "../constants/api_constants";
-import base64 from "base-64";
 import handleJWT from "../paserJWT";
 
 const StyledLink = styled.a`
@@ -56,15 +55,6 @@ const SearchButton = styled.button`
   color: white;
 `;
 
-// 해시태그에 적용할 스타일
-const TaggedText = styled.span`
-  background-color: #ffff00; // 해시태그에 노란 배경 적용
-  color: black; // 텍스트 색상을 검은색으로 설정
-  padding: 0.1em 0.4em;
-  margin: 0 0.25em;
-  border-radius: 0.375em;
-`;
-
 interface NavLiProps {
   children: React.ReactNode; // 자식 요소의 타입
   href: string; // 링크 URL
@@ -101,7 +91,7 @@ function Header() {
     if (sendAccessToken !== null && sendAccessToken !== undefined) {
       setAccessToken(sendAccessToken);
       setLoggin(true);
-      console.log("호출 됨");
+      console.log(hashTag + accessToken);
       if (handleJWT(sendAccessToken).auth === "ROLE_ADMIN") {
         setAdmin(true);
       }

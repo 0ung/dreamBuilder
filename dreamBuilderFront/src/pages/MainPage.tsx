@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import main from "../image/mainImage.png";
 import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
-import { MAIN, PROJECT_DETAIL_VIEW, PROJECT_REG } from "../constants/page_constants";
+import {
+  MAIN,
+  PROJECT_DETAIL_VIEW,
+  PROJECT_REG,
+} from "../constants/page_constants";
 import fetcher from "../fetcher";
 import { MAIN_PAGE_DATA } from "../constants/api_constants";
 
@@ -17,19 +21,45 @@ interface mainData {
 function MainPage() {
   const navigator = useNavigate();
   const [data, setData] = useState<mainData[]>([]);
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [reRender, setRerender] = useState<boolean>(false);
   const handleMainPage = async () => {
-    const response = await fetcher.get(MAIN_PAGE_DATA)
+    const response = await fetcher.get(MAIN_PAGE_DATA);
     setData(response.data);
-  }
+  };
+
+  const parseCookies = () => {
+    return document.cookie
+      .split(";")
+      .map((cookie) => cookie.trim())
+      .reduce((acc: any, cookie) => {
+        const [key, value] = cookie.split("=");
+        acc[key] = value;
+        return acc;
+      }, {});
+  };
 
   useEffect(() => {
-    const kakaoAccessToken = document.cookie.split("=")[1];
-    const kakaoAccessTokenKey = document.cookie.split("=")[0];
-    if (kakaoAccessTokenKey === "accessToken") {
+    const cookies = parseCookies();
+    const kakaoAccessToken = cookies.accessToken;
+
+    if (kakaoAccessToken) {
       localStorage.setItem("accessToken", kakaoAccessToken);
+      setAccessToken(kakaoAccessToken);
+      console.log(accessToken);
+      setRerender(true);
+    } else {
+      handleMainPage();
     }
-    handleMainPage();
   }, []);
+
+  useEffect(() => {
+    if (reRender) {
+      window.location.href = MAIN;
+      setRerender(false);
+    }
+  }, []);
+
   return (
     <>
       <Header />
@@ -67,18 +97,22 @@ function MainPage() {
         <hr />
         <div className="row">
           <h3 className="mb-4 mt-5">좋아요 상위 5개</h3>
-          {data.map((e) => (
-            <div className="col-12 mb-4" key={e.id}>
-              <div className="p-4 border rounded bg-light">
-                <h3 className="mb-3" onClick={
-                  () => {
-                    navigator(PROJECT_DETAIL_VIEW, { state: e.id })
-                  }
-                }>제목: {e.title}</h3>
-                <Markdown>{e.content}</Markdown>
+          {data &&
+            data.map((e) => (
+              <div className="col-12 mb-4" key={e.id}>
+                <div className="p-4 border rounded bg-light">
+                  <h3
+                    className="mb-3"
+                    onClick={() => {
+                      navigator(PROJECT_DETAIL_VIEW, { state: e.id });
+                    }}
+                  >
+                    제목: {e.title}
+                  </h3>
+                  <Markdown>{e.content}</Markdown>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
       <Footer />

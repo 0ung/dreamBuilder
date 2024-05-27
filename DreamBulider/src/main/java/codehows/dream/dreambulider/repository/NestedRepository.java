@@ -10,5 +10,5 @@ public interface NestedRepository extends JpaRepository <NestedReply,Long> {
 
     List<NestedReply> getNestedReplyByReplyOrderById(Reply reply);
     List<NestedReply> findByReplyIdOrderByIdDesc(Long replyId);
-
+    Long countByMemberIdAndInvisibleFalse(Long memberId);
 }

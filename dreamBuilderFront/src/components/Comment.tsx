@@ -41,7 +41,6 @@ interface CommentProps {
 const Comment: React.FC<CommentProps> = ({
   reply,
   openReplies,
-  boardId,
   isAdmin,
   toggleReplies,
 }) => {
@@ -55,13 +54,13 @@ const Comment: React.FC<CommentProps> = ({
   const getBoardTitle = async (replyId: number) => {
     const response = await fetcher.get(`${MANAGE_REPLY_BOARD_TITLE}${replyId}`);
     setBoardTitle(response.data.title);
-  }
+  };
 
   const handleAuthor = () => {
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken !== null && accessToken !== undefined) {
       const data = handleJWT(accessToken);
-      if (data.sub === reply.nickname) {
+      if (data.name === reply.nickname) {
         setAuthor(true);
       }
     }
@@ -102,10 +101,7 @@ const Comment: React.FC<CommentProps> = ({
       comment: comment,
     };
     try {
-      const response = await fetcher.put(
-        `${REPLY_UPDATE}${reply.id}`,
-        formData
-      );
+      await fetcher.put(`${REPLY_UPDATE}${reply.id}`, formData);
       alert("수정 완료");
       reply.comment = comment; // 상태 업데이트
       setModify(false); // 수정 모드 종료
@@ -135,7 +131,7 @@ const Comment: React.FC<CommentProps> = ({
         ...prevNestedReplies,
       ]); // 새로운 댓글을 추가
       setRereply("");
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const fetchNestedReplies = async (replyId: number) => {
@@ -168,10 +164,11 @@ const Comment: React.FC<CommentProps> = ({
         <div className="d-flex justify-content-between align-items-center mb-2">
           {isAdmins ? (
             <div>
-              <h5 className="card-title mb-0">
-                {replyState.nickname}
-              </h5>
-              <h6 className="card-subtitle mb-2 text-muted mt-1" style={{ fontSize: "14px" }}>
+              <h5 className="card-title mb-0">{replyState.nickname}</h5>
+              <h6
+                className="card-subtitle mb-2 text-muted mt-1"
+                style={{ fontSize: "14px" }}
+              >
                 프로젝트 제목: {boardTitle}
                 {replyState.invisible && (
                   <small className="text-muted" style={{ fontSize: "12px" }}>
@@ -185,7 +182,7 @@ const Comment: React.FC<CommentProps> = ({
           )}
           <small className="text-muted">
             {replyState.updateTime == null
-              ? formatDateTime(replyState.regTime) 
+              ? formatDateTime(replyState.regTime)
               : `${formatDateTime(replyState.updateTime)} (수정됨)`}
           </small>
         </div>
@@ -205,7 +202,7 @@ const Comment: React.FC<CommentProps> = ({
           ) : (
             <div className="col-9">{replyState.comment}</div>
           )}
-          { }
+          {}
         </div>
         <div className="d-flex justify-content-between mt-2">
           <button

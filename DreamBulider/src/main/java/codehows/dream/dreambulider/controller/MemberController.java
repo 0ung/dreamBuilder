@@ -120,60 +120,55 @@ public class MemberController {
     }
 
     @GetMapping("/auth/callback")
-    public void authCallback(String code, HttpServletResponse servletResponse) throws IOException {
+    public void authCallback(@RequestParam String code, HttpServletResponse servletResponse) throws IOException {
         RestTemplate rt = new RestTemplate();
 
-        //HttpHeader 오브젝트 생성
+        // HttpHeader 오브젝트 생성
         HttpHeaders headers = new HttpHeaders();
-        headers.add("content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        //HttpBody 오브젝트 생성
+        // HttpBody 오브젝트 생성
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", "95a542009e6abdf2635c87b2de0b4c5f");
-        params.add("redirect_uri", "http://localhost:8080/member/auth/callback");
+        params.add("redirect_uri", "http://222.119.100.90:8111/member/auth/callback");
         params.add("code", code);
 
-        //HttpHeader와 HttpBody를 하나의 오브젝트에 담기
-        HttpEntity<MultiValueMap<String, String>> tokenrequest = new HttpEntity<>(params, headers);
+        // HttpHeader와 HttpBody를 하나의 오브젝트에 담기
+        HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(params, headers);
 
-        //Http 요청하기 - POST 방식으로 - 그리고 response변수의 응답 받음
-        ResponseEntity<String> response = rt.exchange("https://kauth.kakao.com/oauth/token", HttpMethod.POST, tokenrequest, String.class);
+        // Http 요청하기 - POST 방식으로 - 그리고 response변수의 응답 받음
+        ResponseEntity<String> response = rt.exchange("https://kauth.kakao.com/oauth/token", HttpMethod.POST, tokenRequest, String.class);
 
-        ObjectMapper obMapper = new ObjectMapper();
-        OAuthToken oauthToken = null;
+        ObjectMapper objectMapper = new ObjectMapper();
+        OAuthToken oauthToken;
         try {
-            oauthToken = obMapper.readValue(response.getBody(), OAuthToken.class);
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
+            oauthToken = objectMapper.readValue(response.getBody(), OAuthToken.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+            throw new IOException("Failed to parse OAuth token response", e);
         }
 
         System.out.println("카카오 엑세스 토큰: " + oauthToken.getAccess_token());
 
         RestTemplate rt2 = new RestTemplate();
 
-        //HttpHeader 오브젝트 생성
+        // HttpHeader 오브젝트 생성
         HttpHeaders headers2 = new HttpHeaders();
         headers2.add("Authorization", "Bearer " + oauthToken.getAccess_token());
-        headers2.add("content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        headers2.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
+        // Http 요청하기 - POST 방식으로 - 그리고 response변수의 응답 받음
+        HttpEntity<MultiValueMap<String, String>> profileRequest = new HttpEntity<>(headers2);
 
-        //HttpHeader와 HttpBody를 하나의 오브젝트에 담기
-        HttpEntity<MultiValueMap<String, String>> profilerequest = new HttpEntity<>(headers2);
+        ResponseEntity<String> response2 = rt2.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.POST, profileRequest, String.class);
 
-        //Http 요청하기 - POST 방식으로 - 그리고 response변수의 응답 받음
-        ResponseEntity<String> response2 = rt2.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.POST, profilerequest, String.class);
-
-        ObjectMapper obMapper2 = new ObjectMapper();
-        KakaoProfile kakaoProfile = null;
+        KakaoProfile kakaoProfile;
         try {
-            kakaoProfile = obMapper2.readValue(response2.getBody(), KakaoProfile.class);
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
+            kakaoProfile = objectMapper.readValue(response2.getBody(), KakaoProfile.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+            throw new IOException("Failed to parse Kakao profile response", e);
         }
 
         System.out.println("카카오 아이디(번호): " + kakaoProfile.getId());
@@ -181,19 +176,18 @@ public class MemberController {
         System.out.println("카카오 이메일: " + kakaoProfile.getKakao_account().getEmail());
 
         MemberFormDTO kakaoUser = MemberFormDTO.builder()
-                .name(kakaoProfile.getProperties().getNickname())
-                .password(cosKey)
-                .email(kakaoProfile.getKakao_account().getEmail() + "_kakao")
-                .build();
+            .name(kakaoProfile.getProperties().getNickname())
+            .password(cosKey)  // cosKey는 어디서 정의된 것인지 확인 필요
+            .email(kakaoProfile.getKakao_account().getEmail() + "_kakao")
+            .build();
 
-        //회원가입 처리
+        // 회원가입 처리
         if (!memberService.duplicateMemberEmail(kakaoUser.getEmail())) {
             memberService.save(kakaoUser);
         }
 
-        //로그인 처리
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(kakaoUser.getEmail(), kakaoUser.getPassword()); //getPassword를 coskey로 변경
-
+        // 로그인 처리
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(kakaoUser.getEmail(), kakaoUser.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         Member member = memberRepository.findMemberByEmail(authentication.getName()).orElseThrow();
@@ -210,31 +204,29 @@ public class MemberController {
             refreshTokenService.saveRefreshToken(refreshToken);
         }
 
-
         // 액세스 토큰을 쿠키에 설정
         Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(false); // 자바스크립트에서 접근하지 못하게 설정
-        accessTokenCookie.setPath("/"); // 모든 경로에서 쿠키 접근 가능하도록 설정
-        accessTokenCookie.setMaxAge(10); // 1시간 동안 유효
+        accessTokenCookie.setHttpOnly(false);  // 자바스크립트에서 접근하지 못하게 설정
+        accessTokenCookie.setPath("/");  // 모든 경로에서 쿠키 접근 가능하도록 설정
+        accessTokenCookie.setMaxAge(60);  // 1시간 동안 유효
 
         // 리프레시 토큰을 쿠키에 설정
         Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);  // 7일 동안 유효
 
         // 쿠키를 응답에 추가
         servletResponse.addCookie(refreshTokenCookie);
         servletResponse.addCookie(accessTokenCookie);
 
-
         try {
-            servletResponse.sendRedirect("http://localhost:5173/main");
+            servletResponse.sendRedirect("http://222.119.100.90:8219/main");
         } catch (Exception e) {
-            servletResponse.sendRedirect("http://localhost:5173/error");
+            servletResponse.sendRedirect("http://222.119.100.90:8219/404");
         }
-
     }
+
     @GetMapping("/total")
     public ResponseEntity<?> getTotal(){
         return new ResponseEntity<>(memberService.getTotal(),HttpStatus.OK);

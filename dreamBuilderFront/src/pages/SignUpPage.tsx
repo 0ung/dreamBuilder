@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import kakao from "../image/kakao.png";
-import { LOGIN, SIGNUP } from "../constants/page_constants";
+import { LOGIN } from "../constants/page_constants";
 import fetcher from "../fetcher";
 import { useNavigate } from "react-router-dom";
 import { SIGNUP_API } from "../constants/api_constants";
@@ -38,7 +38,7 @@ function SignupInput({ children, placeholder, type, onChange }: SignUPProps) {
   );
 }
 
-function Inputvalidation({ children, data, onChange }: validation) {
+function Inputvalidation({ children, data }: validation) {
   const isVliad = data();
   return (
     <>
@@ -65,7 +65,7 @@ export default function SignUpPage() {
     return regExp.test(e);
   };
   const handleNickName = (e: string) => {
-    const regExp = new RegExp("^[A-Za-z0-9]{8,15}$");
+    const regExp = new RegExp("^[A-Za-z0-9]{4,10}$");
     return regExp.test(e);
   };
   const handlePassword = (e: string) => {
@@ -82,15 +82,11 @@ export default function SignUpPage() {
         name: nickName,
         password: password,
       };
-      const response = await fetcher.post(
-        SIGNUP_API,
-        JSON.stringify(formData),
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await fetcher.post(SIGNUP_API, JSON.stringify(formData), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       alert("회원가입이 완료되었습니다.");
       navigator(LOGIN);
     } catch (error) {
@@ -129,7 +125,7 @@ export default function SignUpPage() {
             아이디
           </Inputvalidation>
           <SignupInput
-            placeholder="닉네임을 입력해주세요 (8~15자)"
+            placeholder="닉네임을 입력해주세요 (4~10자)"
             type="text"
             onChange={(e) => {
               setNickName(e.target.value);
@@ -191,7 +187,7 @@ export default function SignUpPage() {
           >
             <a
               className=""
-              href="https://kauth.kakao.com/oauth/authorize?client_id=95a542009e6abdf2635c87b2de0b4c5f&redirect_uri=http://localhost:8080/auth/callback&response_type=code"
+              href="https://kauth.kakao.com/oauth/authorize?client_id=95a542009e6abdf2635c87b2de0b4c5f&redirect_uri=http://222.119.100.90:8111/auth/callback&response_type=code"
               style={{ width: "15%" }}
             >
               <img src={kakao} style={{ width: "100%", height: "100%" }} />

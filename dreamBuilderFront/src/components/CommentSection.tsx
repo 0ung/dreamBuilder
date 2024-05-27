@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import fetcher from "../fetcher";
-import { MANAGE_REPLY_BOARD_TITLE, REPLY_POST } from "../constants/api_constants";
+import { REPLY_POST } from "../constants/api_constants";
 import Comment from "./Comment";
 
 interface NestedReply {
@@ -36,7 +36,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   setReplies,
 }) => {
   const [comment, setComment] = useState<string>("");
-  const [isAdmin, setAdmin] = useState(false); 
+  const [isAdmin, setAdmin] = useState(false);
 
   useEffect(() => {
     setAdmin(isAdmins);
