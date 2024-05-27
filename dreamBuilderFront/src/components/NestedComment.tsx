@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import fetcher from "../fetcher";
 import { RE_REPLY_DELETE, RE_REPLY_UPDATE } from "../constants/api_constants";
+import formatDateTime from "../dataPaser";
+import handleJWT from "../paserJWT";
 interface NestedReply {
   id: number;
   comment: string;
@@ -22,8 +24,19 @@ const NestedComment: React.FC<NestedCommentProps> = ({
   const [modify, setModify] = useState<boolean>(false);
   const [comment, setComment] = useState<string>(nestedReply.comment);
   const [admin, setAdmin] = useState<boolean>(false);
+  const [author, setAuthor] = useState<boolean>(false);
   const [nestedReplyState, setNestedReplyState] =
     useState<NestedReply>(nestedReply); // 대댓글 상태 변수
+
+  const handleAuthor = () => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken !== null && accessToken !== undefined) {
+      const data = handleJWT(accessToken);
+      if (data.name === nestedReply.nickname) {
+        setAuthor(true);
+      }
+    }
+  };
 
   const handleDelete = async () => {
     if (confirm("삭제하시겠습니까?")) {
@@ -55,6 +68,7 @@ const NestedComment: React.FC<NestedCommentProps> = ({
 
   useEffect(() => {
     setAdmin(isAdmin);
+    handleAuthor();
   }, []);
   return (
     <div className="card mb-2 ms-3">
@@ -62,13 +76,19 @@ const NestedComment: React.FC<NestedCommentProps> = ({
         <div className="d-flex justify-content-between align-items-center mb-2">
           <h6 className="card-title mb-0">{nestedReplyState.nickname}</h6>
           <small className="text-muted">
-            {nestedReplyState.updateTime == null
-              ? nestedReplyState.regTime
-              : `${nestedReplyState.updateTime} (수정됨)`}
+            {nestedReplyState.updateTime === nestedReplyState.regTime
+              ? formatDateTime(nestedReplyState.regTime ?? "")
+              : `${formatDateTime(nestedReplyState.updateTime ?? "")} (수정됨)`}
           </small>
         </div>
         {nestedReplyState.invisible ? (
-          <p className="text-muted">삭제된 대댓글입니다.</p>
+          admin ? (
+            <div>
+              <p className="text-muted">(삭제됨) {nestedReplyState.comment}</p>
+            </div>
+          ) : (
+            <p className="text-muted">삭제된 대댓글입니다.</p>
+          )
         ) : modify ? (
           <input
             type="text"
@@ -106,7 +126,7 @@ const NestedComment: React.FC<NestedCommentProps> = ({
                 취소
               </button>
             </>
-          ) : (
+          ) : nestedReplyState.invisible ? null : author ? (
             <>
               <button
                 className="btn btn-primary btn-sm me-2"
@@ -118,7 +138,7 @@ const NestedComment: React.FC<NestedCommentProps> = ({
                 삭제
               </button>
             </>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

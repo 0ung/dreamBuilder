@@ -1,4 +1,5 @@
 import axios from "axios";
+import { MAIN } from "./constants/page_constants";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -40,6 +41,7 @@ fetcher.interceptors.response.use(
 
     if (error.response.status === 403) {
       alert("해당 페이지 접근 권한이 없습니다.");
+      location.href = MAIN;
     }
     return Promise.reject(error);
   }
